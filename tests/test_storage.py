@@ -336,22 +336,22 @@ class TestMemoryStoreEdgeCases:
     ) -> None:
         """Test saving a project when same path exists with different ID.
 
-        Regression test for: https://github.com/anthropics/claude-ltm/issues/X
-        This happens when import-seeds creates a project with id="ltm" and
+        Regression test for: https://github.com/matt-grain/Anima/issues/X
+        This happens when import-seeds creates a project with id="anima" and
         path=cwd, then SessionStart tries to save with id=slugify(folder_name).
         """
         project_path = Path("/some/project/path")
 
         # First project - like import-seeds would create
         project1 = Project(
-            id="ltm",  # hardcoded id
-            name="LTM Seeds",
+            id="anima",  # hardcoded id
+            name="Anima Seeds",
             path=project_path
         )
         memory_store.save_project(project1)
 
         # Verify it was saved
-        retrieved1 = memory_store.get_project("ltm")
+        retrieved1 = memory_store.get_project("anima")
         assert retrieved1 is not None
         assert retrieved1.path == project_path
 
@@ -368,5 +368,5 @@ class TestMemoryStoreEdgeCases:
         # The original project should still exist with updated name
         retrieved_by_path = memory_store.get_project_by_path(project_path)
         assert retrieved_by_path is not None
-        assert retrieved_by_path.id == "ltm"  # keeps original id
+        assert retrieved_by_path.id == "anima"  # keeps original id
         assert retrieved_by_path.name == "Project Path"  # updated name

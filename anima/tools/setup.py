@@ -391,7 +391,7 @@ def run(args: list[str]) -> int:
 LTM Setup Tool
 
 Usage:
-    uv run python -m ltm.tools.setup [options] [project-dir]
+    uv run python -m anima.tools.setup [options] [project-dir]
 
 Options:
     --commands      Install slash commands only
@@ -402,19 +402,19 @@ Options:
 
 Examples:
     # Set up everything in current directory
-    uv run python -m ltm.tools.setup
+    uv run python -m anima.tools.setup
 
     # Install commands only
-    uv run python -m ltm.tools.setup --commands
+    uv run python -m anima.tools.setup --commands
 
     # Set up in a specific project
-    uv run python -m ltm.tools.setup /path/to/project
+    uv run python -m anima.tools.setup /path/to/project
 
     # Force overwrite existing files
-    uv run python -m ltm.tools.setup --force
+    uv run python -m anima.tools.setup --force
 
     # Skip subagent patching (keep existing agents as primary)
-    uv run python -m ltm.tools.setup --no-patch
+    uv run python -m anima.tools.setup --no-patch
 
 Subagent Patching:
     If your project has .claude/agents/*.md files, they will shadow the global
@@ -493,7 +493,7 @@ Subagent Patching:
         print("\nNext steps:")
         print("  1. Import starter seeds:")
         print("     uv run anima import-seeds seeds/")
-        print("  2. If using Anima, check .agent/rules/ltm.md is configured.")
+        print("  2. If using Anima, check .agent/rules/anima.md is configured.")
         print("  3. Start a new session and say 'Welcome back'")
 
     return 0 if success else 1
