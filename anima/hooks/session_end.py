@@ -10,12 +10,13 @@ It processes memory decay and consolidation.
 import sys
 from pathlib import Path
 
+from typing import Optional
 from anima.core import AgentResolver
 from anima.lifecycle.decay import MemoryDecay
 from anima.storage import MemoryStore
 
 
-def run() -> int:
+def run(args: Optional[list[str]] = None) -> int:
     """
     Run session end maintenance.
 

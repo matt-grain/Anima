@@ -21,6 +21,7 @@ def main() -> int:
         print("  import-seeds <dir> Import seed memories")
         print("  load-context      Load memories for current session")
         print("  end-session       Process memory decay and stats")
+        print("  detect-achievements [hours] Detect and promote achievements")
         return 0
 
     command = sys.argv[1]
@@ -51,6 +52,9 @@ def main() -> int:
             return run(args)
         case "end-session":
             from anima.hooks.session_end import run
+            return run(args)
+        case "detect-achievements":
+            from anima.tools.detect_achievements import run
             return run(args)
         case _:
             print(f"Unknown command: {command}")
