@@ -17,6 +17,7 @@ anima = "anima.cli:main"
 
 [dependency-groups]
 dev = [
+    "anima",
     "bandit>=1.9.2",
     "pre-commit>=4.5.1",
     "pyright>=1.1.407",
@@ -49,3 +50,11 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 # Exclude benchmarks from default test run (run with: pytest tests/benchmarks/)
 norecursedirs = ["tests/benchmarks"]
+
+[tool.uv.workspace]
+members = [
+    ".",
+]
+
+[tool.uv.sources]
+anima = { workspace = true }
