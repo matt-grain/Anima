@@ -1,3 +1,4 @@
+// turbo
 ---
 description: List all long-term memories
 ---
@@ -14,5 +15,5 @@ Options:
 $ARGUMENTS
 
 ```bash
-uv run python -m ltm.commands.memories $ARGUMENTS
+uv run python -m anima.commands.memories $ARGUMENTS
 ```

@@ -1,3 +1,4 @@
+// turbo
 ---
 description: Show memory statistics
 ---
@@ -23,5 +24,5 @@ Display statistics about stored memories for the current agent.
 $ARGUMENTS
 
 ```bash
-uv run python -m ltm.commands.stats $ARGUMENTS
+uv run python -m anima.commands.stats $ARGUMENTS
 ```

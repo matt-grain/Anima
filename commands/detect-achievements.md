@@ -1,3 +1,4 @@
+// turbo
 ---
 description: Auto-detect achievements from git commits
 ---
@@ -34,5 +35,5 @@ Skips non-achievements: WIP, fixup, merge, revert, chore commits.
 $ARGUMENTS
 
 ```bash
-uv run python -m ltm.tools.detect_achievements $ARGUMENTS
+uv run python -m anima.tools.detect_achievements $ARGUMENTS
 ```

@@ -1,3 +1,4 @@
+// turbo
 ---
 description: Sign all unsigned memories with your signing key
 ---
@@ -39,5 +40,5 @@ You must have a signing key configured in `~/.anima/config.json`:
 $ARGUMENTS
 
 ```bash
-uv run python -m ltm.tools.sign_memories $ARGUMENTS
+uv run python -m anima.tools.sign_memories $ARGUMENTS
 ```

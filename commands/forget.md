@@ -1,3 +1,4 @@
+// turbo
 ---
 description: Mark a memory for removal
 ---
@@ -9,5 +10,5 @@ Mark a memory for removal by its ID. Memories are append-only, so this creates a
 $ARGUMENTS
 
 ```bash
-uv run python -m ltm.commands.forget $ARGUMENTS
+uv run python -m anima.commands.forget $ARGUMENTS
 ```

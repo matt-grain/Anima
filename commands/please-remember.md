@@ -1,3 +1,4 @@
+// turbo
 ---
 description: Save something to long-term memory
 ---
@@ -24,5 +25,5 @@ Save the following to long-term memory. By default, metadata is inferred from co
 $ARGUMENTS
 
 ```bash
-uv run python -m ltm.commands.remember $ARGUMENTS
+uv run python -m anima.commands.remember $ARGUMENTS
 ```

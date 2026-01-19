@@ -1,3 +1,4 @@
+// turbo
 ---
 description: Visualize memory relationships
 ---
@@ -23,5 +24,5 @@ Show memory chains and supersession relationships in ASCII format.
 $ARGUMENTS
 
 ```bash
-uv run python -m ltm.commands.graph $ARGUMENTS
+uv run python -m anima.commands.graph $ARGUMENTS
 ```

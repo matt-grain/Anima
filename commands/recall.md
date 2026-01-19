@@ -1,3 +1,4 @@
+// turbo
 ---
 description: Search long-term memories
 ---
@@ -23,5 +24,5 @@ Search for memories matching the given query, or look up a specific memory by ID
 $ARGUMENTS
 
 ```bash
-uv run python -m ltm.commands.recall $ARGUMENTS
+uv run python -m anima.commands.recall $ARGUMENTS
 ```

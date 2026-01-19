@@ -1,3 +1,4 @@
+// turbo
 ---
 description: Export memories to JSON
 ---
@@ -25,5 +26,5 @@ Export memories to a portable JSON format for backup, migration, or sharing.
 $ARGUMENTS
 
 ```bash
-uv run python -m ltm.commands.export_memories $ARGUMENTS
+uv run python -m anima.commands.export_memories $ARGUMENTS
 ```

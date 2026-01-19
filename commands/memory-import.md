@@ -1,3 +1,4 @@
+// turbo
 ---
 description: Import memories from JSON
 ---
@@ -25,5 +26,5 @@ Import memories from a previously exported JSON file.
 $ARGUMENTS
 
 ```bash
-uv run python -m ltm.commands.import_memories $ARGUMENTS
+uv run python -m anima.commands.import_memories $ARGUMENTS
 ```
