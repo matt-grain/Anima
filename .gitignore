@@ -25,5 +25,9 @@ claude-docs/
 # Code indexer database
 code-index.db
 
+# Private - our founding history and agent logic
+gemini-docs/
+.agent
+
 # Git backups
 docs/
