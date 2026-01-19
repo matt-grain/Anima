@@ -288,9 +288,9 @@ class MemoryInjector:
             priority_counts[memory.impact.value] += 1
 
         return {
-            "agent_memories": len(agent_memories),
-            "project_memories": len(project_memories),
-            "total": len(agent_memories) + len(project_memories),
+            "agent_memories": len(all_agent_memories),
+            "project_memories": len(all_project_memories),
+            "total": len(all_agent_memories) + len(all_project_memories),
             "budget_tokens": self.budget,
             "priority_counts": priority_counts
         }
