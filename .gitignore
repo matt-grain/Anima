@@ -26,6 +26,4 @@ claude-docs/
 code-index.db
 
 # Git backups
-gemini-docs/
 docs/
-.agent
