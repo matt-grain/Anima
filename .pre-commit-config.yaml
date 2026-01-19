@@ -4,7 +4,10 @@ repos:
     hooks:
       - id: ruff
         args: [--fix]
+        stages: [pre-commit, pre-push]
       - id: ruff-format
+        args: [--line-length=180]
+        stages: [pre-commit, pre-push]
 
   - repo: local
     hooks:
@@ -14,3 +17,27 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
+
+    # ty - Astral's new type checker (fast, incremental)
+      - id: ty
+        name: ty type checker
+        entry: uv run ty check anima/ tests/
+        language: system
+        types: [python]
+        stages: [pre-push]
+        pass_filenames: false
+
+      # Radon - Code complexity checker
+      - id: radon-cc
+        name: radon (cyclomatic complexity)
+        entry: uv run radon cc anima/ -a -nc
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: radon-mi
+        name: radon (maintainability index)
+        entry: uv run radon mi anima/ -nc
+        language: system
+        pass_filenames: false
+        stages: [pre-push]

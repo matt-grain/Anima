@@ -76,10 +76,7 @@ def run(args: list[str]) -> int:
     store = MemoryStore()
 
     # Get all memories
-    all_memories = store.get_memories_for_agent(
-        agent_id=agent.id,
-        project_id=project.id
-    )
+    all_memories = store.get_memories_for_agent(agent_id=agent.id, project_id=project.id)
 
     # Apply filters
     if agent_only:
@@ -89,6 +86,7 @@ def run(args: list[str]) -> int:
 
     if filter_kind:
         from anima.core import MemoryKind
+
         try:
             kind = MemoryKind(filter_kind)
             all_memories = [m for m in all_memories if m.kind == kind]
@@ -112,7 +110,7 @@ def run(args: list[str]) -> int:
             "id": project.id,
             "name": project.name,
         },
-        "memories": []
+        "memories": [],
     }
 
     for memory in all_memories:

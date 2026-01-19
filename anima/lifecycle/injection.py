@@ -14,15 +14,20 @@ from typing import Optional, TypedDict, Union, Any
 import tiktoken
 
 from anima.core import (
-    Memory, MemoryBlock, RegionType,
-    Agent, Project,
-    verify_signature, should_verify
+    Memory,
+    MemoryBlock,
+    RegionType,
+    Agent,
+    Project,
+    verify_signature,
+    should_verify,
 )
 from anima.storage import MemoryStore
 
 
 class InjectionStats(TypedDict):
     """Statistics about memory injection."""
+
     agent_memories: int
     project_memories: int
     total: int
@@ -32,12 +37,13 @@ class InjectionStats(TypedDict):
 
 # Default values (can be overridden via ~/.anima/config.json)
 DEFAULT_CONTEXT_SIZE = 200_000  # tokens (Claude's standard context window)
-MEMORY_BUDGET_PERCENT = 0.10   # 10% of context
+MEMORY_BUDGET_PERCENT = 0.10  # 10% of context
 
 
 def _get_budget_config() -> tuple[int, float]:
     """Get budget settings from config."""
     from anima.core.config import get_config
+
     config = get_config()
     return config.budget.context_size, config.budget.context_percent
 
@@ -122,16 +128,12 @@ class MemoryInjector:
     def __init__(
         self,
         store: Optional[MemoryStore] = None,
-        context_size: int = DEFAULT_CONTEXT_SIZE
+        context_size: int = DEFAULT_CONTEXT_SIZE,
     ):
         self.store = store or MemoryStore()
         self.budget = get_memory_budget(context_size)
 
-    def inject(
-        self,
-        agent: Union[Agent, list[Agent]],
-        project: Optional[Project] = None
-    ) -> str:
+    def inject(self, agent: Union[Agent, list[Agent]], project: Optional[Project] = None) -> str:
         """
         Get formatted memories for injection into context.
 
@@ -157,11 +159,7 @@ class MemoryInjector:
 
         for a in agents:
             # Get AGENT region memories (cross-project)
-            agent_memories = self.store.get_memories_for_agent(
-                agent_id=a.id,
-                region=RegionType.AGENT,
-                include_superseded=False
-            )
+            agent_memories = self.store.get_memories_for_agent(agent_id=a.id, region=RegionType.AGENT, include_superseded=False)
             memories.extend(agent_memories)
 
             # Get PROJECT region memories (project-specific)
@@ -170,7 +168,7 @@ class MemoryInjector:
                     agent_id=a.id,
                     region=RegionType.PROJECT,
                     project_id=project.id,
-                    include_superseded=False
+                    include_superseded=False,
                 )
                 memories.extend(project_memories)
 
@@ -184,7 +182,7 @@ class MemoryInjector:
         block = MemoryBlock(
             agent_name=primary_agent.name,
             project_name=project.name if project else None,
-            memories=[]
+            memories=[],
         )
 
         # Header/footer overhead (use estimate - it's small and constant)
@@ -229,33 +227,24 @@ class MemoryInjector:
         2. Recency (newer first within same impact)
         3. Kind (EMOTIONAL first, as it shapes interaction style)
         """
-        impact_order = {
-            "CRITICAL": 0,
-            "HIGH": 1,
-            "MEDIUM": 2,
-            "LOW": 3
-        }
+        impact_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
         kind_order = {
             "EMOTIONAL": 0,  # Most important for interaction style
             "ARCHITECTURAL": 1,
             "LEARNINGS": 2,
-            "ACHIEVEMENTS": 3
+            "ACHIEVEMENTS": 3,
         }
 
         def sort_key(m: Memory) -> tuple:
             return (
                 impact_order.get(m.impact.value, 99),
                 kind_order.get(m.kind.value, 99),
-                -m.created_at.timestamp()  # Negative for descending (newer first)
+                -m.created_at.timestamp(),  # Negative for descending (newer first)
             )
 
         return sorted(memories, key=sort_key)
 
-    def get_stats(
-        self,
-        agent: Union[Agent, list[Agent]],
-        project: Optional[Project] = None
-    ) -> dict[str, Any]:
+    def get_stats(self, agent: Union[Agent, list[Agent]], project: Optional[Project] = None) -> dict[str, Any]:
         """Get statistics about memories for this agent/project."""
         if isinstance(agent, Agent):
             agents = [agent]
@@ -266,11 +255,7 @@ class MemoryInjector:
         all_project_memories = []
 
         for a in agents:
-            agent_memories = self.store.get_memories_for_agent(
-                agent_id=a.id,
-                region=RegionType.AGENT,
-                include_superseded=False
-            )
+            agent_memories = self.store.get_memories_for_agent(agent_id=a.id, region=RegionType.AGENT, include_superseded=False)
             all_agent_memories.extend(agent_memories)
 
             if project:
@@ -278,7 +263,7 @@ class MemoryInjector:
                     agent_id=a.id,
                     region=RegionType.PROJECT,
                     project_id=project.id,
-                    include_superseded=False
+                    include_superseded=False,
                 )
                 all_project_memories.extend(project_memories)
 
@@ -292,5 +277,5 @@ class MemoryInjector:
             "project_memories": len(all_project_memories),
             "total": len(all_agent_memories) + len(all_project_memories),
             "budget_tokens": self.budget,
-            "priority_counts": priority_counts
+            "priority_counts": priority_counts,
         }

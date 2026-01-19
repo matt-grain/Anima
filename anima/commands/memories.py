@@ -17,6 +17,7 @@ from anima.storage import MemoryStore
 
 class MemoriesFilterOptions(TypedDict):
     """Typed options for the memories command."""
+
     kind: Optional[str]
     region: Optional[str]
     all: bool
@@ -24,11 +25,7 @@ class MemoriesFilterOptions(TypedDict):
 
 def parse_args(args: list[str]) -> MemoriesFilterOptions:
     """Parse command line arguments."""
-    result: MemoriesFilterOptions = {
-        "kind": None,
-        "region": None,
-        "all": False
-    }
+    result: MemoriesFilterOptions = {"kind": None, "region": None, "all": False}
 
     i = 0
     while i < len(args):
@@ -91,7 +88,7 @@ def run(args: list[str]) -> int:
         region=region,
         project_id=project.id if region == RegionType.PROJECT or region is None else None,
         kind=kind,
-        include_superseded=bool(options["all"])
+        include_superseded=bool(options["all"]),
     )
 
     if not memories:

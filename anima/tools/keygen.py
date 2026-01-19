@@ -30,10 +30,7 @@ def find_agent_file(agent_id: str) -> tuple[Optional[Path], bool]:
         Tuple of (path or None, is_global)
     """
     # Check project-local
-    local_dirs = [
-        Path.cwd() / ".agent" / "agents",
-        Path.cwd() / ".claude" / "agents"
-    ]
+    local_dirs = [Path.cwd() / ".agent" / "agents", Path.cwd() / ".claude" / "agents"]
     for d in local_dirs:
         local_file = d / f"{agent_id}.md"
         if local_file.exists():
@@ -42,7 +39,7 @@ def find_agent_file(agent_id: str) -> tuple[Optional[Path], bool]:
     # Check user-global
     global_dirs = [
         Path.home() / ".agent" / "agents",
-        Path.home() / ".claude" / "agents"
+        Path.home() / ".claude" / "agents",
     ]
     for d in global_dirs:
         global_file = d / f"{agent_id}.md"

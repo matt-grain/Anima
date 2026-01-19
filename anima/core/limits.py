@@ -22,6 +22,7 @@ class MemoryLimits:
         max_memories_per_project: Maximum memories per project (None = unlimited)
         max_memories_per_kind: Maximum memories of each kind (None = unlimited)
     """
+
     max_memories_per_agent: Optional[int] = None
     max_memories_per_project: Optional[int] = None
     max_memories_per_kind: Optional[int] = None
@@ -29,9 +30,9 @@ class MemoryLimits:
 
 # Default limits - generous but prevents runaway creation
 DEFAULT_LIMITS = MemoryLimits(
-    max_memories_per_agent=10000,     # Very high limit - should never hit in normal use
-    max_memories_per_project=5000,    # Per-project limit
-    max_memories_per_kind=2000,       # Per-kind limit
+    max_memories_per_agent=10000,  # Very high limit - should never hit in normal use
+    max_memories_per_project=5000,  # Per-project limit
+    max_memories_per_kind=2000,  # Per-kind limit
 )
 
 # No limits - for testing or special cases
@@ -45,7 +46,4 @@ class MemoryLimitExceeded(Exception):
         self.limit_type = limit_type
         self.current = current
         self.limit = limit
-        super().__init__(
-            f"Memory limit exceeded: {limit_type} "
-            f"(current: {current}, limit: {limit})"
-        )
+        super().__init__(f"Memory limit exceeded: {limit_type} " f"(current: {current}, limit: {limit})")

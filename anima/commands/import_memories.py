@@ -12,10 +12,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from anima.core import (
-    Memory, MemoryKind, ImpactLevel, RegionType,
-    AgentResolver
-)
+from anima.core import Memory, MemoryKind, ImpactLevel, RegionType, AgentResolver
 from anima.lifecycle.injection import ensure_token_count
 from anima.storage import MemoryStore
 

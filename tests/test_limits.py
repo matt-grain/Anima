@@ -30,26 +30,20 @@ def limited_store() -> MemoryStore:
     with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         db_path = Path(f.name)
 
-    limits = MemoryLimits(
-        max_memories_per_agent=5, max_memories_per_project=3, max_memories_per_kind=2
-    )
+    limits = MemoryLimits(max_memories_per_agent=5, max_memories_per_project=3, max_memories_per_kind=2)
     return MemoryStore(db_path=db_path, limits=limits)
 
 
 @pytest.fixture
 def test_agent() -> Agent:
     """Create a test agent."""
-    return Agent(
-        id="test-agent", name="Test Agent", definition_path=None, signing_key=None
-    )
+    return Agent(id="test-agent", name="Test Agent", definition_path=None, signing_key=None)
 
 
 @pytest.fixture
 def test_project() -> Project:
     """Create a test project."""
-    return Project(
-        id="test-project", name="Test Project", path=Path("/tmp/test-project")
-    )
+    return Project(id="test-project", name="Test Project", path=Path("/tmp/test-project"))
 
 
 class TestMemoryLimits:
@@ -100,15 +94,11 @@ class TestMemoryLimitExceeded:
 class TestStoreLimits:
     """Tests for MemoryStore limit enforcement."""
 
-    def test_store_accepts_limits_in_constructor(
-        self, limited_store: MemoryStore
-    ) -> None:
+    def test_store_accepts_limits_in_constructor(self, limited_store: MemoryStore) -> None:
         """Test that MemoryStore accepts limits parameter."""
         assert limited_store.limits.max_memories_per_agent == 5
 
-    def test_agent_limit_enforced(
-        self, limited_store: MemoryStore, test_agent: Agent
-    ) -> None:
+    def test_agent_limit_enforced(self, limited_store: MemoryStore, test_agent: Agent) -> None:
         """Test that agent-wide limit is enforced."""
         limited_store.save_agent(test_agent)
 
@@ -117,9 +107,7 @@ class TestStoreLimits:
             memory = Memory(
                 agent_id=test_agent.id,
                 region=RegionType.AGENT,
-                kind=MemoryKind(
-                    ["EMOTIONAL", "ARCHITECTURAL", "LEARNINGS", "ACHIEVEMENTS"][i % 4]
-                ),
+                kind=MemoryKind(["EMOTIONAL", "ARCHITECTURAL", "LEARNINGS", "ACHIEVEMENTS"][i % 4]),
                 content=f"Memory {i}",
             )
             limited_store.save_memory(memory)
@@ -136,9 +124,7 @@ class TestStoreLimits:
 
         assert "agent total" in str(exc_info.value)
 
-    def test_project_limit_enforced(
-        self, limited_store: MemoryStore, test_agent: Agent, test_project: Project
-    ) -> None:
+    def test_project_limit_enforced(self, limited_store: MemoryStore, test_agent: Agent, test_project: Project) -> None:
         """Test that per-project limit is enforced."""
         limited_store.save_agent(test_agent)
         limited_store.save_project(test_project)
@@ -167,9 +153,7 @@ class TestStoreLimits:
 
         assert "project" in str(exc_info.value)
 
-    def test_kind_limit_enforced(
-        self, limited_store: MemoryStore, test_agent: Agent
-    ) -> None:
+    def test_kind_limit_enforced(self, limited_store: MemoryStore, test_agent: Agent) -> None:
         """Test that per-kind limit is enforced."""
         limited_store.save_agent(test_agent)
 
@@ -196,9 +180,7 @@ class TestStoreLimits:
         assert "kind" in str(exc_info.value)
         assert "LEARNINGS" in str(exc_info.value)
 
-    def test_updates_dont_count_against_limits(
-        self, limited_store: MemoryStore, test_agent: Agent
-    ) -> None:
+    def test_updates_dont_count_against_limits(self, limited_store: MemoryStore, test_agent: Agent) -> None:
         """Test that updating an existing memory doesn't hit limits."""
         limited_store.save_agent(test_agent)
 
@@ -284,24 +266,11 @@ class TestCountMemoriesByKind:
             )
         )
 
-        assert (
-            limited_store.count_memories_by_kind(test_agent.id, MemoryKind.LEARNINGS)
-            == 2
-        )
-        assert (
-            limited_store.count_memories_by_kind(test_agent.id, MemoryKind.EMOTIONAL)
-            == 1
-        )
-        assert (
-            limited_store.count_memories_by_kind(
-                test_agent.id, MemoryKind.ARCHITECTURAL
-            )
-            == 0
-        )
+        assert limited_store.count_memories_by_kind(test_agent.id, MemoryKind.LEARNINGS) == 2
+        assert limited_store.count_memories_by_kind(test_agent.id, MemoryKind.EMOTIONAL) == 1
+        assert limited_store.count_memories_by_kind(test_agent.id, MemoryKind.ARCHITECTURAL) == 0
 
-    def test_count_by_kind_excludes_superseded(
-        self, limited_store: MemoryStore, test_agent: Agent
-    ) -> None:
+    def test_count_by_kind_excludes_superseded(self, limited_store: MemoryStore, test_agent: Agent) -> None:
         """Test that superseded memories aren't counted."""
         limited_store.save_agent(test_agent)
 
@@ -323,7 +292,4 @@ class TestCountMemoriesByKind:
         limited_store.supersede_memory(old_memory.id, new_memory.id)
 
         # Should only count the non-superseded one
-        assert (
-            limited_store.count_memories_by_kind(test_agent.id, MemoryKind.LEARNINGS)
-            == 1
-        )
+        assert limited_store.count_memories_by_kind(test_agent.id, MemoryKind.LEARNINGS) == 1

@@ -10,9 +10,15 @@ from pathlib import Path
 from typing import Optional, Iterator
 
 from anima.core import (
-    Memory, Agent, Project,
-    RegionType, MemoryKind, ImpactLevel,
-    MemoryLimits, MemoryLimitExceeded, DEFAULT_LIMITS
+    Memory,
+    Agent,
+    Project,
+    RegionType,
+    MemoryKind,
+    ImpactLevel,
+    MemoryLimits,
+    MemoryLimitExceeded,
+    DEFAULT_LIMITS,
 )
 from anima.storage.protocol import MemoryStoreProtocol
 
@@ -44,12 +50,7 @@ def escape_like_pattern(pattern: str) -> str:
     Prevents LIKE injection where user input containing % or _ could
     manipulate search behavior.
     """
-    return (
-        pattern
-        .replace("\\", "\\\\")
-        .replace("%", "\\%")
-        .replace("_", "\\_")
-    )
+    return pattern.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
 class MemoryStore(MemoryStoreProtocol):
@@ -60,11 +61,7 @@ class MemoryStore(MemoryStoreProtocol):
     Handles all CRUD operations for memories, agents, and projects.
     """
 
-    def __init__(
-        self,
-        db_path: Optional[Path] = None,
-        limits: Optional[MemoryLimits] = None
-    ):
+    def __init__(self, db_path: Optional[Path] = None, limits: Optional[MemoryLimits] = None):
         self.db_path = db_path or get_default_db_path()
         self.limits = limits if limits is not None else DEFAULT_LIMITS
         self._init_db()
@@ -110,17 +107,14 @@ class MemoryStore(MemoryStoreProtocol):
                     agent.name,
                     str(agent.definition_path) if agent.definition_path else None,
                     agent.signing_key,
-                    agent.created_at or datetime.now().isoformat()
-                )
+                    agent.created_at or datetime.now().isoformat(),
+                ),
             )
 
     def get_agent(self, agent_id: str) -> Optional[Agent]:
         """Get an agent by ID."""
         with self._connect() as conn:
-            row = conn.execute(
-                "SELECT * FROM agents WHERE id = ?",
-                (agent_id,)
-            ).fetchone()
+            row = conn.execute("SELECT * FROM agents WHERE id = ?", (agent_id,)).fetchone()
 
             if not row:
                 return None
@@ -130,7 +124,7 @@ class MemoryStore(MemoryStoreProtocol):
                 name=row["name"],
                 definition_path=Path(row["definition_path"]) if row["definition_path"] else None,
                 signing_key=row["signing_key"],
-                created_at=row["created_at"]
+                created_at=row["created_at"],
             )
 
     # --- Project operations ---
@@ -147,14 +141,14 @@ class MemoryStore(MemoryStoreProtocol):
             # Check if a project with this path already exists (with different id)
             existing = conn.execute(
                 "SELECT id FROM projects WHERE path = ? AND id != ?",
-                (str(project.path), project.id)
+                (str(project.path), project.id),
             ).fetchone()
 
             if existing:
                 # Update the existing project (keep its original id)
                 conn.execute(
                     "UPDATE projects SET name = ? WHERE path = ?",
-                    (project.name, str(project.path))
+                    (project.name, str(project.path)),
                 )
             else:
                 # Normal upsert by id
@@ -170,17 +164,14 @@ class MemoryStore(MemoryStoreProtocol):
                         project.id,
                         project.name,
                         str(project.path),
-                        project.created_at or datetime.now().isoformat()
-                    )
+                        project.created_at or datetime.now().isoformat(),
+                    ),
                 )
 
     def get_project(self, project_id: str) -> Optional[Project]:
         """Get a project by ID."""
         with self._connect() as conn:
-            row = conn.execute(
-                "SELECT * FROM projects WHERE id = ?",
-                (project_id,)
-            ).fetchone()
+            row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
 
             if not row:
                 return None
@@ -189,16 +180,13 @@ class MemoryStore(MemoryStoreProtocol):
                 id=row["id"],
                 name=row["name"],
                 path=Path(row["path"]),
-                created_at=row["created_at"]
+                created_at=row["created_at"],
             )
 
     def get_project_by_path(self, path: Path) -> Optional[Project]:
         """Get a project by its path."""
         with self._connect() as conn:
-            row = conn.execute(
-                "SELECT * FROM projects WHERE path = ?",
-                (str(path),)
-            ).fetchone()
+            row = conn.execute("SELECT * FROM projects WHERE path = ?", (str(path),)).fetchone()
 
             if not row:
                 return None
@@ -207,7 +195,7 @@ class MemoryStore(MemoryStoreProtocol):
                 id=row["id"],
                 name=row["name"],
                 path=Path(row["path"]),
-                created_at=row["created_at"]
+                created_at=row["created_at"],
             )
 
     # --- Memory operations ---
@@ -228,11 +216,7 @@ class MemoryStore(MemoryStoreProtocol):
         if self.limits.max_memories_per_agent is not None:
             current = self.count_memories(memory.agent_id)
             if current >= self.limits.max_memories_per_agent:
-                raise MemoryLimitExceeded(
-                    "agent total",
-                    current,
-                    self.limits.max_memories_per_agent
-                )
+                raise MemoryLimitExceeded("agent total", current, self.limits.max_memories_per_agent)
 
         # Check per-project limit
         if self.limits.max_memories_per_project is not None and memory.project_id:
@@ -241,21 +225,17 @@ class MemoryStore(MemoryStoreProtocol):
                 raise MemoryLimitExceeded(
                     f"project '{memory.project_id}'",
                     current,
-                    self.limits.max_memories_per_project
+                    self.limits.max_memories_per_project,
                 )
 
         # Check per-kind limit
         if self.limits.max_memories_per_kind is not None:
-            current = self.count_memories_by_kind(
-                memory.agent_id,
-                memory.kind,
-                memory.project_id
-            )
+            current = self.count_memories_by_kind(memory.agent_id, memory.kind, memory.project_id)
             if current >= self.limits.max_memories_per_kind:
                 raise MemoryLimitExceeded(
                     f"kind '{memory.kind.value}'",
                     current,
-                    self.limits.max_memories_per_kind
+                    self.limits.max_memories_per_kind,
                 )
 
     def save_memory(self, memory: Memory) -> None:
@@ -303,17 +283,14 @@ class MemoryStore(MemoryStoreProtocol):
                     memory.version,
                     memory.superseded_by,
                     memory.signature,
-                    memory.token_count
-                )
+                    memory.token_count,
+                ),
             )
 
     def get_memory(self, memory_id: str) -> Optional[Memory]:
         """Get a memory by ID."""
         with self._connect() as conn:
-            row = conn.execute(
-                "SELECT * FROM memories WHERE id = ?",
-                (memory_id,)
-            ).fetchone()
+            row = conn.execute("SELECT * FROM memories WHERE id = ?", (memory_id,)).fetchone()
 
             if not row:
                 return None
@@ -327,7 +304,7 @@ class MemoryStore(MemoryStoreProtocol):
         project_id: Optional[str] = None,
         kind: Optional[MemoryKind] = None,
         include_superseded: bool = False,
-        limit: Optional[int] = None
+        limit: Optional[int] = None,
     ) -> list[Memory]:
         """
         Get memories for an agent with optional filters.
@@ -377,7 +354,7 @@ class MemoryStore(MemoryStoreProtocol):
         agent_id: str,
         kind: MemoryKind,
         region: RegionType,
-        project_id: Optional[str] = None
+        project_id: Optional[str] = None,
     ) -> Optional[Memory]:
         """Get the most recent non-superseded memory of a specific kind."""
         query = """
@@ -404,7 +381,7 @@ class MemoryStore(MemoryStoreProtocol):
         with self._connect() as conn:
             conn.execute(
                 "UPDATE memories SET superseded_by = ? WHERE id = ?",
-                (new_memory_id, old_memory_id)
+                (new_memory_id, old_memory_id),
             )
 
     def update_confidence(self, memory_id: str, confidence: float) -> None:
@@ -412,7 +389,7 @@ class MemoryStore(MemoryStoreProtocol):
         with self._connect() as conn:
             conn.execute(
                 "UPDATE memories SET confidence = ? WHERE id = ?",
-                (confidence, memory_id)
+                (confidence, memory_id),
             )
 
     def delete_memory(self, memory_id: str) -> None:
@@ -425,7 +402,7 @@ class MemoryStore(MemoryStoreProtocol):
         agent_id: str,
         query: str,
         project_id: Optional[str] = None,
-        limit: int = 10
+        limit: int = 10,
     ) -> list[Memory]:
         """
         Search memories by content (simple LIKE search).
@@ -466,12 +443,7 @@ class MemoryStore(MemoryStoreProtocol):
         with self._connect() as conn:
             return conn.execute(query, params).fetchone()[0]
 
-    def count_memories_by_kind(
-        self,
-        agent_id: str,
-        kind: MemoryKind,
-        project_id: Optional[str] = None
-    ) -> int:
+    def count_memories_by_kind(self, agent_id: str, kind: MemoryKind, project_id: Optional[str] = None) -> int:
         """Count non-superseded memories of a specific kind for an agent."""
         query = """
             SELECT COUNT(*) FROM memories
@@ -504,5 +476,5 @@ class MemoryStore(MemoryStoreProtocol):
             version=row["version"],
             superseded_by=row["superseded_by"],
             signature=row["signature"],
-            token_count=row["token_count"]
+            token_count=row["token_count"],
         )

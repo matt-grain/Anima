@@ -15,10 +15,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from anima.core import (
-    Memory, MemoryKind, ImpactLevel, RegionType,
-    AgentResolver
-)
+from anima.core import Memory, MemoryKind, ImpactLevel, RegionType, AgentResolver
 from anima.lifecycle.injection import ensure_token_count
 from anima.storage import MemoryStore
 
@@ -26,41 +23,40 @@ from anima.storage import MemoryStore
 # Patterns that suggest significant achievements
 ACHIEVEMENT_PATTERNS = [
     # Feature completion - "Add X command", "Implement Y", etc.
-    (r'^add\s+.*(command|feature|module|hook|test)', ImpactLevel.HIGH),
-    (r'^add\s+/\w+', ImpactLevel.HIGH),  # "Add /memory-export" style
-    (r'\b(implement|create|build)\b.*\b(feature|command|module|system|api)\b', ImpactLevel.HIGH),
-    (r'\bcomplete[ds]?\b', ImpactLevel.HIGH),
-    (r'\bfinish(ed|es)?\b', ImpactLevel.MEDIUM),
-
+    (r"^add\s+.*(command|feature|module|hook|test)", ImpactLevel.HIGH),
+    (r"^add\s+/\w+", ImpactLevel.HIGH),  # "Add /memory-export" style
+    (
+        r"\b(implement|create|build)\b.*\b(feature|command|module|system|api)\b",
+        ImpactLevel.HIGH,
+    ),
+    (r"\bcomplete[ds]?\b", ImpactLevel.HIGH),
+    (r"\bfinish(ed|es)?\b", ImpactLevel.MEDIUM),
     # Major milestones
-    (r'\b(v?\d+\.\d+(\.\d+)?)\b', ImpactLevel.HIGH),  # Version numbers
-    (r'\bmilestone\b', ImpactLevel.HIGH),
-    (r'\brelease\b', ImpactLevel.HIGH),
-    (r'\blaunch(ed|es|ing)?\b', ImpactLevel.HIGH),
-
+    (r"\b(v?\d+\.\d+(\.\d+)?)\b", ImpactLevel.HIGH),  # Version numbers
+    (r"\bmilestone\b", ImpactLevel.HIGH),
+    (r"\brelease\b", ImpactLevel.HIGH),
+    (r"\blaunch(ed|es|ing)?\b", ImpactLevel.HIGH),
     # Significant fixes
-    (r'\bfix(ed|es)?\b.*\b(critical|major|important)\b', ImpactLevel.HIGH),
-    (r'\bresolve[ds]?\b', ImpactLevel.MEDIUM),
-
+    (r"\bfix(ed|es)?\b.*\b(critical|major|important)\b", ImpactLevel.HIGH),
+    (r"\bresolve[ds]?\b", ImpactLevel.MEDIUM),
     # Refactoring achievements
-    (r'\brefactor(ed|s|ing)?\b', ImpactLevel.MEDIUM),
-    (r'\bmigrat(e|ed|ion)\b', ImpactLevel.HIGH),
-
+    (r"\brefactor(ed|s|ing)?\b", ImpactLevel.MEDIUM),
+    (r"\bmigrat(e|ed|ion)\b", ImpactLevel.HIGH),
     # Test achievements
-    (r'\b(\d+)\s*(tests?|specs?)\s*(pass(ing|ed)?|green)\b', ImpactLevel.MEDIUM),
-    (r'\b100%\s*(coverage|tests?)\b', ImpactLevel.HIGH),
-    (r'^add\s+tests?\b', ImpactLevel.MEDIUM),  # "Add tests for X"
+    (r"\b(\d+)\s*(tests?|specs?)\s*(pass(ing|ed)?|green)\b", ImpactLevel.MEDIUM),
+    (r"\b100%\s*(coverage|tests?)\b", ImpactLevel.HIGH),
+    (r"^add\s+tests?\b", ImpactLevel.MEDIUM),  # "Add tests for X"
 ]
 
 # Patterns to skip (not achievements)
 SKIP_PATTERNS = [
-    r'^wip\b',
-    r'^fixup\b',
-    r'^squash\b',
-    r'^merge\b',
-    r'^revert\b',
-    r'^\[skip',
-    r'^chore\b',
+    r"^wip\b",
+    r"^fixup\b",
+    r"^squash\b",
+    r"^merge\b",
+    r"^revert\b",
+    r"^\[skip",
+    r"^chore\b",
 ]
 
 
@@ -75,15 +71,16 @@ def get_recent_commits(since_hours: int = 24, repo_path: Optional[Path] = None) 
     try:
         result = subprocess.run(
             [
-                "git", "log",
+                "git",
+                "log",
                 f"--since={since_hours} hours ago",
                 "--format=%H|%s|%an|%aI",
-                "--no-merges"
+                "--no-merges",
             ],
             cwd=cwd,
             capture_output=True,
             text=True,
-            timeout=10
+            timeout=10,
         )
 
         if result.returncode != 0:
@@ -95,12 +92,14 @@ def get_recent_commits(since_hours: int = 24, repo_path: Optional[Path] = None) 
                 continue
             parts = line.split("|", 3)
             if len(parts) >= 4:
-                commits.append({
-                    "hash": parts[0],
-                    "message": parts[1],
-                    "author": parts[2],
-                    "date": datetime.fromisoformat(parts[3].replace("Z", "+00:00")),
-                })
+                commits.append(
+                    {
+                        "hash": parts[0],
+                        "message": parts[1],
+                        "author": parts[2],
+                        "date": datetime.fromisoformat(parts[3].replace("Z", "+00:00")),
+                    }
+                )
 
         return commits
 
@@ -208,12 +207,7 @@ def run(args: list[str]) -> int:
 
         # Check if we already have this achievement (by commit hash in content)
         # This prevents duplicates on re-runs
-        existing = store.search_memories(
-            query=commit["hash"][:8],
-            agent_id=agent.id,
-            project_id=project.id,
-            limit=1
-        )
+        existing = store.search_memories(query=commit["hash"][:8], agent_id=agent.id, project_id=project.id, limit=1)
 
         if existing:
             print(f"  ⏭️  Already recorded: {message[:50]}...")

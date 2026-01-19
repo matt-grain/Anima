@@ -207,9 +207,7 @@ def run(args: list[str]) -> int:
         print("Usage: uv run anima remember <text>")
         print("       uv run anima remember --region agent <text>")
         print("       uv run anima remember --project MyProject --region project <text>")
-        print(
-            "\nExample: uv run anima remember This is crucial: never use print() for logging"
-        )
+        print("\nExample: uv run anima remember This is crucial: never use print() for logging")
         print("\nFlags:")
         print("  --region, -r   agent|project    Where to store (default: inferred)")
         print("  --kind, -k    emotional|architectural|learnings|achievements")
@@ -239,10 +237,7 @@ def run(args: list[str]) -> int:
     # Validate --project flag if provided (safety check)
     if parsed.project:
         if parsed.project != project.name:
-            print(
-                f"ERROR: --project '{parsed.project}' does not match "
-                f"current project '{project.name}' (from cwd)"
-            )
+            print(f"ERROR: --project '{parsed.project}' does not match " f"current project '{project.name}' (from cwd)")
             print("This safety check prevents saving memories to the wrong project.")
             print(f"Either cd to the correct directory or use --project {project.name}")
             return 1
@@ -304,17 +299,11 @@ def run(args: list[str]) -> int:
     store.save_memory(memory)
 
     # Output confirmation
-    region_str = (
-        f"PROJECT ({project.name})" if region == RegionType.PROJECT else "AGENT"
-    )
-    linked_str = (
-        f"\nLinked to previous {kind.value.lower()} memory." if previous else ""
-    )
+    region_str = f"PROJECT ({project.name})" if region == RegionType.PROJECT else "AGENT"
+    linked_str = f"\nLinked to previous {kind.value.lower()} memory." if previous else ""
     signed_str = " [signed]" if memory.signature else ""
 
-    print(
-        f"Remembered as {kind.value} ({impact.value} impact) in {region_str} region.{linked_str}"
-    )
+    print(f"Remembered as {kind.value} ({impact.value} impact) in {region_str} region.{linked_str}")
     print(f"Memory ID: {memory.id[:8]}{signed_str}")
 
     return 0

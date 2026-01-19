@@ -80,9 +80,7 @@ def parse_seed_file(file_path: Path) -> Optional[dict]:
     if impact_match:
         result["impact"] = ImpactLevel(impact_match.group(1))
 
-    region_match = re.search(
-        r"\*\*Region:\*\*\s*(AGENT|PROJECT)(?:\s*\(([^)]+)\))?", content
-    )
+    region_match = re.search(r"\*\*Region:\*\*\s*(AGENT|PROJECT)(?:\s*\(([^)]+)\))?", content)
     if region_match:
         result["region"] = RegionType(region_match.group(1))
         if region_match.group(2):
@@ -93,16 +91,12 @@ def parse_seed_file(file_path: Path) -> Optional[dict]:
         result["confidence"] = float(confidence_match.group(1))
 
     # Parse raw content (between ## Raw Memory and ## Compacted Memory)
-    raw_match = re.search(
-        r"## Raw Memory.*?\n\n(.*?)(?=\n## Compacted Memory)", content, re.DOTALL
-    )
+    raw_match = re.search(r"## Raw Memory.*?\n\n(.*?)(?=\n## Compacted Memory)", content, re.DOTALL)
     if raw_match:
         result["raw_content"] = raw_match.group(1).strip()
 
     # Parse compacted content (in code block after ## Compacted Memory)
-    compacted_match = re.search(
-        r"## Compacted Memory.*?```\n(.*?)\n```", content, re.DOTALL
-    )
+    compacted_match = re.search(r"## Compacted Memory.*?```\n(.*?)\n```", content, re.DOTALL)
     if compacted_match:
         result["compacted_content"] = compacted_match.group(1).strip()
 
@@ -205,9 +199,7 @@ def run(args: list[str]) -> int:
             id=parsed["id"],  # Preserve original ID
             agent_id=agent.id,
             region=parsed["region"],
-            project_id=project.id
-            if parsed["region"] == RegionType.PROJECT
-            else None,
+            project_id=project.id if parsed["region"] == RegionType.PROJECT else None,
             kind=parsed["kind"],
             content=content,
             original_content=parsed["raw_content"],

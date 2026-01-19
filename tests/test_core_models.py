@@ -63,7 +63,7 @@ class TestMemory:
             agent_id="test",
             region=RegionType.AGENT,
             kind=MemoryKind.EMOTIONAL,
-            content="Test content"
+            content="Test content",
         )
 
         assert memory.agent_id == "test"
@@ -84,7 +84,7 @@ class TestMemory:
             project_id="my-project",
             kind=MemoryKind.ARCHITECTURAL,
             content="Use pytest",
-            impact=ImpactLevel.HIGH
+            impact=ImpactLevel.HIGH,
         )
 
         assert memory.region == RegionType.PROJECT
@@ -98,7 +98,7 @@ class TestMemory:
             agent_id="test",
             region=RegionType.AGENT,
             kind=MemoryKind.LEARNINGS,
-            content="Test"
+            content="Test",
         )
         after = datetime.now()
 
@@ -111,7 +111,7 @@ class TestMemory:
             agent_id="test",
             region=RegionType.AGENT,
             kind=MemoryKind.LEARNINGS,
-            content="Old version"
+            content="Old version",
         )
         assert not memory.is_superseded()
 
@@ -124,7 +124,7 @@ class TestMemory:
             agent_id="test",
             region=RegionType.AGENT,
             kind=MemoryKind.LEARNINGS,
-            content="Test"
+            content="Test",
         )
         assert not memory.is_low_confidence()
 
@@ -140,13 +140,13 @@ class TestMemory:
             agent_id="test",
             region=RegionType.AGENT,
             kind=MemoryKind.EMOTIONAL,
-            content="Memory 1"
+            content="Memory 1",
         )
         memory2 = Memory(
             agent_id="test",
             region=RegionType.AGENT,
             kind=MemoryKind.EMOTIONAL,
-            content="Memory 2"
+            content="Memory 2",
         )
 
         assert memory1.id != memory2.id
@@ -161,7 +161,7 @@ class TestAgent:
             id="my-agent",
             name="My Agent",
             definition_path=Path("/path/to/agent.yaml"),
-            signing_key="secret-key"
+            signing_key="secret-key",
         )
 
         assert agent.id == "my-agent"
@@ -171,12 +171,7 @@ class TestAgent:
 
     def test_agent_minimal(self) -> None:
         """Test agent with minimal fields."""
-        agent = Agent(
-            id="anima",
-            name="Anima",
-            definition_path=None,
-            signing_key=None
-        )
+        agent = Agent(id="anima", name="Anima", definition_path=None, signing_key=None)
 
         assert agent.id == "anima"
         assert agent.name == "Anima"
@@ -192,7 +187,7 @@ class TestProject:
         project = Project(
             id="my-project",
             name="My Project",
-            path=Path("/home/user/projects/my-project")
+            path=Path("/home/user/projects/my-project"),
         )
 
         assert project.id == "my-project"
@@ -202,11 +197,7 @@ class TestProject:
     def test_project_from_path(self) -> None:
         """Test project ID derivation from path."""
         # The project name typically comes from the directory name
-        project = Project(
-            id="test-ltm",
-            name="test_ltm",
-            path=Path("/home/matt/projects/test_ltm")
-        )
+        project = Project(id="test-ltm", name="test_ltm", path=Path("/home/matt/projects/test_ltm"))
 
         assert project.id == "test-ltm"
         assert project.name == "test_ltm"

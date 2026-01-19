@@ -30,31 +30,40 @@ def main() -> int:
     match command:
         case "remember":
             from anima.commands.remember import run
+
             return run(args)
         case "recall":
             from anima.commands.recall import run
+
             return run(args)
         case "forget":
             from anima.commands.forget import run
+
             return run(args)
         case "memories":
             from anima.commands.memories import run
+
             return run(args)
         case "keygen":
             from anima.tools.keygen import run
+
             return run(args)
         case "import-seeds":
             from anima.tools.import_seeds import run
+
             return run(args)
         case "load-context":
             from anima.hooks.session_start import run
+
             # Handle arguments like --format json or --agent name
             return run(args)
         case "end-session":
             from anima.hooks.session_end import run
+
             return run(args)
         case "detect-achievements":
             from anima.tools.detect_achievements import run
+
             return run(args)
         case _:
             print(f"Unknown command: {command}")

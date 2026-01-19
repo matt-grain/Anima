@@ -74,10 +74,7 @@ def auto_patch_agents(project_dir: Path) -> tuple[list[str], list[str]]:
         Tuple of (patched_agents, disabled_agents) filenames
     """
     # Check both .agent and .claude directories
-    local_dirs = [
-        project_dir / ".agent" / "agents",
-        project_dir / ".claude" / "agents"
-    ]
+    local_dirs = [project_dir / ".agent" / "agents", project_dir / ".claude" / "agents"]
 
     patched = []
     disabled = []
@@ -137,7 +134,7 @@ def run(args: Optional[list[str]] = None) -> int:
                 output_format = args[idx + 1]
         elif "--json" in args:
             output_format = "json"
-        
+
         if "--agent" in args:
             idx = args.index("--agent")
             if idx + 1 < len(args):
@@ -165,13 +162,14 @@ def run(args: Optional[list[str]] = None) -> int:
     if agent.is_subagent and agent.id != "anima":
         # Resolve the default global agent (Anima)
         from anima.core.config import get_config
+
         config = get_config()
         primary_agent = Agent(
             id=config.agent.id,
             name=config.agent.name,
-            signing_key=config.agent.signing_key
+            signing_key=config.agent.signing_key,
         )
-        
+
         # Inject from both, prioritizing subagent specific if any
         # (Usually subagents have 0 memories of their own, so they just get Anima's)
         memories_dsl = injector.inject([agent, primary_agent], project)
@@ -181,21 +179,15 @@ def run(args: Optional[list[str]] = None) -> int:
     # Build status notes
     status_notes = []
     if patched_agents:
-        status_notes.append(
-            f"# LTM: Auto-patched {len(patched_agents)} agent(s) as subagents: {', '.join(patched_agents)}"
-        )
+        status_notes.append(f"# LTM: Auto-patched {len(patched_agents)} agent(s) as subagents: {', '.join(patched_agents)}")
     if disabled_agents:
-        status_notes.append(
-            f"# LTM WARNING: Disabled {len(disabled_agents)} incompatible agent(s) (missing YAML frontmatter): {', '.join(disabled_agents)}"
-        )
-        status_notes.append(
-            "# LTM: To fix, add frontmatter: ---\\nname: \"AgentName\"\\nltm: subagent: true\\n---"
-        )
+        status_notes.append(f"# LTM WARNING: Disabled {len(disabled_agents)} incompatible agent(s) (missing YAML frontmatter): {', '.join(disabled_agents)}")
+        status_notes.append('# LTM: To fix, add frontmatter: ---\\nname: "AgentName"\\nltm: subagent: true\\n---')
 
     if memories_dsl:
         # Get stats
         stats = injector.get_stats(agent, project)
-        pc = stats['priority_counts']
+        pc = stats["priority_counts"]
 
         # Build context message
         context = f"""{memories_dsl}
@@ -217,7 +209,7 @@ def run(args: Optional[list[str]] = None) -> int:
             output = {
                 "hookSpecificOutput": {
                     "hookEventName": "SessionStart",
-                    "additionalContext": context
+                    "additionalContext": context,
                 }
             }
             print(json.dumps(output))
@@ -237,7 +229,7 @@ def run(args: Optional[list[str]] = None) -> int:
             output = {
                 "hookSpecificOutput": {
                     "hookEventName": "SessionStart",
-                    "additionalContext": no_mem_context
+                    "additionalContext": no_mem_context,
                 }
             }
             print(json.dumps(output))

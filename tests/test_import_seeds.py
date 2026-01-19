@@ -196,9 +196,7 @@ class TestImportRun:
         assert result == 1
         assert "not found" in captured.out
 
-    def test_run_empty_directory(
-        self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
-    ) -> None:
+    def test_run_empty_directory(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
         """Test run with empty directory."""
         result = import_seeds.run([str(tmp_path)])
         captured = capsys.readouterr()
@@ -206,9 +204,7 @@ class TestImportRun:
         assert result == 1
         assert "No seed files found" in captured.out
 
-    def test_run_skips_readme(
-        self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
-    ) -> None:
+    def test_run_skips_readme(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
         """Test that README.md is skipped."""
         readme = tmp_path / "README.md"
         readme.write_text("# Seeds Directory\n\nThis is a readme.")
@@ -219,9 +215,7 @@ class TestImportRun:
         assert result == 1
         assert "No seed files found" in captured.out
 
-    def test_run_imports_valid_seeds(
-        self, tmp_path: Path, temp_db_path: Path, capsys: pytest.CaptureFixture[str]
-    ) -> None:
+    def test_run_imports_valid_seeds(self, tmp_path: Path, temp_db_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
         """Test importing valid seed files."""
         from unittest.mock import patch
 
@@ -258,9 +252,7 @@ class TestImportRun:
             assert "1 imported" in captured.out
             mock_store.save_memory.assert_called_once()
 
-    def test_run_skips_already_imported(
-        self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
-    ) -> None:
+    def test_run_skips_already_imported(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
         """Test that already imported seeds are skipped."""
         from unittest.mock import patch, MagicMock
 
@@ -298,9 +290,7 @@ class TestImportRun:
             assert "1 skipped" in captured.out
             mock_store.save_memory.assert_not_called()
 
-    def test_run_strips_dsl_prefix(
-        self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
-    ) -> None:
+    def test_run_strips_dsl_prefix(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
         """Test that DSL prefix is stripped from compacted content."""
         from unittest.mock import patch
 

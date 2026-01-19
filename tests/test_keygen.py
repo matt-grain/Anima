@@ -70,9 +70,7 @@ class TestFindAgentFile:
         home_dir = tmp_path / "fake_home"
         home_dir.mkdir()
         (home_dir / ".claude" / "agents").mkdir(parents=True)
-        (home_dir / ".claude" / "agents" / "global-agent.md").write_text(
-            "---\nname: global-agent\n---\n"
-        )
+        (home_dir / ".claude" / "agents" / "global-agent.md").write_text("---\nname: global-agent\n---\n")
         monkeypatch.setattr(Path, "home", lambda: home_dir)
 
         found, is_global = find_agent_file("global-agent")
@@ -154,9 +152,7 @@ class TestAddKeyToAgentFile:
     def test_adds_key_to_frontmatter(self, tmp_path: Path) -> None:
         """Adds signing_key to existing frontmatter."""
         agent_file = tmp_path / "agent.md"
-        agent_file.write_text(
-            "---\nname: test-agent\ncolor: blue\n---\n\n# Test Agent\n"
-        )
+        agent_file.write_text("---\nname: test-agent\ncolor: blue\n---\n\n# Test Agent\n")
 
         add_key_to_agent_file(agent_file, "new-secret-key")
 
@@ -168,9 +164,7 @@ class TestAddKeyToAgentFile:
     def test_preserves_body_content(self, tmp_path: Path) -> None:
         """Body content after frontmatter is preserved."""
         agent_file = tmp_path / "agent.md"
-        original_body = (
-            "\n# Agent\n\nThis is the agent description.\n\n## Usage\n\nUse it wisely."
-        )
+        original_body = "\n# Agent\n\nThis is the agent description.\n\n## Usage\n\nUse it wisely."
         agent_file.write_text(f"---\nname: test\n---\n{original_body}")
 
         add_key_to_agent_file(agent_file, "key123")
@@ -198,9 +192,7 @@ class TestKeygenCommand:
         store = MemoryStore(db_path=db_path)
 
         # Patch default DB path
-        monkeypatch.setattr(
-            "anima.tools.keygen.MemoryStore", lambda: MemoryStore(db_path=db_path)
-        )
+        monkeypatch.setattr("anima.tools.keygen.MemoryStore", lambda: MemoryStore(db_path=db_path))
 
         # Patch home to avoid global agent lookup issues
         home_dir = tmp_path / "fake_home"

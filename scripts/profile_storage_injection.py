@@ -5,6 +5,7 @@ Run with:
 
 Produces a small pstats summary to stdout and writes `profile_stats.prof` in the repo root.
 """
+
 import cProfile
 import pstats
 import tempfile
@@ -24,7 +25,12 @@ def setup_store(tmpdir: Path, num_memories: int = 500) -> tuple[MemoryStore, Age
     store.save_project(project)
 
     for i in range(num_memories):
-        impact = [ImpactLevel.LOW, ImpactLevel.MEDIUM, ImpactLevel.HIGH, ImpactLevel.CRITICAL][i % 4]
+        impact = [
+            ImpactLevel.LOW,
+            ImpactLevel.MEDIUM,
+            ImpactLevel.HIGH,
+            ImpactLevel.CRITICAL,
+        ][i % 4]
         memory = Memory(
             agent_id=agent.id,
             region=RegionType.PROJECT,

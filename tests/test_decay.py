@@ -27,7 +27,7 @@ class TestDecayThresholds:
             kind=MemoryKind.ARCHITECTURAL,
             content="Critical architecture decision",
             impact=ImpactLevel.CRITICAL,
-            created_at=datetime.now() - timedelta(days=365)  # Very old
+            created_at=datetime.now() - timedelta(days=365),  # Very old
         )
 
         assert not decay.should_compact(memory)
@@ -44,7 +44,7 @@ class TestDecayThresholds:
             kind=MemoryKind.LEARNINGS,
             content="Minor learning",
             impact=ImpactLevel.LOW,
-            created_at=datetime.now() - timedelta(days=2)
+            created_at=datetime.now() - timedelta(days=2),
         )
 
         # Memory from 12 hours ago
@@ -54,7 +54,7 @@ class TestDecayThresholds:
             kind=MemoryKind.LEARNINGS,
             content="Recent learning",
             impact=ImpactLevel.LOW,
-            created_at=datetime.now() - timedelta(hours=12)
+            created_at=datetime.now() - timedelta(hours=12),
         )
 
         assert decay.should_compact(old_memory)
@@ -72,7 +72,7 @@ class TestDecayThresholds:
             kind=MemoryKind.LEARNINGS,
             content="Medium importance learning",
             impact=ImpactLevel.MEDIUM,
-            created_at=datetime.now() - timedelta(days=10)
+            created_at=datetime.now() - timedelta(days=10),
         )
 
         # Memory from 3 days ago
@@ -82,7 +82,7 @@ class TestDecayThresholds:
             kind=MemoryKind.LEARNINGS,
             content="Recent medium learning",
             impact=ImpactLevel.MEDIUM,
-            created_at=datetime.now() - timedelta(days=3)
+            created_at=datetime.now() - timedelta(days=3),
         )
 
         assert decay.should_compact(old_memory)
@@ -100,7 +100,7 @@ class TestDecayThresholds:
             kind=MemoryKind.ARCHITECTURAL,
             content="High importance architecture",
             impact=ImpactLevel.HIGH,
-            created_at=datetime.now() - timedelta(days=60)
+            created_at=datetime.now() - timedelta(days=60),
         )
 
         # Memory from 15 days ago
@@ -110,7 +110,7 @@ class TestDecayThresholds:
             kind=MemoryKind.ARCHITECTURAL,
             content="Recent high importance",
             impact=ImpactLevel.HIGH,
-            created_at=datetime.now() - timedelta(days=15)
+            created_at=datetime.now() - timedelta(days=15),
         )
 
         assert decay.should_compact(old_memory)
@@ -128,7 +128,7 @@ class TestDecayThresholds:
             kind=MemoryKind.LEARNINGS,
             content="Timezone aware learning",
             impact=ImpactLevel.LOW,
-            created_at=datetime.now(timezone.utc) - timedelta(days=2)
+            created_at=datetime.now(timezone.utc) - timedelta(days=2),
         )
 
         # Should not raise TypeError when comparing with naive datetime
@@ -147,7 +147,7 @@ class TestDecayThresholds:
             kind=MemoryKind.LEARNINGS,
             content="Naive datetime memory",
             impact=ImpactLevel.LOW,
-            created_at=datetime.now() - timedelta(days=2)
+            created_at=datetime.now() - timedelta(days=2),
         )
 
         # Timezone-aware memory (e.g., +01:00 offset)
@@ -157,7 +157,7 @@ class TestDecayThresholds:
             kind=MemoryKind.LEARNINGS,
             content="Aware datetime memory",
             impact=ImpactLevel.LOW,
-            created_at=datetime.now(timezone(timedelta(hours=1))) - timedelta(days=2)
+            created_at=datetime.now(timezone(timedelta(hours=1))) - timedelta(days=2),
         )
 
         # Both should work without raising errors
@@ -178,7 +178,7 @@ class TestCompaction:
             region=RegionType.AGENT,
             kind=MemoryKind.LEARNINGS,
             content="Short",
-            impact=ImpactLevel.LOW
+            impact=ImpactLevel.LOW,
         )
 
         result = decay.compact_content(memory)
@@ -194,7 +194,7 @@ class TestCompaction:
             region=RegionType.AGENT,
             kind=MemoryKind.LEARNINGS,
             content="I think we should use pytest. I believe it's the best choice.",
-            impact=ImpactLevel.LOW
+            impact=ImpactLevel.LOW,
         )
 
         result = decay.compact_content(memory)
@@ -213,7 +213,7 @@ class TestCompaction:
             region=RegionType.AGENT,
             kind=MemoryKind.LEARNINGS,
             content=long_content,
-            impact=ImpactLevel.LOW
+            impact=ImpactLevel.LOW,
         )
 
         result = decay.compact_content(memory)
@@ -245,7 +245,7 @@ class TestProcessDecay:
             kind=MemoryKind.LEARNINGS,
             content="I think we discussed this at length. After investigation we found that pytest is the best framework for testing.",
             impact=ImpactLevel.LOW,
-            created_at=datetime.now() - timedelta(days=5)  # Old enough to decay
+            created_at=datetime.now() - timedelta(days=5),  # Old enough to decay
         )
         store.save_memory(old_memory)
 
@@ -280,16 +280,12 @@ class TestProcessDecay:
             kind=MemoryKind.LEARNINGS,
             content=original_content,
             impact=ImpactLevel.LOW,
-            created_at=datetime.now() - timedelta(days=5)
+            created_at=datetime.now() - timedelta(days=5),
         )
         store.save_memory(old_memory)
 
         # Process with dry_run=True
-        compacted = decay.process_decay(
-            agent_id=agent.id,
-            project_id=project.id,
-            dry_run=True
-        )
+        compacted = decay.process_decay(agent_id=agent.id, project_id=project.id, dry_run=True)
 
         assert len(compacted) == 1
 
@@ -316,7 +312,7 @@ class TestProcessDecay:
             kind=MemoryKind.ARCHITECTURAL,
             content="I think this is a crucial architecture decision that must never be forgotten.",
             impact=ImpactLevel.CRITICAL,
-            created_at=datetime.now() - timedelta(days=365)  # Very old
+            created_at=datetime.now() - timedelta(days=365),  # Very old
         )
         store.save_memory(critical_memory)
 
@@ -342,7 +338,7 @@ class TestDeleteEmptyMemories:
             region=RegionType.AGENT,
             kind=MemoryKind.LEARNINGS,
             content="x",  # Shorter than MIN_CONTENT_LENGTH
-            superseded_by="some-other-id"
+            superseded_by="some-other-id",
         )
         store.save_memory(superseded)
 
@@ -364,7 +360,7 @@ class TestDeleteEmptyMemories:
             agent_id=agent.id,
             region=RegionType.AGENT,
             kind=MemoryKind.LEARNINGS,
-            content="x"  # Short but not superseded
+            content="x",  # Short but not superseded
         )
         store.save_memory(short_memory)
 

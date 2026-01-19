@@ -20,6 +20,7 @@ class Memory:
     They decay over time based on impact level, with content being compacted
     while original_content is preserved forever.
     """
+
     # Identity
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     agent_id: str = ""
@@ -30,12 +31,12 @@ class Memory:
 
     # Content
     kind: MemoryKind = MemoryKind.LEARNINGS
-    content: str = ""           # Current (possibly compacted) content
+    content: str = ""  # Current (possibly compacted) content
     original_content: str = ""  # Original full content, never changes
 
     # Metadata
     impact: ImpactLevel = ImpactLevel.MEDIUM
-    confidence: float = 1.0     # 0.0-1.0, decreases on contradiction
+    confidence: float = 1.0  # 0.0-1.0, decreases on contradiction
 
     # Timestamps (always from OS, never from AI knowledge)
     created_at: datetime = field(default_factory=datetime.now)
@@ -108,6 +109,7 @@ class MemoryBlock:
     Represents all memories for a specific agent/project combination,
     formatted in the compact DSL.
     """
+
     agent_name: str
     project_name: Optional[str]
     memories: list[Memory] = field(default_factory=list)

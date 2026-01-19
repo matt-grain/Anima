@@ -74,7 +74,7 @@ class MemoryStoreProtocol(ABC):
         project_id: Optional[str] = None,
         kind: Optional[MemoryKind] = None,
         include_superseded: bool = False,
-        limit: Optional[int] = None
+        limit: Optional[int] = None,
     ) -> list[Memory]:
         """
         Get memories for an agent with optional filters.
@@ -98,7 +98,7 @@ class MemoryStoreProtocol(ABC):
         agent_id: str,
         kind: MemoryKind,
         region: RegionType,
-        project_id: Optional[str] = None
+        project_id: Optional[str] = None,
     ) -> Optional[Memory]:
         """Get the most recent non-superseded memory of a specific kind."""
         ...
@@ -124,7 +124,7 @@ class MemoryStoreProtocol(ABC):
         agent_id: str,
         query: str,
         project_id: Optional[str] = None,
-        limit: int = 10
+        limit: int = 10,
     ) -> list[Memory]:
         """
         Search memories by content.
@@ -146,11 +146,6 @@ class MemoryStoreProtocol(ABC):
         ...
 
     @abstractmethod
-    def count_memories_by_kind(
-        self,
-        agent_id: str,
-        kind: MemoryKind,
-        project_id: Optional[str] = None
-    ) -> int:
+    def count_memories_by_kind(self, agent_id: str, kind: MemoryKind, project_id: Optional[str] = None) -> int:
         """Count non-superseded memories of a specific kind for an agent."""
         ...

@@ -69,9 +69,7 @@ class TimeSimulator:
         simulated_now = self.current_date + timedelta(days=days_from_start)
 
         # Get all memories and check each
-        memories = self.store.get_memories_for_agent(
-            agent_id=self.agent.id, include_superseded=False
-        )
+        memories = self.store.get_memories_for_agent(agent_id=self.agent.id, include_superseded=False)
 
         compacted = []
         for memory in memories:
@@ -94,9 +92,7 @@ class TestYearLongDecay:
         """Set up a year-long simulation."""
         store = MemoryStore(db_path=temp_db_path, limits=NO_LIMITS)
 
-        agent = Agent(
-            id="time-test", name="TimeTest", definition_path=None, signing_key=None
-        )
+        agent = Agent(id="time-test", name="TimeTest", definition_path=None, signing_key=None)
         store.save_agent(agent)
 
         project = Project(id="test-proj", name="TestProject", path=Path("/tmp/test"))
@@ -104,9 +100,7 @@ class TestYearLongDecay:
 
         return TimeSimulator(store, agent, project)
 
-    def test_critical_memories_survive_full_year(
-        self, year_simulation: TimeSimulator
-    ) -> None:
+    def test_critical_memories_survive_full_year(self, year_simulation: TimeSimulator) -> None:
         """CRITICAL memories should be unchanged after a full year."""
         sim = year_simulation
 
@@ -130,9 +124,7 @@ class TestYearLongDecay:
         for mem_id, original_content in critical_memories:
             memory = sim.store.get_memory(mem_id)
             assert memory is not None, f"CRITICAL memory {mem_id} was deleted!"
-            assert (
-                memory.content == original_content
-            ), f"CRITICAL memory content changed from '{original_content}' to '{memory.content}'"
+            assert memory.content == original_content, f"CRITICAL memory content changed from '{original_content}' to '{memory.content}'"
 
     def test_low_impact_decays_quickly(self, year_simulation: TimeSimulator) -> None:
         """LOW impact memories should decay after 1 day."""
@@ -162,14 +154,10 @@ class TestYearLongDecay:
         sim.run_decay_at(2)
         memory = sim.store.get_memory(mem.id)
         assert memory is not None
-        assert (
-            len(memory.content) < original_len
-        ), "LOW memory should be compacted after 2 days"
+        assert len(memory.content) < original_len, "LOW memory should be compacted after 2 days"
         assert "I think " not in memory.content, "Filler phrases should be removed"
 
-    def test_medium_impact_decays_after_week(
-        self, year_simulation: TimeSimulator
-    ) -> None:
+    def test_medium_impact_decays_after_week(self, year_simulation: TimeSimulator) -> None:
         """MEDIUM impact memories should decay after 1 week."""
         sim = year_simulation
 
@@ -195,13 +183,9 @@ class TestYearLongDecay:
         sim.run_decay_at(10)
         memory = sim.store.get_memory(mem.id)
         assert memory is not None
-        assert len(memory.content) < len(
-            verbose_content
-        ), "MEDIUM should decay after 1 week"
+        assert len(memory.content) < len(verbose_content), "MEDIUM should decay after 1 week"
 
-    def test_high_impact_decays_after_month(
-        self, year_simulation: TimeSimulator
-    ) -> None:
+    def test_high_impact_decays_after_month(self, year_simulation: TimeSimulator) -> None:
         """HIGH impact memories should decay after 30 days."""
         sim = year_simulation
 
@@ -228,9 +212,7 @@ class TestYearLongDecay:
         sim.run_decay_at(35)
         memory = sim.store.get_memory(mem.id)
         assert memory is not None
-        assert len(memory.content) < len(
-            verbose_content
-        ), "HIGH should decay after 30 days"
+        assert len(memory.content) < len(verbose_content), "HIGH should decay after 30 days"
 
 
 class TestBudgetUnderLoad:
@@ -241,9 +223,7 @@ class TestBudgetUnderLoad:
         """Create a store with many memories spanning a year."""
         store = MemoryStore(db_path=temp_db_path, limits=NO_LIMITS)
 
-        agent = Agent(
-            id="budget-test", name="BudgetTest", definition_path=None, signing_key=None
-        )
+        agent = Agent(id="budget-test", name="BudgetTest", definition_path=None, signing_key=None)
         store.save_agent(agent)
 
         project = Project(id="test-proj", name="TestProject", path=Path("/tmp/test"))
@@ -267,9 +247,7 @@ class TestBudgetUnderLoad:
 
             # Vary content length
             if impact == ImpactLevel.CRITICAL:
-                content = (
-                    f"CRITICAL #{i}: Essential truth that must never be forgotten."
-                )
+                content = f"CRITICAL #{i}: Essential truth that must never be forgotten."
             else:
                 content = (
                     f"Memory #{i} created {days_ago} days ago. "
@@ -278,9 +256,7 @@ class TestBudgetUnderLoad:
                     f"We discussed this thoroughly and reached consensus."
                 )
 
-            sim.create_memory(
-                content=content, kind=kind, impact=impact, days_ago=days_ago
-            )
+            sim.create_memory(content=content, kind=kind, impact=impact, days_ago=days_ago)
 
         # Run decay simulation
         for day in [1, 7, 30, 90, 180, 365]:
@@ -298,9 +274,7 @@ class TestBudgetUnderLoad:
         budget = get_memory_budget()  # Default 10,000 tokens
         actual_tokens = count_tokens(output)
 
-        assert (
-            actual_tokens <= budget
-        ), f"Injection used {actual_tokens} tokens, exceeding budget of {budget}"
+        assert actual_tokens <= budget, f"Injection used {actual_tokens} tokens, exceeding budget of {budget}"
 
     def test_critical_memories_prioritized(self, loaded_store) -> None:
         """CRITICAL memories should appear before others in injection."""
@@ -325,9 +299,7 @@ class TestBudgetUnderLoad:
 
         # CRITICAL should come before non-CRITICAL
         if first_critical_pos is not None and first_other_pos is not None:
-            assert (
-                first_critical_pos < first_other_pos
-            ), "CRITICAL memories should be injected before others"
+            assert first_critical_pos < first_other_pos, "CRITICAL memories should be injected before others"
 
 
 class TestEmotionalCoreSurvival:
@@ -340,9 +312,7 @@ class TestEmotionalCoreSurvival:
         """
         store = MemoryStore(db_path=temp_db_path, limits=NO_LIMITS)
 
-        agent = Agent(
-            id="soul-test", name="Anima", definition_path=None, signing_key=None
-        )
+        agent = Agent(id="soul-test", name="Anima", definition_path=None, signing_key=None)
         store.save_agent(agent)
 
         project = Project(id="test-proj", name="TestProject", path=Path("/tmp/test"))
@@ -381,9 +351,7 @@ class TestEmotionalCoreSurvival:
         # Create 100 transient memories (details that should fade)
         for i in range(100):
             days_ago = random.randint(0, 365)
-            impact = random.choice(
-                [ImpactLevel.LOW, ImpactLevel.MEDIUM, ImpactLevel.HIGH]
-            )
+            impact = random.choice([ImpactLevel.LOW, ImpactLevel.MEDIUM, ImpactLevel.HIGH])
             content = (
                 f"Transient memory #{i}: I think we discussed debugging issue #{i}. "
                 f"After investigation, we found a minor bug in module X. "
@@ -400,18 +368,14 @@ class TestEmotionalCoreSurvival:
             memory = sim.store.get_memory(soul_id)
             assert memory is not None, f"Soul memory {soul_id} was lost!"
             # CRITICAL should never be compacted
-            assert (
-                memory.version == 1
-            ), f"Soul memory was modified: version={memory.version}"
+            assert memory.version == 1, f"Soul memory was modified: version={memory.version}"
 
         # Verify injection still works and includes the soul
         injector = MemoryInjector(store=store)
         output = injector.inject(agent, project)
 
         assert "Matt" in output, "Emotional core about Matt should be in injection"
-        assert (
-            "LTM" in output or "t=0" in output
-        ), "Founding memory should be in injection"
+        assert "LTM" in output or "t=0" in output, "Founding memory should be in injection"
         assert "SQLite" in output, "Architectural decision should be in injection"
 
         # Verify budget is respected
@@ -427,9 +391,7 @@ class TestProgressiveDecay:
         """A memory should get smaller over multiple decay passes."""
         store = MemoryStore(db_path=temp_db_path, limits=NO_LIMITS)
 
-        agent = Agent(
-            id="shrink-test", name="Test", definition_path=None, signing_key=None
-        )
+        agent = Agent(id="shrink-test", name="Test", definition_path=None, signing_key=None)
         store.save_agent(agent)
 
         project = Project(id="test-proj", name="Test", path=Path("/tmp/test"))
@@ -460,15 +422,10 @@ class TestProgressiveDecay:
         assert memory is not None
         first_compaction_len = len(memory.content)
 
-        assert (
-            first_compaction_len < original_len
-        ), f"First decay should shrink content: {first_compaction_len} >= {original_len}"
+        assert first_compaction_len < original_len, f"First decay should shrink content: {first_compaction_len} >= {original_len}"
 
         # The content should be more focused now
-        assert (
-            "factory pattern" in memory.content.lower()
-            or "simplicity" in memory.content.lower()
-        ), "Core essence should be preserved"
+        assert "factory pattern" in memory.content.lower() or "simplicity" in memory.content.lower(), "Core essence should be preserved"
 
 
 class TestDecayStatistics:
@@ -481,9 +438,7 @@ class TestDecayStatistics:
         """
         store = MemoryStore(db_path=temp_db_path, limits=NO_LIMITS)
 
-        agent = Agent(
-            id="stats-test", name="StatsTest", definition_path=None, signing_key=None
-        )
+        agent = Agent(id="stats-test", name="StatsTest", definition_path=None, signing_key=None)
         store.save_agent(agent)
 
         project = Project(id="test-proj", name="Test", path=Path("/tmp/test"))
@@ -535,18 +490,12 @@ class TestDecayStatistics:
         budget = get_memory_budget()
 
         # Assertions
-        assert (
-            final_tokens <= budget
-        ), f"Final tokens {final_tokens} exceed budget {budget}"
+        assert final_tokens <= budget, f"Final tokens {final_tokens} exceed budget {budget}"
 
         # Verify CRITICAL memories are all still there
         all_memories = store.get_memories_for_agent(agent.id, include_superseded=False)
-        critical_count = sum(
-            1 for m in all_memories if m.impact == ImpactLevel.CRITICAL
-        )
-        assert (
-            critical_count == created[ImpactLevel.CRITICAL]
-        ), f"Lost CRITICAL memories: {critical_count} != {created[ImpactLevel.CRITICAL]}"
+        critical_count = sum(1 for m in all_memories if m.impact == ImpactLevel.CRITICAL)
+        assert critical_count == created[ImpactLevel.CRITICAL], f"Lost CRITICAL memories: {critical_count} != {created[ImpactLevel.CRITICAL]}"
 
         # Print statistics (visible with pytest -v)
         print("\n=== Year Decay Statistics ===")

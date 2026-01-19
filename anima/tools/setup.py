@@ -87,7 +87,7 @@ def setup_skills(project_dir: Path, force: bool = False) -> tuple[int, int]:
     dest_dir = project_dir / ".agent" / "skills"
     if not (project_dir / ".agent").exists() and (project_dir / ".claude").exists():
         dest_dir = project_dir / ".claude" / "skills"
-    
+
     dest_dir.mkdir(parents=True, exist_ok=True)
 
     copied = 0
@@ -130,7 +130,7 @@ def setup_commands(project_dir: Path, force: bool = False) -> tuple[int, int]:
     dest_dir = project_dir / ".agent" / "workflows"
     if not (project_dir / ".agent").exists() and (project_dir / ".claude").exists():
         dest_dir = project_dir / ".claude" / "commands"
-    
+
     # Create directory if needed
     dest_dir.mkdir(parents=True, exist_ok=True)
 
@@ -168,10 +168,7 @@ def patch_subagents(project_dir: Path) -> tuple[int, int, int]:
         Tuple of (patched_count, skipped_count, disabled_count)
     """
     # Check both .agent and .claude directories
-    local_dirs = [
-        project_dir / ".agent" / "agents",
-        project_dir / ".claude" / "agents"
-    ]
+    local_dirs = [project_dir / ".agent" / "agents", project_dir / ".claude" / "agents"]
 
     patched = 0
     skipped = 0
@@ -195,7 +192,7 @@ def patch_subagents(project_dir: Path) -> tuple[int, int, int]:
                 disabled_path = agent_file.with_suffix(".md.disabled")
                 agent_file.rename(disabled_path)
                 print(f"  ⚠️  {agent_file.name} → {disabled_path.name} (missing frontmatter, disabled)")
-                print("      To fix: add ---\\nname: \"AgentName\"\\nltm: subagent: true\\n--- at top")
+                print('      To fix: add ---\\nname: "AgentName"\\nltm: subagent: true\\n--- at top')
                 disabled += 1
                 continue
 
@@ -285,47 +282,47 @@ def setup_hooks(project_dir: Path, force: bool = False) -> bool:
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m anima.hooks.session_start"
+                        "command": "uv run python -m anima.hooks.session_start",
                     }
-                ]
+                ],
             },
             {
                 "matcher": "compact",
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m anima.hooks.session_start"
+                        "command": "uv run python -m anima.hooks.session_start",
                     }
-                ]
+                ],
             },
             {
                 "matcher": "clear",
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m anima.tools.detect_achievements --since 24"
+                        "command": "uv run python -m anima.tools.detect_achievements --since 24",
                     },
                     {
                         "type": "command",
-                        "command": "uv run python -m anima.hooks.session_start"
-                    }
-                ]
-            }
+                        "command": "uv run python -m anima.hooks.session_start",
+                    },
+                ],
+            },
         ],
         "Stop": [
             {
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m anima.hooks.session_end"
+                        "command": "uv run python -m anima.hooks.session_end",
                     },
                     {
                         "type": "command",
-                        "command": "uv run python -m anima.tools.detect_achievements --since 24"
-                    }
+                        "command": "uv run python -m anima.tools.detect_achievements --since 24",
+                    },
                 ]
             }
-        ]
+        ],
     }
 
     # Load existing settings or create new

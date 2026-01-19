@@ -17,6 +17,7 @@ from typing import Optional
 @dataclass
 class AgentConfig:
     """Configuration for the default agent (Anima)."""
+
     id: str = "anima"
     name: str = "Anima"
     signing_key: Optional[str] = None
@@ -25,16 +26,18 @@ class AgentConfig:
 @dataclass
 class BudgetConfig:
     """Configuration for memory injection budget."""
+
     context_percent: float = 0.10  # 10% of context
-    context_size: int = 200_000    # tokens (Standard context window)
+    context_size: int = 200_000  # tokens (Standard context window)
 
 
 @dataclass
 class DecayConfig:
     """Configuration for memory decay thresholds."""
-    low_days: int = 1       # LOW impact decays after 1 day
-    medium_days: int = 7    # MEDIUM impact decays after 1 week
-    high_days: int = 30     # HIGH impact decays after 30 days
+
+    low_days: int = 1  # LOW impact decays after 1 day
+    medium_days: int = 7  # MEDIUM impact decays after 1 week
+    high_days: int = 30  # HIGH impact decays after 30 days
     # CRITICAL never decays (not configurable)
 
 
@@ -46,6 +49,7 @@ class LTMConfig:
     Loaded from ~/.anima/config.json if it exists.
     All fields have sensible defaults.
     """
+
     agent: AgentConfig = field(default_factory=AgentConfig)
     budget: BudgetConfig = field(default_factory=BudgetConfig)
     decay: DecayConfig = field(default_factory=DecayConfig)
@@ -121,17 +125,17 @@ class LTMConfig:
             "agent": {
                 "id": self.agent.id,
                 "name": self.agent.name,
-                "signing_key": self.agent.signing_key
+                "signing_key": self.agent.signing_key,
             },
             "budget": {
                 "context_percent": self.budget.context_percent,
-                "context_size": self.budget.context_size
+                "context_size": self.budget.context_size,
             },
             "decay": {
                 "low_days": self.decay.low_days,
                 "medium_days": self.decay.medium_days,
-                "high_days": self.decay.high_days
-            }
+                "high_days": self.decay.high_days,
+            },
         }
 
     def save(self, config_path: Optional[Path] = None) -> None:

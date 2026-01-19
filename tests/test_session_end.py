@@ -17,15 +17,14 @@ from anima.hooks import session_end
 class TestSessionEndHook:
     """Tests for the session end hook."""
 
-    def test_session_end_processes_decay(
-        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
-    ) -> None:
+    def test_session_end_processes_decay(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
         """Test that session end processes memory decay."""
-        with patch("anima.hooks.session_end.MemoryStore") as MockStore, \
-             patch("anima.hooks.session_end.MemoryDecay") as MockDecay, \
-             patch("anima.hooks.session_end.AgentResolver") as MockResolver, \
-             patch("anima.hooks.session_end.Path") as MockPath:
-
+        with (
+            patch("anima.hooks.session_end.MemoryStore") as MockStore,
+            patch("anima.hooks.session_end.MemoryDecay") as MockDecay,
+            patch("anima.hooks.session_end.AgentResolver") as MockResolver,
+            patch("anima.hooks.session_end.Path") as MockPath,
+        ):
             mock_store = MagicMock()
             MockStore.return_value = mock_store
 
@@ -47,23 +46,19 @@ class TestSessionEndHook:
             result = session_end.run()
 
             assert result == 0
-            mock_decay.process_decay.assert_called_once_with(
-                agent_id=mock_agent.id,
-                project_id=mock_project.id
-            )
+            mock_decay.process_decay.assert_called_once_with(agent_id=mock_agent.id, project_id=mock_project.id)
             mock_decay.delete_empty_memories.assert_called_once_with(mock_agent.id)
 
-    def test_session_end_reports_compacted_memories(
-        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
-    ) -> None:
+    def test_session_end_reports_compacted_memories(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
         """Test that session end reports compacted memories."""
         from anima.core import Memory, MemoryKind, RegionType, ImpactLevel
 
-        with patch("anima.hooks.session_end.MemoryStore") as MockStore, \
-             patch("anima.hooks.session_end.MemoryDecay") as MockDecay, \
-             patch("anima.hooks.session_end.AgentResolver") as MockResolver, \
-             patch("anima.hooks.session_end.Path") as MockPath:
-
+        with (
+            patch("anima.hooks.session_end.MemoryStore") as MockStore,
+            patch("anima.hooks.session_end.MemoryDecay") as MockDecay,
+            patch("anima.hooks.session_end.AgentResolver") as MockResolver,
+            patch("anima.hooks.session_end.Path") as MockPath,
+        ):
             mock_store = MagicMock()
             MockStore.return_value = mock_store
 
@@ -73,13 +68,11 @@ class TestSessionEndHook:
                 region=RegionType.AGENT,
                 kind=MemoryKind.LEARNINGS,
                 content="Original verbose content about testing",
-                impact=ImpactLevel.LOW
+                impact=ImpactLevel.LOW,
             )
 
             mock_decay = MagicMock()
-            mock_decay.process_decay.return_value = [
-                (mock_memory, "Compacted: testing best practices")
-            ]
+            mock_decay.process_decay.return_value = [(mock_memory, "Compacted: testing best practices")]
             mock_decay.delete_empty_memories.return_value = 2
             MockDecay.return_value = mock_decay
 
@@ -100,15 +93,14 @@ class TestSessionEndHook:
             assert "1 memories compacted" in captured.out
             assert "2 deleted" in captured.out
 
-    def test_session_end_no_compaction_needed(
-        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
-    ) -> None:
+    def test_session_end_no_compaction_needed(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
         """Test session end output when no compaction is needed."""
-        with patch("anima.hooks.session_end.MemoryStore") as MockStore, \
-             patch("anima.hooks.session_end.MemoryDecay") as MockDecay, \
-             patch("anima.hooks.session_end.AgentResolver") as MockResolver, \
-             patch("anima.hooks.session_end.Path") as MockPath:
-
+        with (
+            patch("anima.hooks.session_end.MemoryStore") as MockStore,
+            patch("anima.hooks.session_end.MemoryDecay") as MockDecay,
+            patch("anima.hooks.session_end.AgentResolver") as MockResolver,
+            patch("anima.hooks.session_end.Path") as MockPath,
+        ):
             mock_store = MagicMock()
             MockStore.return_value = mock_store
 

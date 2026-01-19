@@ -35,10 +35,7 @@ def run(args: Optional[list[str]] = None) -> int:
     decay = MemoryDecay(store)
 
     # Process decay
-    compacted = decay.process_decay(
-        agent_id=agent.id,
-        project_id=project.id
-    )
+    compacted = decay.process_decay(agent_id=agent.id, project_id=project.id)
 
     # Clean up empty memories
     deleted = decay.delete_empty_memories(agent.id)

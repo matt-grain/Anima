@@ -18,15 +18,14 @@ from anima.hooks import session_start
 class TestSessionStartHook:
     """Tests for the SessionStart hook."""
 
-    def test_session_start_with_memories(
-        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
-    ) -> None:
+    def test_session_start_with_memories(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
         """Test session start with memories available."""
-        with patch("anima.hooks.session_start.MemoryStore") as MockStore, \
-             patch("anima.hooks.session_start.MemoryInjector") as MockInjector, \
-             patch("anima.hooks.session_start.AgentResolver") as MockResolver, \
-             patch("anima.hooks.session_start.Path") as MockPath:
-
+        with (
+            patch("anima.hooks.session_start.MemoryStore") as MockStore,
+            patch("anima.hooks.session_start.MemoryInjector") as MockInjector,
+            patch("anima.hooks.session_start.AgentResolver") as MockResolver,
+            patch("anima.hooks.session_start.Path") as MockPath,
+        ):
             # Setup mocks
             mock_store = MagicMock()
             MockStore.return_value = mock_store
@@ -38,7 +37,7 @@ class TestSessionStartHook:
                 "agent_memories": 2,
                 "project_memories": 1,
                 "budget_tokens": 10000,
-                "priority_counts": {"CRITICAL": 1, "HIGH": 1, "MEDIUM": 1, "LOW": 0}
+                "priority_counts": {"CRITICAL": 1, "HIGH": 1, "MEDIUM": 1, "LOW": 0},
             }
             MockInjector.return_value = mock_injector
 
@@ -71,15 +70,14 @@ class TestSessionStartHook:
             assert len(lines) >= 2
             assert "Success: 3 memories loaded" in lines[1]
 
-    def test_session_start_no_memories(
-        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
-    ) -> None:
+    def test_session_start_no_memories(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
         """Test session start with no memories."""
-        with patch("anima.hooks.session_start.MemoryStore") as MockStore, \
-             patch("anima.hooks.session_start.MemoryInjector") as MockInjector, \
-             patch("anima.hooks.session_start.AgentResolver") as MockResolver, \
-             patch("anima.hooks.session_start.Path") as MockPath:
-
+        with (
+            patch("anima.hooks.session_start.MemoryStore") as MockStore,
+            patch("anima.hooks.session_start.MemoryInjector") as MockInjector,
+            patch("anima.hooks.session_start.AgentResolver") as MockResolver,
+            patch("anima.hooks.session_start.Path") as MockPath,
+        ):
             mock_store = MagicMock()
             MockStore.return_value = mock_store
 
@@ -111,15 +109,14 @@ class TestSessionStartHook:
             assert len(lines) >= 2
             assert "Success: No memories found yet" in lines[1]
 
-    def test_session_start_json_format(
-        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
-    ) -> None:
+    def test_session_start_json_format(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
         """Test that session start outputs valid JSON."""
-        with patch("anima.hooks.session_start.MemoryStore") as MockStore, \
-             patch("anima.hooks.session_start.MemoryInjector") as MockInjector, \
-             patch("anima.hooks.session_start.AgentResolver") as MockResolver, \
-             patch("anima.hooks.session_start.Path") as MockPath:
-
+        with (
+            patch("anima.hooks.session_start.MemoryStore") as MockStore,
+            patch("anima.hooks.session_start.MemoryInjector") as MockInjector,
+            patch("anima.hooks.session_start.AgentResolver") as MockResolver,
+            patch("anima.hooks.session_start.Path") as MockPath,
+        ):
             mock_store = MagicMock()
             MockStore.return_value = mock_store
 
@@ -130,7 +127,7 @@ class TestSessionStartHook:
                 "agent_memories": 1,
                 "project_memories": 0,
                 "budget_tokens": 10000,
-                "priority_counts": {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 0, "LOW": 0}
+                "priority_counts": {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 0, "LOW": 0},
             }
             MockInjector.return_value = mock_injector
 
@@ -164,15 +161,14 @@ class TestSessionStartHook:
             assert len(lines) >= 2
             assert "Success:" in lines[1]
 
-    def test_session_start_saves_agent_and_project(
-        self, temp_project_dir: Path
-    ) -> None:
+    def test_session_start_saves_agent_and_project(self, temp_project_dir: Path) -> None:
         """Test that session start saves agent and project."""
-        with patch("anima.hooks.session_start.MemoryStore") as MockStore, \
-             patch("anima.hooks.session_start.MemoryInjector") as MockInjector, \
-             patch("anima.hooks.session_start.AgentResolver") as MockResolver, \
-             patch("anima.hooks.session_start.Path") as MockPath:
-
+        with (
+            patch("anima.hooks.session_start.MemoryStore") as MockStore,
+            patch("anima.hooks.session_start.MemoryInjector") as MockInjector,
+            patch("anima.hooks.session_start.AgentResolver") as MockResolver,
+            patch("anima.hooks.session_start.Path") as MockPath,
+        ):
             mock_store = MagicMock()
             MockStore.return_value = mock_store
 

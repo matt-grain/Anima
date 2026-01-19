@@ -51,33 +51,19 @@ def memory_store(temp_db_path: Path) -> MemoryStore:
 @pytest.fixture
 def test_agent() -> Agent:
     """Create a test agent."""
-    return Agent(
-        id="test-agent",
-        name="Test Agent",
-        definition_path=None,
-        signing_key=None
-    )
+    return Agent(id="test-agent", name="Test Agent", definition_path=None, signing_key=None)
 
 
 @pytest.fixture
 def anima_agent() -> Agent:
     """Create the default Anima agent."""
-    return Agent(
-        id="anima",
-        name="Anima",
-        definition_path=None,
-        signing_key=None
-    )
+    return Agent(id="anima", name="Anima", definition_path=None, signing_key=None)
 
 
 @pytest.fixture
 def test_project() -> Project:
     """Create a test project."""
-    return Project(
-        id="test-project",
-        name="Test Project",
-        path=Path("/tmp/test-project")
-    )
+    return Project(id="test-project", name="Test Project", path=Path("/tmp/test-project"))
 
 
 @pytest.fixture
@@ -89,7 +75,7 @@ def sample_memory(test_agent: Agent, test_project: Project) -> Memory:
         project_id=test_project.id,
         kind=MemoryKind.ARCHITECTURAL,
         content="Use pytest for testing",
-        impact=ImpactLevel.MEDIUM
+        impact=ImpactLevel.MEDIUM,
     )
 
 
@@ -102,7 +88,7 @@ def sample_agent_memory(test_agent: Agent) -> Memory:
         project_id=None,
         kind=MemoryKind.EMOTIONAL,
         content="@User collaborative style",
-        impact=ImpactLevel.CRITICAL
+        impact=ImpactLevel.CRITICAL,
     )
 
 
@@ -117,11 +103,7 @@ def temp_project_dir() -> Generator[Path, None, None]:
 
 
 @pytest.fixture
-def populated_store(
-    memory_store: MemoryStore,
-    test_agent: Agent,
-    test_project: Project
-) -> MemoryStore:
+def populated_store(memory_store: MemoryStore, test_agent: Agent, test_project: Project) -> MemoryStore:
     """Create a store with some test data."""
     # Save agent and project
     memory_store.save_agent(test_agent)
@@ -135,7 +117,7 @@ def populated_store(
             project_id=None,
             kind=MemoryKind.EMOTIONAL,
             content="@Matt collaborative style, likes humor",
-            impact=ImpactLevel.CRITICAL
+            impact=ImpactLevel.CRITICAL,
         ),
         Memory(
             agent_id=test_agent.id,
@@ -143,7 +125,7 @@ def populated_store(
             project_id=test_project.id,
             kind=MemoryKind.ARCHITECTURAL,
             content="Use SQLite for storage",
-            impact=ImpactLevel.HIGH
+            impact=ImpactLevel.HIGH,
         ),
         Memory(
             agent_id=test_agent.id,
@@ -151,7 +133,7 @@ def populated_store(
             project_id=test_project.id,
             kind=MemoryKind.LEARNINGS,
             content="Never use print for logging",
-            impact=ImpactLevel.MEDIUM
+            impact=ImpactLevel.MEDIUM,
         ),
         Memory(
             agent_id=test_agent.id,
@@ -159,7 +141,7 @@ def populated_store(
             project_id=None,
             kind=MemoryKind.ACHIEVEMENTS,
             content="Built LTM system in single session",
-            impact=ImpactLevel.HIGH
+            impact=ImpactLevel.HIGH,
         ),
     ]
 

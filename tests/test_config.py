@@ -210,9 +210,7 @@ class TestConfigIntegration:
         from anima.lifecycle.injection import get_memory_budget
 
         config_path = tmp_path / "config.json"
-        config_path.write_text(
-            json.dumps({"budget": {"context_percent": 0.20, "context_size": 100000}})
-        )
+        config_path.write_text(json.dumps({"budget": {"context_percent": 0.20, "context_size": 100000}}))
 
         monkeypatch.setattr(LTMConfig, "get_config_path", lambda: config_path)
         reload_config()
