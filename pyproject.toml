@@ -1,0 +1,51 @@
+[project]
+name = "anima"
+version = "0.5.0"
+description = "Long Term Memory for Anima Agents - human-like persistent memory across sessions"
+readme = "README.md"
+requires-python = ">=3.13"
+authors = [
+    { name = "matt-grain" }
+]
+license = { text = "MIT" }
+dependencies = [
+    "tiktoken>=0.8.0",
+]
+
+[project.scripts]
+anima = "anima.cli:main"
+
+[dependency-groups]
+dev = [
+    "bandit>=1.9.2",
+    "pre-commit>=4.5.1",
+    "pyright>=1.1.407",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "radon>=6.0.1",
+    "ruff>=0.14.10",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["anima"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "anima/",
+    "commands/",
+    "seeds/",
+]
+
+[tool.hatch.build.targets.wheel.force-include]
+"commands" = "commands"
+"seeds" = "seeds"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+# Exclude benchmarks from default test run (run with: pytest tests/benchmarks/)
+norecursedirs = ["tests/benchmarks"]

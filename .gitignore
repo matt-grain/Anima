@@ -1,0 +1,31 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Test/dev artifacts
+.pytest_cache/
+.ruff_cache/
+
+# Screenshots
+*.png
+
+# Private docs - our t=0 memories, just between us
+claude-docs/
+
+# Claude Code local config
+.claude/
+
+# Code indexer database
+code-index.db
+
+# Git backups
+gemini-docs/
+docs/
+.agent
