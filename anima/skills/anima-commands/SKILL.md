@@ -104,13 +104,14 @@ uv run anima forget abc123
 
 ### setup [flags]
 
-Set up LTM in a new project. **Note:** This runs as a Python module, not via the `ltm` CLI.
+Set up LTM in a new project. Automatically detects and configures Claude, Antigravity, or Opencode environments.
 
 ```bash
-uv run python -m ltm.tools.setup [flags] [project-dir]
+uv run anima setup [flags] [project-dir]
 ```
 
 **Flags:**
+- `--platform` / `-p`: Target platform (claude, antigravity, opencode)
 - `--commands`: Install slash commands only
 - `--hooks`: Configure hooks only
 - `--no-patch`: Skip patching existing agents as subagents
@@ -118,14 +119,14 @@ uv run python -m ltm.tools.setup [flags] [project-dir]
 
 **Examples:**
 ```bash
-# Full setup in current directory
-uv run python -m ltm.tools.setup
+# Auto-detect all platforms in current directory
+uv run anima setup
+
+# Explicitly setup Opencode
+uv run anima setup --platform opencode
 
 # Setup in a different project
-uv run python -m ltm.tools.setup /path/to/project
-
-# Force overwrite existing files
-uv run python -m ltm.tools.setup --force
+uv run anima setup /path/to/project --platform claude
 ```
 
 # What it installs:

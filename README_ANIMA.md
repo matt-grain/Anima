@@ -37,6 +37,12 @@ The maintenance worker.
 - **Achievements**: Scans recent activity to detect and promote "Achievements".
 - **Access Tracking**: Updates "last used" timestamps to optimize future retrieval.
 
+### `anima setup`
+The platform-aware installer.
+- **Multi-Platform**: Automatically detects and configures Claude, Antigravity, or Opencode environments.
+- **Explicit Target**: Use `--platform <name>` to force installation for a specific environment.
+- **Artefacts**: Deploys skills, workflows, hooks, and TS plugins.
+
 ---
 
 ## 🧠 The Anima Philosophy

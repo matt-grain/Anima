@@ -31,3 +31,7 @@ gemini-docs/
 
 # Git backups
 docs/
+
+# tests related
+.coverage
+

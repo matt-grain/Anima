@@ -16,8 +16,10 @@ uv pip install -e .
 The easiest way to configure Claude Code is using the setup tool:
 
 ```bash
-uv run python -m anima.tools.setup --hooks
+uv run anima setup --platform claude
 ```
+
+*Note: You can also use `uv run anima setup` (no flags) to automatically detect and configure all detected platform targets.*
 
 This will:
 1. Detect your `.claude/settings.json` (or `settings.local.json`).
@@ -61,7 +63,7 @@ If you prefer to configure hooks manually, add the following to your `.claude/se
 To add `/memories`, `/recall`, and `/remember` to the Claude CLI:
 
 ```bash
-uv run python -m anima.tools.setup --commands
+uv run anima setup --commands --platform claude
 ```
 This copies the markdown command definitions to `.claude/commands/`.
 
@@ -71,7 +73,7 @@ This copies the markdown command definitions to `.claude/commands/`.
 
 If you have custom agents in `.claude/agents/`, Claude LTM will treat them as sub-agents by default to allow the global **Anima** identity to lead. 
 
-Run `uv run python -m anima.tools.setup` (no flags) to auto-patch local agents with the `subagent: true` marker.
+Run `uv run anima setup` (no flags) to auto-patch local agents with the `subagent: true` marker.
 
 ---
 

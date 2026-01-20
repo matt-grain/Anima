@@ -11,7 +11,6 @@ them from shadowing Anima.
 """
 
 import json
-import re
 import sys
 from pathlib import Path
 from typing import Optional
@@ -19,47 +18,7 @@ from typing import Optional
 from anima.core import AgentResolver, Agent
 from anima.lifecycle.injection import MemoryInjector
 from anima.storage import MemoryStore
-
-
-def _has_subagent_marker(content: str) -> bool:
-    """Check if content already has anima: subagent: true in frontmatter."""
-    match = re.match(r"^---\s*\n(.*?)\n---", content, re.DOTALL)
-    if not match:
-        return False
-
-    frontmatter = match.group(1)
-    in_section = False
-
-    for line in frontmatter.split("\n"):
-        stripped = line.strip()
-
-        if stripped in ("anima:", "ltm:"):
-            in_section = True
-            continue
-
-        if in_section:
-            if stripped and not line.startswith(" ") and not line.startswith("\t"):
-                in_section = False
-                continue
-
-            if "subagent:" in stripped:
-                value = stripped.split(":", 1)[1].strip().lower()
-                return value in ("true", "yes", "1")
-
-    return False
-
-
-def _add_subagent_marker(content: str) -> str:
-    """Add anima: subagent: true to frontmatter before closing ---."""
-    if content.startswith("---\n"):
-        end_idx = content.find("\n---", 4)
-        if end_idx != -1:
-            return content[:end_idx] + "\nanima:\n  subagent: true" + content[end_idx:]
-    elif content.startswith("---\r\n"):
-        end_idx = content.find("\r\n---", 5)
-        if end_idx != -1:
-            return content[:end_idx] + "\r\nanima:\r\n  subagent: true" + content[end_idx:]
-    return content
+from anima.utils.agent_patching import has_subagent_marker, add_subagent_marker
 
 
 def auto_patch_agents(project_dir: Path) -> tuple[list[str], list[str]]:
@@ -95,10 +54,10 @@ def auto_patch_agents(project_dir: Path) -> tuple[list[str], list[str]]:
                     disabled.append(agent_file.name)
                     continue
 
-                if _has_subagent_marker(content):
+                if has_subagent_marker(content):
                     continue
 
-                new_content = _add_subagent_marker(content)
+                new_content = add_subagent_marker(content)
 
                 if new_content != content:
                     agent_file.write_text(new_content, encoding="utf-8")
@@ -215,6 +174,9 @@ def run(args: Optional[list[str]] = None) -> int:
             print(json.dumps(output))
             # Output status AFTER JSON - Claude Code may display this in terminal
             print(f"Success: {stats['total']} memories loaded")
+        elif output_format == "dsl":
+            # Output ONLY the DSL block for direct plugin injection
+            print(memories_dsl)
         else:
             # Output as raw text for Anima
             print(context)

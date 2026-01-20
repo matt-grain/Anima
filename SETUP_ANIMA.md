@@ -27,10 +27,11 @@ Ensure `.agent/rules/anima.md` exists in your project. This file tells every age
 > "Every session MUST start with `uv run anima load-context` and end with `uv run anima end-session`."
 
 ### Expert Skills
-Copy the `anima-expert` skill to your project:
+Copy the `anima-expert` skill and workflows to your project:
 ```powershell
-uv run anima setup --commands
+uv run anima setup --platform antigravity
 ```
+*Note: If you run `anima setup` without flags, it will automatically detect the `.agent` directory and perform this installation.*
 This utility will deploy:
 - `.agent/skills/anima-expert/`: Detailed instructions for the agent on memory impact, regions, and capture protocols.
 - `.agent/workflows/`: Standardized process files for common LTM tasks.

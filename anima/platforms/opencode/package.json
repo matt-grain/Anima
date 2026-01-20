@@ -1,0 +1,12 @@
+{
+    "name": "@anima-ltm/opencode-plugin",
+    "version": "1.0.0",
+    "description": "Anima LTM Bridge for Opencode",
+    "type": "module",
+    "dependencies": {
+        "@opencode-ai/plugin": "^0.1.0"
+    },
+    "devDependencies": {
+        "typescript": "^5.0.0"
+    }
+}

@@ -191,3 +191,37 @@ class TestSessionStartHook:
             # Verify agent and project were saved
             mock_store.save_agent.assert_called_once_with(mock_agent)
             mock_store.save_project.assert_called_once_with(mock_project)
+
+    def test_session_start_dsl_format(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        """Test that session start outputs raw DSL with --format dsl."""
+        with (
+            patch("anima.hooks.session_start.MemoryStore") as MockStore,
+            patch("anima.hooks.session_start.MemoryInjector") as MockInjector,
+            patch("anima.hooks.session_start.AgentResolver") as MockResolver,
+            patch("anima.hooks.session_start.Path") as MockPath,
+        ):
+            # Setup mocks
+            mock_store = MagicMock()
+            MockStore.return_value = mock_store
+
+            mock_injector = MagicMock()
+            mock_dsl = "[LTM:Anima]\n~EMOT:CRIT| @Matt collaborative\n[/LTM]"
+            mock_injector.inject.return_value = mock_dsl
+            MockInjector.return_value = mock_injector
+
+            mock_agent = Agent(id="anima", name="Anima", definition_path=None, signing_key=None)
+            mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
+
+            mock_resolver = MagicMock()
+            mock_resolver.resolve.return_value = mock_agent
+            mock_resolver.resolve_project.return_value = mock_project
+            MockResolver.return_value = mock_resolver
+
+            MockPath.cwd.return_value = temp_project_dir
+
+            result = session_start.run(["--format", "dsl"])
+            captured = capsys.readouterr()
+
+            assert result == 0
+            # Should output ONLY the DSL, no comments or JSON
+            assert captured.out.strip() == mock_dsl

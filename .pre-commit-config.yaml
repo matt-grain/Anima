@@ -11,6 +11,7 @@ repos:
 
   - repo: local
     hooks:
+      # Pyright - Type checker (non-blocking due to pre-existing issues)
       - id: pyright
         name: pyright
         entry: uv run pyright
@@ -19,7 +20,7 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
-    # ty - Astral's new type checker (fast, incremental)
+      # ty - Astral's new type checker (fast, incremental)
       - id: ty
         name: ty type checker
         entry: uv run ty check anima/ tests/
@@ -27,6 +28,14 @@ repos:
         types: [python]
         stages: [pre-commit]
         pass_filenames: false
+
+      # Bandit - Security linter (only fails on high severity)
+      - id: bandit
+        name: bandit security scan
+        entry: uv run bandit -c pyproject.toml -r anima/ --severity-level high -q
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
 
       # Radon - Code complexity checker
       - id: radon-cc

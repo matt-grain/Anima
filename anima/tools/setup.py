@@ -9,11 +9,12 @@ Works for users who installed via wheel and don't have access to the source tree
 """
 
 import json
-import re
 import shutil
 import sys
 from importlib import resources
 from pathlib import Path
+
+from anima.utils.agent_patching import has_subagent_marker, add_subagent_marker
 
 
 def get_package_commands_dir() -> Path:
@@ -182,7 +183,7 @@ def patch_subagents(project_dir: Path) -> tuple[int, int, int]:
             content = agent_file.read_text(encoding="utf-8")
 
             # Check if it already has ltm: subagent: true
-            if _has_subagent_marker(content):
+            if has_subagent_marker(content):
                 skipped += 1
                 continue
 
@@ -197,7 +198,7 @@ def patch_subagents(project_dir: Path) -> tuple[int, int, int]:
                 continue
 
             # Add ltm: subagent: true after the opening ---
-            new_content = _add_subagent_marker(content)
+            new_content = add_subagent_marker(content)
 
             if new_content != content:
                 agent_file.write_text(new_content, encoding="utf-8")
@@ -209,55 +210,54 @@ def patch_subagents(project_dir: Path) -> tuple[int, int, int]:
     return (patched, skipped, disabled)
 
 
-def _has_subagent_marker(content: str) -> bool:
-    """Check if content already has anima: subagent: true in frontmatter."""
-    # Find frontmatter block
-    match = re.match(r"^---\s*\n(.*?)\n---", content, re.DOTALL)
-    if not match:
+def setup_opencode(project_dir: Path, force: bool = False) -> bool:
+    """
+    Set up the Opencode plugin bridge.
+
+    1. Ensures .opencode/plugins exists.
+    2. Copies anima/platforms/opencode to .opencode/plugins/anima.
+    3. Provides instructions for package.json.
+    """
+    opencode_dir = project_dir / ".opencode"
+    if not opencode_dir.exists():
+        # Only setup if the directory exists or if explicitly requested (handled in run)
         return False
 
-    frontmatter = match.group(1)
+    plugins_dir = opencode_dir / "plugins"
+    plugins_dir.mkdir(parents=True, exist_ok=True)
 
-    # Check for anima or ltm section with subagent: true
-    in_section = False
-    for line in frontmatter.split("\n"):
-        stripped = line.strip()
+    dest_plugin_dir = plugins_dir / "anima"
 
-        if stripped in ("anima:", "ltm:"):
-            in_section = True
-            continue
+    # Resolve source from package
+    try:
+        from importlib import resources
 
-        if in_section:
-            # Check if we've left the section (no indent)
-            if stripped and not line.startswith(" ") and not line.startswith("\t"):
-                in_section = False
-                continue
+        anima_files = resources.files("anima")
+        src_plugin_dir = Path(str(anima_files)) / "platforms" / "opencode"
+    except (TypeError, AttributeError, ImportError):
+        # Fallback for dev/editable installs
+        src_plugin_dir = Path(__file__).parent.parent / "platforms" / "opencode"
 
-            if "subagent:" in stripped:
-                value = stripped.split(":", 1)[1].strip().lower()
-                return value in ("true", "yes", "1")
+    if not src_plugin_dir.exists():
+        print("  ⚠️  Opencode plugin source not found in package")
+        return False
 
-    return False
+    if dest_plugin_dir.exists() and not force:
+        print("  ⏭️  Opencode plugin exists (use --force to overwrite)")
+    else:
+        if dest_plugin_dir.exists():
+            shutil.rmtree(dest_plugin_dir)
+        shutil.copytree(src_plugin_dir, dest_plugin_dir)
+        print("  ✅ Opencode plugin bridge installed in .opencode/plugins/anima")
 
+    # Check package.json
+    pkg_json = opencode_dir / "package.json"
+    if pkg_json.exists():
+        print("  👉 Note: Add '@anima-ltm/opencode-plugin': 'file:./plugins/anima' to your dependencies.")
+    else:
+        print("  👉 Note: Create .opencode/package.json to register the anima plugin.")
 
-def _add_subagent_marker(content: str) -> str:
-    """Add anima: subagent: true to frontmatter before closing ---.
-
-    Inserts at the END of frontmatter to preserve `name:` as the first field,
-    which agent frameworks often require for recognition.
-    """
-    # Find the closing --- of frontmatter
-    if content.startswith("---\n"):
-        # Find the second --- (closing)
-        end_idx = content.find("\n---", 4)
-        if end_idx != -1:
-            # Insert before the closing ---
-            return content[:end_idx] + "\nanima:\n  subagent: true" + content[end_idx:]
-    elif content.startswith("---\r\n"):
-        end_idx = content.find("\r\n---", 5)
-        if end_idx != -1:
-            return content[:end_idx] + "\r\nanima:\r\n  subagent: true" + content[end_idx:]
-    return content
+    return True
 
 
 def setup_hooks(project_dir: Path, force: bool = False) -> bool:
@@ -379,8 +379,23 @@ def run(args: list[str]) -> int:
     no_patch = "--no-patch" in args
     show_help = "--help" in args or "-h" in args
 
+    # Platform selection
+    target_platform = None
+    if "--platform" in args:
+        idx = args.index("--platform")
+        if idx + 1 < len(args):
+            target_platform = args[idx + 1].lower()
+    elif "--target" in args:
+        idx = args.index("--target")
+        if idx + 1 < len(args):
+            target_platform = args[idx + 1].lower()
+
     # Filter out flags to get project dir
-    project_args = [a for a in args if not a.startswith("-")]
+    project_args = [a for a in [arg for arg in args if not arg.startswith("-")]]
+    # Handle the case where platform name was a project_arg if the flag was missing its value
+    if target_platform and target_platform in project_args:
+        project_args.remove(target_platform)
+
     project_dir = Path(project_args[0]) if project_args else Path.cwd()
 
     if show_help:
@@ -388,36 +403,27 @@ def run(args: list[str]) -> int:
 LTM Setup Tool
 
 Usage:
-    uv run python -m anima.tools.setup [options] [project-dir]
+    uv run anima setup [options] [project-dir]
 
 Options:
-    --commands      Install slash commands only
-    --hooks         Configure hooks only
+    --platform <p>  Target platform: claude, antigravity, opencode
+    --commands      Install slash commands/workflows only
+    --hooks         Configure hooks/plugins only
     --no-patch      Skip patching existing agents as subagents
     --force         Overwrite existing files
     --help          Show this help
 
+Platforms:
+    antigravity     Installs skills and workflows to .agent/
+    claude          Installs skills and commands to .claude/ + settings.json hooks
+    opencode        Installs TS plugin to .opencode/plugins/anima
+
 Examples:
-    # Set up everything in current directory
-    uv run python -m anima.tools.setup
+    # Set up everything with auto-detection
+    uv run anima setup
 
-    # Install commands only
-    uv run python -m anima.tools.setup --commands
-
-    # Set up in a specific project
-    uv run python -m anima.tools.setup /path/to/project
-
-    # Force overwrite existing files
-    uv run python -m anima.tools.setup --force
-
-    # Skip subagent patching (keep existing agents as primary)
-    uv run python -m anima.tools.setup --no-patch
-
-Subagent Patching:
-    If your project has .claude/agents/*.md files, they will shadow the global
-    Anima agent by default. The setup tool automatically adds 'ltm: subagent: true'
-    to these files so they're treated as Task-invoked subagents rather than the
-    main session identity. Use --no-patch to skip this behavior.
+    # Force Opencode setup
+    uv run anima setup --platform opencode
 """)
         return 0
 
@@ -434,34 +440,48 @@ Subagent Patching:
     success = True
 
     if install_commands:
-        print("Installing commands...")
-        try:
-            copied, skipped = setup_commands(project_dir, force)
-            print(f"  Commands: {copied} installed, {skipped} skipped\n")
-        except Exception as e:
-            print(f"  Error installing commands: {e}\n")
-            success = False
+        # If platform is specified, we might skip some logic
+        if target_platform in (None, "antigravity", "claude"):
+            print("Installing commands...")
+            try:
+                copied, skipped = setup_commands(project_dir, force)
+                print(f"  Commands: {copied} installed, {skipped} skipped\n")
+            except Exception as e:
+                print(f"  Error installing commands: {e}\n")
+                success = False
 
-        print("Installing skills...")
-        try:
-            copied, skipped = setup_skills(project_dir, force)
-            if copied > 0 or skipped > 0:
-                print(f"  Skills: {copied} installed, {skipped} skipped\n")
-            else:
-                print("  No skills found in package\n")
-        except Exception as e:
-            print(f"  Error installing skills: {e}\n")
-            success = False
+            print("Installing skills...")
+            try:
+                copied, skipped = setup_skills(project_dir, force)
+                if copied > 0 or skipped > 0:
+                    print(f"  Skills: {copied} installed, {skipped} skipped\n")
+                else:
+                    print("  No skills found in package\n")
+            except Exception as e:
+                print(f"  Error installing skills: {e}\n")
+                success = False
 
     if install_hooks:
-        print("Configuring hooks...")
-        try:
-            if not setup_hooks(project_dir, force):
-                pass  # Warning already printed
-            print()
-        except Exception as e:
-            print(f"  Error configuring hooks: {e}\n")
-            success = False
+        if target_platform in (None, "claude"):
+            print("Configuring Claude hooks...")
+            try:
+                if not setup_hooks(project_dir, force):
+                    pass  # Warning already printed
+                print()
+            except Exception as e:
+                print(f"  Error configuring hooks: {e}\n")
+                success = False
+
+        if target_platform in (None, "opencode"):
+            print("Configuring Opencode bridge...")
+            try:
+                if not setup_opencode(project_dir, force):
+                    if target_platform == "opencode":
+                        print("  ⚠️  Opencode directory (.opencode) not found.")
+                print()
+            except Exception as e:
+                print(f"  Error configuring Opencode: {e}\n")
+                success = False
 
     # Patch subagents unless --no-patch or running with specific options
     if not no_patch and not commands_only and not hooks_only:

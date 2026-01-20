@@ -9,6 +9,7 @@ Anima is a **Universal Memory Layer** designed to give AI agents persistent, cro
 | Framework | Best For... | Guide |
 | :--- | :--- | :--- |
 | **Anima (Gemini)** | Google agents using Skills, Rules, and Workflows. | [**Anima Guide**](README_ANIMA.md) |
+| **Opencode (Bun)** | Universal agents using the TypeScript Plugin Bridge. | [**Opencode Guide**](README_OPENCODE.md) |
 | **Claude Code (Anthropic)** | Legacy CLI users using the standard Hook system. | [**Claude Guide**](README_CLAUDE.md) |
 
 ---

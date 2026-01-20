@@ -12,10 +12,10 @@ uv pip install -e .
 ### 2. Hook Integration
 Claude Code relies on a `settings.json` hook system to inject memories.
 
-- **Setup**: Run `uv run python -m ltm.tools.setup`.
+- **Setup**: Run `uv run anima setup --platform claude`.
 - **Function**: This tool will:
     1. Patch your `.claude/settings.json` to add `SessionStart` and `SessionStop` hooks.
-    2. Point those hooks to `ltm/hooks/session_start.py` and `session_end.py`.
+    2. Point those hooks to the Anima lifecycle handlers.
     3. Install legacy command files in `.claude/commands/`.
 
 ### 3. Memory Injection

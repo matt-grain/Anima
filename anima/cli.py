@@ -22,6 +22,7 @@ def main() -> int:
         print("  load-context      Load memories for current session")
         print("  end-session       Process memory decay and stats")
         print("  detect-achievements [hours] Detect and promote achievements")
+        print("  setup             Set up LTM in current project")
         return 0
 
     command = sys.argv[1]
@@ -63,6 +64,10 @@ def main() -> int:
             return run(args)
         case "detect-achievements":
             from anima.tools.detect_achievements import run
+
+            return run(args)
+        case "setup":
+            from anima.tools.setup import run
 
             return run(args)
         case _:

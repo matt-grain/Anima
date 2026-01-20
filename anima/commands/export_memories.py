@@ -11,7 +11,7 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 
 from anima.core import AgentResolver, RegionType
 from anima.storage import MemoryStore
@@ -99,7 +99,7 @@ def run(args: list[str]) -> int:
         return 0
 
     # Build export structure
-    export_data = {
+    export_data: dict[str, Any] = {
         "version": "1.0",
         "exported_at": datetime.now().isoformat(),
         "agent": {

@@ -13,6 +13,7 @@ LTM (Long-Term Memory) provides persistent memory across Anima sessions. When a 
 3. **Budget-constrained**: Max 10% of context window used for memories
 4. **Agent isolation**: Each agent has private memories
 5. **Signature verification**: Optional cryptographic tamper detection
+6. **Platform Agnostic**: Native bridges for Claude Code, Antigravity, and Opencode
 
 ---
 
@@ -283,6 +284,22 @@ Three mechanisms control memory count:
 | `/memory-import` | Import memories from JSON |
 | `/sign-memories` | Sign existing unsigned memories |
 | `/detect-achievements` | Auto-detect achievements from git |
+
+---
+
+## Platform Integrations
+
+### Claude Code
+Uses the legacy `hooks` system defined in `SETUP_CLAUDE.md`. Communicates via JSON formatted hook outputs.
+
+### Antigravity
+Uses the modern `Skills` and `Workflows` system. Managed via `.agent/rules/anima.md`.
+
+### Opencode
+Uses a TypeScript **Universal Bridge** (`anima/platforms/opencode/plugin.ts`). 
+- **System Transform**: Injects DSL into the system prompt turn-by-turn.
+- **Compaction Hook**: Injects DSL into `experimental.session.compacting` to prevent amnesia.
+- **Maintenance**: Triggers `end-session` on `session.end`.
 
 ---
 
