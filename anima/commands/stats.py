@@ -47,7 +47,9 @@ def run(args: list[str]) -> int:
     store = MemoryStore()
 
     # Get all memories for this agent
-    all_memories = store.get_memories_for_agent(agent_id=agent.id, project_id=project.id)
+    all_memories = store.get_memories_for_agent(
+        agent_id=agent.id, project_id=project.id
+    )
 
     if not all_memories:
         print(f"No memories found for agent '{agent.name}'")

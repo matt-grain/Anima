@@ -86,7 +86,9 @@ def run(args: list[str]) -> int:
     memories = store.get_memories_for_agent(
         agent_id=agent.id,
         region=region,
-        project_id=project.id if region == RegionType.PROJECT or region is None else None,
+        project_id=project.id
+        if region == RegionType.PROJECT or region is None
+        else None,
         kind=kind,
         include_superseded=bool(options["all"]),
     )
@@ -129,7 +131,9 @@ def run(args: list[str]) -> int:
 
             # Format output
             date_str = memory.created_at.strftime("%Y-%m-%d")
-            print(f"  {region_str} [{memory.impact.value}]{marker_str} {memory.content[:70]}")
+            print(
+                f"  {region_str} [{memory.impact.value}]{marker_str} {memory.content[:70]}"
+            )
             print(f"     ID: {memory.id[:8]} | {date_str}")
             print()
 
@@ -137,7 +141,9 @@ def run(args: list[str]) -> int:
     total = len(memories)
     agent_count = sum(1 for m in memories if m.region == RegionType.AGENT)
     project_count = total - agent_count
-    print(f"Total: {total} memories ({agent_count} agent 🌐, {project_count} project 📁)")
+    print(
+        f"Total: {total} memories ({agent_count} agent 🌐, {project_count} project 📁)"
+    )
 
     return 0
 

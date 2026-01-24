@@ -146,6 +146,8 @@ class MemoryStoreProtocol(ABC):
         ...
 
     @abstractmethod
-    def count_memories_by_kind(self, agent_id: str, kind: MemoryKind, project_id: Optional[str] = None) -> int:
+    def count_memories_by_kind(
+        self, agent_id: str, kind: MemoryKind, project_id: Optional[str] = None
+    ) -> int:
         """Count non-superseded memories of a specific kind for an agent."""
         ...

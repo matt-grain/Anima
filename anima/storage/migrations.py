@@ -16,11 +16,12 @@ from typing import Optional
 
 
 # Current schema version - increment when schema changes
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 # Migration history:
 # v1: Original schema (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS)
 # v2: Added INTROSPECT kind + platform column for spaceship tracking
+# v3: Added curiosity_queue table + settings table for autonomous research
 
 
 def get_schema_version(db_path: Path) -> int:
@@ -107,12 +108,71 @@ def migrate_v1_to_v2(conn: sqlite3.Connection) -> None:
     conn.execute("ALTER TABLE memories_new RENAME TO memories")
 
     # Recreate indexes
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_agent_region ON memories(agent_id, region)")
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_project ON memories(project_id)")
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_memories_agent_region ON memories(agent_id, region)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_memories_project ON memories(project_id)"
+    )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_kind ON memories(kind)")
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_created ON memories(created_at DESC)")
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_memories_created ON memories(created_at DESC)"
+    )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_impact ON memories(impact)")
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_superseded ON memories(superseded_by)")
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_memories_superseded ON memories(superseded_by)"
+    )
+
+
+def migrate_v2_to_v3(conn: sqlite3.Connection) -> None:
+    """
+    Migrate from v2 to v3: Add curiosity_queue and settings tables.
+
+    These are new tables, so no data migration needed.
+    """
+    # Create curiosity queue table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS curiosity_queue (
+            id TEXT PRIMARY KEY,
+            agent_id TEXT NOT NULL,
+            region TEXT NOT NULL CHECK (region IN ('AGENT', 'PROJECT')),
+            project_id TEXT,
+            question TEXT NOT NULL,
+            context TEXT,
+            recurrence_count INTEGER DEFAULT 1,
+            first_seen TIMESTAMP NOT NULL,
+            last_seen TIMESTAMP NOT NULL,
+            status TEXT NOT NULL CHECK (status IN ('OPEN', 'RESEARCHED', 'DISMISSED')),
+            priority_boost INTEGER DEFAULT 0,
+
+            FOREIGN KEY (agent_id) REFERENCES agents(id),
+            FOREIGN KEY (project_id) REFERENCES projects(id),
+            CHECK (region = 'AGENT' OR project_id IS NOT NULL)
+        )
+    """)
+
+    # Create indexes for curiosity queue
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_curiosity_agent ON curiosity_queue(agent_id)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_curiosity_status ON curiosity_queue(status)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_curiosity_last_seen ON curiosity_queue(last_seen DESC)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_curiosity_region ON curiosity_queue(agent_id, region)"
+    )
+
+    # Create settings table for tracking last_research, etc.
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
 
 
 def has_memories_table(db_path: Path) -> bool:
@@ -129,7 +189,9 @@ def has_memories_table(db_path: Path) -> bool:
         return False
 
 
-def run_migrations(db_path: Path, target_version: Optional[int] = None) -> tuple[int, int, Optional[Path]]:
+def run_migrations(
+    db_path: Path, target_version: Optional[int] = None
+) -> tuple[int, int, Optional[Path]]:
     """
     Run all pending migrations.
 
@@ -153,25 +215,23 @@ def run_migrations(db_path: Path, target_version: Optional[int] = None) -> tuple
     # Create backup before migrations
     backup_path = backup_database(db_path)
 
+    conn = sqlite3.connect(db_path, timeout=5.0)
     try:
-        conn = sqlite3.connect(db_path, timeout=5.0)
-
         # Run migrations in order
         if current < 2 and target >= 2:
             migrate_v1_to_v2(conn)
 
-        # Future migrations would go here:
-        # if current < 3 and target >= 3:
-        #     migrate_v2_to_v3(conn)
+        if current < 3 and target >= 3:
+            migrate_v2_to_v3(conn)
 
         set_schema_version(conn, target)
         conn.commit()
-        conn.close()
 
         return (current, target, backup_path)
 
     except Exception as e:
         # Restore from backup on failure
-        conn.close()
         shutil.copy2(backup_path, db_path)
         raise RuntimeError(f"Migration failed, restored from backup: {e}") from e
+    finally:
+        conn.close()

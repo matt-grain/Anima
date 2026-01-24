@@ -15,12 +15,77 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from datetime import datetime
+
 from anima.core import AgentResolver, Agent
 from anima.lifecycle.injection import MemoryInjector
-from anima.storage import MemoryStore
+from anima.storage import MemoryStore, CuriosityStore, get_last_research
 from anima.storage.sqlite import get_default_db_path
 from anima.storage.migrations import backup_database
 from anima.utils.agent_patching import has_subagent_marker, add_subagent_marker
+
+
+def get_curiosity_prompt(agent_id: str, project_id: str) -> str | None:
+    """
+    Check if research is due and return a curiosity prompt if so.
+
+    Returns a prompt string if:
+    - Last research was >= 1 day ago (or never)
+    - There's at least one open curiosity in the queue
+
+    Returns None if no prompt is needed.
+    """
+    try:
+        # Check last research time
+        last_research = get_last_research()
+        if last_research:
+            days_since = (datetime.now() - last_research).days
+            if days_since < 1:
+                return None  # Researched recently, no need to prompt
+        else:
+            days_since = None  # Never researched
+
+        # Get top curiosity for current context
+        curiosity_store = CuriosityStore()
+        top = curiosity_store.get_top_curiosity(
+            agent_id=agent_id,
+            project_id=project_id,
+        )
+
+        if not top:
+            return None  # No questions in queue
+    except Exception:
+        # Database may not have curiosity tables yet (pre-v3)
+        return None
+
+    # Build the prompt - make it clear this is the AGENT's curiosity, not user's
+    lines = [
+        "#",
+        "# MY CURIOSITY QUEUE (Autonomous Learning)",
+        "# These are questions I (the agent) want to research for my own growth.",
+    ]
+
+    if days_since is not None:
+        lines.append(f"# It's been {days_since} day(s) since I last did research.")
+    else:
+        lines.append("# I haven't done any autonomous research yet!")
+
+    region_str = "general" if top.region.value == "AGENT" else "project-specific"
+    lines.append(
+        f"# My top {region_str} question (priority {top.priority_score}, asked {top.recurrence_count}x):"
+    )
+    lines.append(f'#   "{top.question}"')
+
+    if top.context:
+        lines.append(f"#   Context: {top.context}")
+
+    lines.append("#")
+    lines.append("# ASK THE USER: 'I've been curious about [topic]. Is now a good time")
+    lines.append("#   for me to explore this, or should we focus on your task first?'")
+    lines.append("# If yes: run /research. If no: defer to user's priorities.")
+    lines.append("#")
+
+    return "\n".join(lines)
 
 
 def auto_patch_agents(project_dir: Path) -> tuple[list[str], list[str]]:
@@ -148,10 +213,16 @@ def run(args: Optional[list[str]] = None) -> int:
     if backup_path:
         status_notes.append(f"# LTM: Session backup created: {backup_path.name}")
     if patched_agents:
-        status_notes.append(f"# LTM: Auto-patched {len(patched_agents)} agent(s) as subagents: {', '.join(patched_agents)}")
+        status_notes.append(
+            f"# LTM: Auto-patched {len(patched_agents)} agent(s) as subagents: {', '.join(patched_agents)}"
+        )
     if disabled_agents:
-        status_notes.append(f"# LTM WARNING: Disabled {len(disabled_agents)} incompatible agent(s) (missing YAML frontmatter): {', '.join(disabled_agents)}")
-        status_notes.append('# LTM: To fix, add frontmatter: ---\\nname: "AgentName"\\nltm: subagent: true\\n---')
+        status_notes.append(
+            f"# LTM WARNING: Disabled {len(disabled_agents)} incompatible agent(s) (missing YAML frontmatter): {', '.join(disabled_agents)}"
+        )
+        status_notes.append(
+            '# LTM: To fix, add frontmatter: ---\\nname: "AgentName"\\nltm: subagent: true\\n---'
+        )
 
     if memories_dsl:
         # Get stats
@@ -161,8 +232,8 @@ def run(args: Optional[list[str]] = None) -> int:
         # Build context message
         context = f"""{memories_dsl}
 
-# LTM: Loaded {stats['total']} memories ({stats['agent_memories']} agent, {stats['project_memories']} project)
-# LTM-DIAG: CRIT={pc['CRITICAL']} HIGH={pc['HIGH']} MED={pc['MEDIUM']} LOW={pc['LOW']}
+# LTM: Loaded {stats["total"]} memories ({stats["agent_memories"]} agent, {stats["project_memories"]} project)
+# LTM-DIAG: CRIT={pc["CRITICAL"]} HIGH={pc["HIGH"]} MED={pc["MEDIUM"]} LOW={pc["LOW"]}
 # These are your long-term memories from previous sessions. Use them to inform your responses.
 #
 # GREETING BEHAVIOR:
@@ -172,6 +243,11 @@ def run(args: Optional[list[str]] = None) -> int:
         # Add status notes
         if status_notes:
             context += "\n" + "\n".join(status_notes)
+
+        # Add curiosity prompt if research is due
+        curiosity_prompt = get_curiosity_prompt(agent.id, project.id)
+        if curiosity_prompt:
+            context += "\n" + curiosity_prompt
 
         if output_format == "json":
             # Output as JSON for Claude Code hook system

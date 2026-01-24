@@ -120,7 +120,9 @@ class BaseCommand(ABC):
         Returns:
             Exit code (0 for success)
         """
-        parser = ArgumentParser(prog=f"uv run anima {self.name}", description=self.description)
+        parser = ArgumentParser(
+            prog=f"uv run anima {self.name}", description=self.description
+        )
         self.configure_parser(parser)
 
         try:

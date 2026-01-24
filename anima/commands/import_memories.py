@@ -116,17 +116,27 @@ def run(args: list[str]) -> int:
                     skipped += 1
                     continue
                 else:
-                    print(f"Memory {mem_data['id'][:8]} already exists. Use --merge to skip.")
+                    print(
+                        f"Memory {mem_data['id'][:8]} already exists. Use --merge to skip."
+                    )
                     errors += 1
                     continue
 
             # Determine agent_id
-            agent_id = current_agent.id if remap_agent else mem_data.get("agent_id", current_agent.id)
+            agent_id = (
+                current_agent.id
+                if remap_agent
+                else mem_data.get("agent_id", current_agent.id)
+            )
 
             # Determine project_id
             project_id = None
             if mem_data.get("region") == "PROJECT":
-                project_id = current_project.id if remap_agent else mem_data.get("project_id", current_project.id)
+                project_id = (
+                    current_project.id
+                    if remap_agent
+                    else mem_data.get("project_id", current_project.id)
+                )
 
             # Parse timestamps
             created_at = datetime.fromisoformat(mem_data["created_at"])
@@ -152,7 +162,9 @@ def run(args: list[str]) -> int:
             )
 
             if dry_run:
-                print(f"Would import: [{memory.kind.value}:{memory.impact.value}] {memory.content[:50]}...")
+                print(
+                    f"Would import: [{memory.kind.value}:{memory.impact.value}] {memory.content[:50]}..."
+                )
             else:
                 ensure_token_count(memory)
                 store.save_memory(memory)
@@ -165,9 +177,13 @@ def run(args: list[str]) -> int:
 
     # Summary
     if dry_run:
-        print(f"\nDry run complete: {imported} would be imported, {skipped} skipped, {errors} errors")
+        print(
+            f"\nDry run complete: {imported} would be imported, {skipped} skipped, {errors} errors"
+        )
     else:
-        print(f"\nImport complete: {imported} imported, {skipped} skipped, {errors} errors")
+        print(
+            f"\nImport complete: {imported} imported, {skipped} skipped, {errors} errors"
+        )
 
     return 0 if errors == 0 else 1
 

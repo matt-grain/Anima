@@ -100,6 +100,99 @@ uv run anima forget <memory-id>
 uv run anima forget abc123
 ```
 
+## Curiosity & Research
+
+These commands enable autonomous learning by maintaining a research queue.
+
+### curious "question" [flags]
+
+Add a question or topic to the research queue for later exploration.
+
+**Syntax:** `uv run anima curious "QUESTION" [FLAGS]`
+
+**Flags:**
+- `--region` / `-r`: Scope (agent = general topics, project = project-specific)
+- `--context` / `-c`: What triggered this curiosity
+
+**Examples:**
+```bash
+# Add a general question
+uv run anima curious "Why does Python GIL affect async?"
+
+# Agent-wide curiosity (travels across projects)
+uv run anima curious "Latest LLM introspection research" --region agent
+
+# With context
+uv run anima curious "Why did pytest-asyncio break?" --context "upgrade to Python 3.12"
+```
+
+**Tips:**
+- Recurring questions automatically get priority bumps
+- At session start, you'll be prompted about top curiosities
+- Questions that keep coming up rise to the top of the queue
+
+### research [flags]
+
+Pop the top curiosity from the queue and explore it.
+
+**Syntax:** `uv run anima research [FLAGS]`
+
+**Flags:**
+- `--list` / `-l`: Show the queue before researching
+- `--topic` / `-t`: Research a specific topic (bypasses queue)
+- `--complete` / `-c`: Mark a curiosity as researched by ID
+- `--defer` / `-d`: Defer research to later
+
+**Examples:**
+```bash
+# Research top priority question
+uv run anima research
+
+# See queue first
+uv run anima research --list
+
+# Research specific topic (ad-hoc)
+uv run anima research --topic "Docker networking internals"
+
+# Mark as done after researching
+uv run anima research --complete abc123
+```
+
+**Workflow:**
+1. `/research` displays the top question
+2. Use WebSearch or other tools to explore
+3. Save findings with `/remember <findings> --kind learnings`
+4. Mark complete: `uv run anima research --complete <id>`
+
+### curiosity-queue [flags]
+
+View and manage the research queue.
+
+**Syntax:** `uv run anima curiosity-queue [FLAGS]`
+
+**Flags:**
+- `--dismiss ID`: Remove a question (no longer interested)
+- `--boost ID`: Increase priority of a question
+- `--boost-amount N`: How much to boost (default: 10)
+- `--all` / `-a`: Show all (including researched/dismissed)
+- `--agent-only`: Show only agent-wide curiosities
+- `--project-only`: Show only project-specific curiosities
+
+**Examples:**
+```bash
+# List open questions
+uv run anima curiosity-queue
+
+# Dismiss a question
+uv run anima curiosity-queue --dismiss abc123
+
+# Boost priority
+uv run anima curiosity-queue --boost abc123
+
+# See all history
+uv run anima curiosity-queue --all
+```
+
 ## Setup & Tools
 
 ### setup [flags]

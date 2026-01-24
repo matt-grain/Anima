@@ -33,7 +33,9 @@ def lookup_by_id(memory_id: str) -> int:
     store = MemoryStore()
 
     # Get all memories for this agent and search for matching ID
-    all_memories = store.get_memories_for_agent(agent_id=agent.id, project_id=project.id)
+    all_memories = store.get_memories_for_agent(
+        agent_id=agent.id, project_id=project.id
+    )
 
     # Find memory with matching ID (partial match from start)
     matches = [m for m in all_memories if m.id.startswith(memory_id)]
@@ -60,7 +62,9 @@ def lookup_by_id(memory_id: str) -> int:
     print(f"Created: {date_str}")
     print(f"Confidence: {memory.confidence}")
     if memory.platform:
-        spaceship_icon = {"claude": "🔵", "antigravity": "🟣", "opencode": "🟢"}.get(memory.platform, "🚀")
+        spaceship_icon = {"claude": "🔵", "antigravity": "🟣", "opencode": "🟢"}.get(
+            memory.platform, "🚀"
+        )
         print(f"Platform: {spaceship_icon} {memory.platform}")
     if memory.superseded_by:
         print(f"⚠️  Superseded by: {memory.superseded_by}")
@@ -139,7 +143,9 @@ def run(args: list[str]) -> int:
 
     # Search memories
     store = MemoryStore()
-    memories = store.search_memories(agent_id=agent.id, query=query, project_id=project.id, limit=10)
+    memories = store.search_memories(
+        agent_id=agent.id, query=query, project_id=project.id, limit=10
+    )
 
     if not memories:
         print(f'No memories found matching "{query}"')
@@ -154,7 +160,9 @@ def run(args: list[str]) -> int:
 
         if show_full:
             # Full output: show complete content
-            print(f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] ({date_str})")
+            print(
+                f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] ({date_str})"
+            )
             print(f"   ID: {memory.id}")
             print(f"   Region: {memory.region.value}")
             print("   Content:")
@@ -163,7 +171,11 @@ def run(args: list[str]) -> int:
             print()
         else:
             # Brief output: truncate content
-            print(f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] " f"{memory.content[:80]}{'...' if len(memory.content) > 80 else ''} " f"({date_str})")
+            print(
+                f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] "
+                f"{memory.content[:80]}{'...' if len(memory.content) > 80 else ''} "
+                f"({date_str})"
+            )
             print(f"   ID: {memory.id[:8]}")
             print()
 

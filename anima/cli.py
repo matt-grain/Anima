@@ -17,6 +17,9 @@ def main() -> int:
         print("  recall <query>    Search memories")
         print("  forget <id>       Remove a memory")
         print("  memories          List all memories")
+        print("  curious <question> Add question to research queue")
+        print("  research          Process research queue")
+        print("  curiosity-queue   View/manage research queue")
         print("  keygen <agent>    Add signing key to Anima agent")
         print("  import-seeds <dir> Import seed memories")
         print("  load-context      Load memories for current session")
@@ -43,6 +46,18 @@ def main() -> int:
             return run(args)
         case "memories":
             from anima.commands.memories import run
+
+            return run(args)
+        case "curious":
+            from anima.commands.curious import run
+
+            return run(args)
+        case "research":
+            from anima.commands.research import run
+
+            return run(args)
+        case "curiosity-queue":
+            from anima.commands.curiosity_queue import run
 
             return run(args)
         case "keygen":

@@ -67,7 +67,9 @@ def build_chains(memories: list[Memory]) -> dict[str, list[Memory]]:
     return chains
 
 
-def format_memory_node(memory: Memory, is_superseded: bool = False, truncated_size: int = 80) -> str:
+def format_memory_node(
+    memory: Memory, is_superseded: bool = False, truncated_size: int = 80
+) -> str:
     """Format a single memory as a node."""
     kind_icons = {
         MemoryKind.EMOTIONAL: "💜",
@@ -122,7 +124,9 @@ def run(args: list[str]) -> int:
     store = MemoryStore()
 
     # Get all memories
-    all_memories = store.get_memories_for_agent(agent_id=agent.id, project_id=project.id)
+    all_memories = store.get_memories_for_agent(
+        agent_id=agent.id, project_id=project.id
+    )
 
     if not all_memories:
         print(f"No memories found for agent '{agent.name}'")

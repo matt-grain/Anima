@@ -17,13 +17,27 @@ from pathlib import Path
 from anima.utils.agent_patching import has_subagent_marker, add_subagent_marker
 
 
-def get_package_commands_dir() -> Path:
-    """Get the commands directory from the installed package."""
+def get_package_commands_dir(platform: str | None = None) -> Path:
+    """Get the commands directory from the installed package.
+
+    Args:
+        platform: If specified, returns platform-specific commands (antigravity, opencode, claude).
+                  If None, returns the default commands directory.
+    """
     # Try to find commands in the package
     try:
         # For Python 3.9+
         anima_files = resources.files("anima")
-        commands_dir = Path(str(anima_files)).parent / "commands"
+        package_base = Path(str(anima_files))
+
+        # Platform-specific commands
+        if platform:
+            platform_commands = package_base / "platforms" / platform / "commands"
+            if platform_commands.exists():
+                return platform_commands
+
+        # Default commands directory (at package root level)
+        commands_dir = package_base.parent / "commands"
         if commands_dir.exists():
             return commands_dir
     except (TypeError, AttributeError):
@@ -31,6 +45,15 @@ def get_package_commands_dir() -> Path:
 
     # Fallback: look relative to this file (for editable installs)
     package_root = Path(__file__).parent.parent.parent
+
+    # Platform-specific commands
+    if platform:
+        platform_commands = (
+            Path(__file__).parent.parent / "platforms" / platform / "commands"
+        )
+        if platform_commands.exists():
+            return platform_commands
+
     commands_dir = package_root / "commands"
     if commands_dir.exists():
         return commands_dir
@@ -119,10 +142,18 @@ def setup_skills(project_dir: Path, force: bool = False) -> tuple[int, int]:
     return (copied, skipped)
 
 
-def setup_commands(project_dir: Path, force: bool = False) -> tuple[int, int]:
-    """Copy command files to project's commands directory."""
+def setup_commands(
+    project_dir: Path, force: bool = False, platform: str | None = None
+) -> tuple[int, int]:
+    """Copy command files to project's commands directory.
+
+    Args:
+        project_dir: Target project directory
+        force: Overwrite existing files
+        platform: Target platform (antigravity, opencode, claude) - uses platform-specific templates
+    """
     try:
-        src_dir = get_package_commands_dir()
+        src_dir = get_package_commands_dir(platform)
     except FileNotFoundError as e:
         print(f"Error: {e}")
         return (0, 0)
@@ -131,6 +162,10 @@ def setup_commands(project_dir: Path, force: bool = False) -> tuple[int, int]:
     dest_dir = project_dir / ".agent" / "workflows"
     if not (project_dir / ".agent").exists() and (project_dir / ".claude").exists():
         dest_dir = project_dir / ".claude" / "commands"
+
+    # For opencode, use .opencode/commands
+    if platform == "opencode":
+        dest_dir = project_dir / ".opencode" / "commands"
 
     # Create directory if needed
     dest_dir.mkdir(parents=True, exist_ok=True)
@@ -192,8 +227,12 @@ def patch_subagents(project_dir: Path) -> tuple[int, int, int]:
                 # Incompatible format - disable by renaming
                 disabled_path = agent_file.with_suffix(".md.disabled")
                 agent_file.rename(disabled_path)
-                print(f"  ⚠️  {agent_file.name} → {disabled_path.name} (missing frontmatter, disabled)")
-                print('      To fix: add ---\\nname: "AgentName"\\nltm: subagent: true\\n--- at top')
+                print(
+                    f"  ⚠️  {agent_file.name} → {disabled_path.name} (missing frontmatter, disabled)"
+                )
+                print(
+                    '      To fix: add ---\\nname: "AgentName"\\nltm: subagent: true\\n--- at top'
+                )
                 disabled += 1
                 continue
 
@@ -251,9 +290,11 @@ def setup_opencode(project_dir: Path, force: bool = False) -> bool:
         print("  ✅ Opencode plugin bridge installed in .opencode/plugins/anima")
 
     # Check package.json
-    pkg_json = opencode_dir / "plugins" / "anima""package.json"
+    pkg_json = opencode_dir / "plugins" / "animapackage.json"
     if pkg_json.exists():
-        print("  👉 Note: Add '@anima-ltm/opencode-plugin': 'file:./plugins/anima' to your dependencies.")
+        print(
+            "  👉 Note: Add '@anima-ltm/opencode-plugin': 'file:./plugins/anima' to your dependencies."
+        )
     else:
         print("  👉 Note: Create .opencode/package.json to register the anima plugin.")
 
@@ -441,10 +482,12 @@ Examples:
 
     if install_commands:
         # If platform is specified, we might skip some logic
-        if target_platform in (None, "antigravity", "claude"):
-            print("Installing commands...")
+        if target_platform in (None, "antigravity", "claude", "opencode"):
+            print(
+                f"Installing commands{f' ({target_platform})' if target_platform else ''}..."
+            )
             try:
-                copied, skipped = setup_commands(project_dir, force)
+                copied, skipped = setup_commands(project_dir, force, target_platform)
                 print(f"  Commands: {copied} installed, {skipped} skipped\n")
             except Exception as e:
                 print(f"  Error installing commands: {e}\n")

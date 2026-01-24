@@ -19,14 +19,12 @@ wheels/
 # Private docs - our t=0 memories, just between us
 claude-docs/
 
-# Claude Code local config
-.claude/
-
 # Code indexer database
 code-index.db
 
 # Private - our founding history and agent logic
-gemini-docs/
+private-docs/
+.claude/
 .agent
 
 # Git backups

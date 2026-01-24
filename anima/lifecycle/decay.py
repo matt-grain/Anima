@@ -75,7 +75,11 @@ class MemoryDecay:
         # Normalize both datetimes to naive for comparison
         # (handles mixed timezone-aware and naive datetimes in database)
         now_naive = now.replace(tzinfo=None) if now.tzinfo else now
-        created_naive = memory.created_at.replace(tzinfo=None) if memory.created_at.tzinfo else memory.created_at
+        created_naive = (
+            memory.created_at.replace(tzinfo=None)
+            if memory.created_at.tzinfo
+            else memory.created_at
+        )
 
         age = now_naive - created_naive
         return age > threshold
@@ -132,7 +136,9 @@ class MemoryDecay:
 
         return content.strip()
 
-    def process_decay(self, agent_id: str, project_id: Optional[str] = None, dry_run: bool = False) -> list[tuple[Memory, str]]:
+    def process_decay(
+        self, agent_id: str, project_id: Optional[str] = None, dry_run: bool = False
+    ) -> list[tuple[Memory, str]]:
         """
         Process decay for all memories of an agent.
 
@@ -148,7 +154,9 @@ class MemoryDecay:
         compacted: list[tuple[Memory, str]] = []
 
         # Get all non-superseded memories
-        memories = self.store.get_memories_for_agent(agent_id=agent_id, project_id=project_id, include_superseded=False)
+        memories = self.store.get_memories_for_agent(
+            agent_id=agent_id, project_id=project_id, include_superseded=False
+        )
 
         for memory in memories:
             if self.should_compact(memory, now):

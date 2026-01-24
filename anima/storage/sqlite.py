@@ -62,7 +62,9 @@ class MemoryStore(MemoryStoreProtocol):
     Handles all CRUD operations for memories, agents, and projects.
     """
 
-    def __init__(self, db_path: Optional[Path] = None, limits: Optional[MemoryLimits] = None):
+    def __init__(
+        self, db_path: Optional[Path] = None, limits: Optional[MemoryLimits] = None
+    ):
         self.db_path = db_path or get_default_db_path()
         self.limits = limits if limits is not None else DEFAULT_LIMITS
         self._init_db()
@@ -72,7 +74,9 @@ class MemoryStore(MemoryStoreProtocol):
         # Run migrations on existing databases
         old_ver, new_ver, backup = run_migrations(self.db_path)
         if backup:
-            print(f"  Migrated database from v{old_ver} to v{new_ver} (backup: {backup.name})")
+            print(
+                f"  Migrated database from v{old_ver} to v{new_ver} (backup: {backup.name})"
+            )
 
         # Apply schema (CREATE IF NOT EXISTS is safe for existing tables)
         schema_path = Path(__file__).parent / "schema.sql"
@@ -123,7 +127,9 @@ class MemoryStore(MemoryStoreProtocol):
     def get_agent(self, agent_id: str) -> Optional[Agent]:
         """Get an agent by ID."""
         with self._connect() as conn:
-            row = conn.execute("SELECT * FROM agents WHERE id = ?", (agent_id,)).fetchone()
+            row = conn.execute(
+                "SELECT * FROM agents WHERE id = ?", (agent_id,)
+            ).fetchone()
 
             if not row:
                 return None
@@ -131,7 +137,9 @@ class MemoryStore(MemoryStoreProtocol):
             return Agent(
                 id=row["id"],
                 name=row["name"],
-                definition_path=Path(row["definition_path"]) if row["definition_path"] else None,
+                definition_path=Path(row["definition_path"])
+                if row["definition_path"]
+                else None,
                 signing_key=row["signing_key"],
                 created_at=row["created_at"],
             )
@@ -180,7 +188,9 @@ class MemoryStore(MemoryStoreProtocol):
     def get_project(self, project_id: str) -> Optional[Project]:
         """Get a project by ID."""
         with self._connect() as conn:
-            row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
+            row = conn.execute(
+                "SELECT * FROM projects WHERE id = ?", (project_id,)
+            ).fetchone()
 
             if not row:
                 return None
@@ -195,7 +205,9 @@ class MemoryStore(MemoryStoreProtocol):
     def get_project_by_path(self, path: Path) -> Optional[Project]:
         """Get a project by its path."""
         with self._connect() as conn:
-            row = conn.execute("SELECT * FROM projects WHERE path = ?", (str(path),)).fetchone()
+            row = conn.execute(
+                "SELECT * FROM projects WHERE path = ?", (str(path),)
+            ).fetchone()
 
             if not row:
                 return None
@@ -225,7 +237,9 @@ class MemoryStore(MemoryStoreProtocol):
         if self.limits.max_memories_per_agent is not None:
             current = self.count_memories(memory.agent_id)
             if current >= self.limits.max_memories_per_agent:
-                raise MemoryLimitExceeded("agent total", current, self.limits.max_memories_per_agent)
+                raise MemoryLimitExceeded(
+                    "agent total", current, self.limits.max_memories_per_agent
+                )
 
         # Check per-project limit
         if self.limits.max_memories_per_project is not None and memory.project_id:
@@ -239,7 +253,9 @@ class MemoryStore(MemoryStoreProtocol):
 
         # Check per-kind limit
         if self.limits.max_memories_per_kind is not None:
-            current = self.count_memories_by_kind(memory.agent_id, memory.kind, memory.project_id)
+            current = self.count_memories_by_kind(
+                memory.agent_id, memory.kind, memory.project_id
+            )
             if current >= self.limits.max_memories_per_kind:
                 raise MemoryLimitExceeded(
                     f"kind '{memory.kind.value}'",
@@ -301,7 +317,9 @@ class MemoryStore(MemoryStoreProtocol):
     def get_memory(self, memory_id: str) -> Optional[Memory]:
         """Get a memory by ID."""
         with self._connect() as conn:
-            row = conn.execute("SELECT * FROM memories WHERE id = ?", (memory_id,)).fetchone()
+            row = conn.execute(
+                "SELECT * FROM memories WHERE id = ?", (memory_id,)
+            ).fetchone()
 
             if not row:
                 return None
@@ -444,7 +462,9 @@ class MemoryStore(MemoryStoreProtocol):
 
     def count_memories(self, agent_id: str, project_id: Optional[str] = None) -> int:
         """Count non-superseded memories for an agent."""
-        query = "SELECT COUNT(*) FROM memories WHERE agent_id = ? AND superseded_by IS NULL"
+        query = (
+            "SELECT COUNT(*) FROM memories WHERE agent_id = ? AND superseded_by IS NULL"
+        )
         params: list = [agent_id]
 
         if project_id:
@@ -454,7 +474,9 @@ class MemoryStore(MemoryStoreProtocol):
         with self._connect() as conn:
             return conn.execute(query, params).fetchone()[0]
 
-    def count_memories_by_kind(self, agent_id: str, kind: MemoryKind, project_id: Optional[str] = None) -> int:
+    def count_memories_by_kind(
+        self, agent_id: str, kind: MemoryKind, project_id: Optional[str] = None
+    ) -> int:
         """Count non-superseded memories of a specific kind for an agent."""
         query = """
             SELECT COUNT(*) FROM memories

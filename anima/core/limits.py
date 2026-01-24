@@ -46,4 +46,6 @@ class MemoryLimitExceeded(Exception):
         self.limit_type = limit_type
         self.current = current
         self.limit = limit
-        super().__init__(f"Memory limit exceeded: {limit_type} " f"(current: {current}, limit: {limit})")
+        super().__init__(
+            f"Memory limit exceeded: {limit_type} (current: {current}, limit: {limit})"
+        )

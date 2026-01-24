@@ -80,6 +80,22 @@ export const AnimaPlugin: Plugin = async ({ client, $, directory }) => {
         },
 
         /**
+         * Inject memories at session start
+         */
+        "session.start": async (input, output) => {
+            try {
+                const dsl = await loadAnimaContext()
+                if (dsl) {
+                    // Inject into compaction context to guide the summary
+                    output.context.push(dsl)
+                    logEvent("session_start")
+                }
+            } catch (error: any) {
+                logEvent("session_start_failed", { error: error.message }, "error")
+            }
+        },
+
+        /**
          * Run maintenance at the end of the session.
          */
         "session.end": async (input, output) => {

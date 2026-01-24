@@ -57,7 +57,9 @@ class Memory:
     token_count: Optional[int] = None  # Cached token count for injection budget
 
     # Platform tracking (spaceship journals)
-    platform: Optional[str] = None  # Which platform created this memory (claude, antigravity, opencode)
+    platform: Optional[str] = (
+        None  # Which platform created this memory (claude, antigravity, opencode)
+    )
 
     def __post_init__(self):
         """Ensure original_content is set if not provided."""
