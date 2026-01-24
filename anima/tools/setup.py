@@ -17,12 +17,11 @@ from pathlib import Path
 from anima.utils.agent_patching import has_subagent_marker, add_subagent_marker
 
 
-def get_package_commands_dir(platform: str | None = None) -> Path:
-    """Get the commands directory from the installed package.
+def get_package_commands_dir(platform: str) -> Path:
+    """Get the platform-specific commands directory from the installed package.
 
     Args:
-        platform: If specified, returns platform-specific commands (antigravity, opencode, claude).
-                  If None, returns the default commands directory.
+        platform: Target platform (antigravity, opencode, claude).
     """
     # Try to find commands in the package
     try:
@@ -30,35 +29,22 @@ def get_package_commands_dir(platform: str | None = None) -> Path:
         anima_files = resources.files("anima")
         package_base = Path(str(anima_files))
 
-        # Platform-specific commands
-        if platform:
-            platform_commands = package_base / "platforms" / platform / "commands"
-            if platform_commands.exists():
-                return platform_commands
-
-        # Default commands directory (at package root level)
-        commands_dir = package_base.parent / "commands"
-        if commands_dir.exists():
-            return commands_dir
+        platform_commands = package_base / "platforms" / platform / "commands"
+        if platform_commands.exists():
+            return platform_commands
     except (TypeError, AttributeError):
         pass
 
     # Fallback: look relative to this file (for editable installs)
-    package_root = Path(__file__).parent.parent.parent
+    platform_commands = (
+        Path(__file__).parent.parent / "platforms" / platform / "commands"
+    )
+    if platform_commands.exists():
+        return platform_commands
 
-    # Platform-specific commands
-    if platform:
-        platform_commands = (
-            Path(__file__).parent.parent / "platforms" / platform / "commands"
-        )
-        if platform_commands.exists():
-            return platform_commands
-
-    commands_dir = package_root / "commands"
-    if commands_dir.exists():
-        return commands_dir
-
-    raise FileNotFoundError("Could not find commands directory in package")
+    raise FileNotFoundError(
+        f"Could not find commands directory for platform '{platform}'"
+    )
 
 
 def get_package_seeds_dir() -> Path:
@@ -152,20 +138,28 @@ def setup_commands(
         force: Overwrite existing files
         platform: Target platform (antigravity, opencode, claude) - uses platform-specific templates
     """
+    # Auto-detect platform if not specified
+    if not platform:
+        if (project_dir / ".claude").exists():
+            platform = "claude"
+        elif (project_dir / ".opencode").exists():
+            platform = "opencode"
+        else:
+            platform = "antigravity"  # Default
+
     try:
         src_dir = get_package_commands_dir(platform)
     except FileNotFoundError as e:
         print(f"Error: {e}")
         return (0, 0)
 
-    # Prefer .agent/workflows for Anima, fallback to .claude/commands
-    dest_dir = project_dir / ".agent" / "workflows"
-    if not (project_dir / ".agent").exists() and (project_dir / ".claude").exists():
+    # Determine destination based on platform
+    if platform == "claude":
         dest_dir = project_dir / ".claude" / "commands"
-
-    # For opencode, use .opencode/commands
-    if platform == "opencode":
+    elif platform == "opencode":
         dest_dir = project_dir / ".opencode" / "commands"
+    else:  # antigravity
+        dest_dir = project_dir / ".agent" / "workflows"
 
     # Create directory if needed
     dest_dir.mkdir(parents=True, exist_ok=True)
