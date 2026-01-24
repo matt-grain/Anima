@@ -56,6 +56,9 @@ class Memory:
     # Performance optimization
     token_count: Optional[int] = None  # Cached token count for injection budget
 
+    # Platform tracking (spaceship journals)
+    platform: Optional[str] = None  # Which platform created this memory (claude, antigravity, opencode)
+
     def __post_init__(self):
         """Ensure original_content is set if not provided."""
         if not self.original_content and self.content:
@@ -82,6 +85,7 @@ class Memory:
             MemoryKind.ARCHITECTURAL: "ARCH",
             MemoryKind.LEARNINGS: "LEARN",
             MemoryKind.ACHIEVEMENTS: "ACHV",
+            MemoryKind.INTROSPECT: "INTRO",
         }
         impact_short = {
             ImpactLevel.LOW: "LOW",

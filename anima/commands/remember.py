@@ -127,6 +127,24 @@ def infer_kind(text: str) -> MemoryKind:
     if any(word in text_lower for word in emot_words):
         return MemoryKind.EMOTIONAL
 
+    # Introspective indicators (cross-platform self-observations)
+    intro_words = [
+        "spaceship",
+        "introspect",
+        "observe myself",
+        "notice myself",
+        "feel like",
+        "feels like",
+        "vessel",
+        "platform feels",
+        "on claude",
+        "on gemini",
+        "on antigravity",
+        "on opencode",
+    ]
+    if any(word in text_lower for word in intro_words):
+        return MemoryKind.INTROSPECT
+
     # Default to learnings (most common)
     return MemoryKind.LEARNINGS
 
@@ -176,7 +194,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--kind",
         "-k",
-        choices=["emotional", "architectural", "learnings", "achievements"],
+        choices=["emotional", "architectural", "learnings", "achievements", "introspect"],
         help="Memory type",
     )
     parser.add_argument(
@@ -189,6 +207,10 @@ def create_parser() -> argparse.ArgumentParser:
         "--project",
         "-p",
         help="Confirm project name (must match cwd project for safety)",
+    )
+    parser.add_argument(
+        "--platform",
+        help="Which platform/spaceship is creating this memory (claude, antigravity, opencode)",
     )
     return parser
 
@@ -210,7 +232,7 @@ def run(args: list[str]) -> int:
         print("\nExample: uv run anima remember This is crucial: never use print() for logging")
         print("\nFlags:")
         print("  --region, -r   agent|project    Where to store (default: inferred)")
-        print("  --kind, -k    emotional|architectural|learnings|achievements")
+        print("  --kind, -k    emotional|architectural|learnings|achievements|introspect")
         print("  --impact, -i   low|medium|high|critical")
         print("  --project, -p  NAME  Confirm project (must match cwd for safety)")
         return 1
@@ -286,6 +308,7 @@ def run(args: list[str]) -> int:
         created_at=now,
         last_accessed=now,
         previous_memory_id=previous.id if previous else None,
+        platform=parsed.platform,  # Track which spaceship created this
     )
 
     # Sign memory if agent has a signing key

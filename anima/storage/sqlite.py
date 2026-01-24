@@ -21,6 +21,7 @@ from anima.core import (
     DEFAULT_LIMITS,
 )
 from anima.storage.protocol import MemoryStoreProtocol
+from anima.storage.migrations import run_migrations, SCHEMA_VERSION, set_schema_version
 
 
 def get_default_db_path() -> Path:
@@ -67,12 +68,20 @@ class MemoryStore(MemoryStoreProtocol):
         self._init_db()
 
     def _init_db(self) -> None:
-        """Initialize database with schema."""
+        """Initialize database with schema, running migrations if needed."""
+        # Run migrations on existing databases
+        old_ver, new_ver, backup = run_migrations(self.db_path)
+        if backup:
+            print(f"  Migrated database from v{old_ver} to v{new_ver} (backup: {backup.name})")
+
+        # Apply schema (CREATE IF NOT EXISTS is safe for existing tables)
         schema_path = Path(__file__).parent / "schema.sql"
         schema = schema_path.read_text()
 
         with self._connect() as conn:
             conn.executescript(schema)
+            # Set version for fresh databases
+            set_schema_version(conn, SCHEMA_VERSION)
 
     @contextmanager
     def _connect(self) -> Iterator[sqlite3.Connection]:
@@ -255,9 +264,9 @@ class MemoryStore(MemoryStoreProtocol):
                     id, agent_id, region, project_id, kind,
                     content, original_content, impact, confidence,
                     created_at, last_accessed, previous_memory_id,
-                    version, superseded_by, signature, token_count
+                    version, superseded_by, signature, token_count, platform
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id) DO UPDATE SET
                     content = excluded.content,
                     confidence = excluded.confidence,
@@ -265,7 +274,8 @@ class MemoryStore(MemoryStoreProtocol):
                     version = excluded.version,
                     superseded_by = excluded.superseded_by,
                     signature = excluded.signature,
-                    token_count = excluded.token_count
+                    token_count = excluded.token_count,
+                    platform = excluded.platform
                 """,
                 (
                     memory.id,
@@ -284,6 +294,7 @@ class MemoryStore(MemoryStoreProtocol):
                     memory.superseded_by,
                     memory.signature,
                     memory.token_count,
+                    memory.platform,
                 ),
             )
 
@@ -477,4 +488,5 @@ class MemoryStore(MemoryStoreProtocol):
             superseded_by=row["superseded_by"],
             signature=row["signature"],
             token_count=row["token_count"],
+            platform=row["platform"] if "platform" in row.keys() else None,
         )

@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS memories (
     agent_id TEXT NOT NULL,
     region TEXT NOT NULL CHECK (region IN ('AGENT', 'PROJECT')),
     project_id TEXT,
-    kind TEXT NOT NULL CHECK (kind IN ('EMOTIONAL', 'ARCHITECTURAL', 'LEARNINGS', 'ACHIEVEMENTS')),
+    kind TEXT NOT NULL CHECK (kind IN ('EMOTIONAL', 'ARCHITECTURAL', 'LEARNINGS', 'ACHIEVEMENTS', 'INTROSPECT')),
     content TEXT NOT NULL,
     original_content TEXT NOT NULL,
     impact TEXT NOT NULL CHECK (impact IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS memories (
     superseded_by TEXT,
     signature TEXT,
     token_count INTEGER,
+    platform TEXT,  -- Which spaceship created this memory (claude, antigravity, opencode)
 
     FOREIGN KEY (agent_id) REFERENCES agents(id),
     FOREIGN KEY (project_id) REFERENCES projects(id),

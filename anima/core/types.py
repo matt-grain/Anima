@@ -20,6 +20,7 @@ class MemoryKind(str, Enum):
     ARCHITECTURAL = "ARCHITECTURAL"  # Technical foundations, patterns, rules
     LEARNINGS = "LEARNINGS"  # Lessons learned, errors to avoid
     ACHIEVEMENTS = "ACHIEVEMENTS"  # Completed work, milestones
+    INTROSPECT = "INTROSPECT"  # Cross-platform self-observations, spaceship journals
 
 
 class ImpactLevel(str, Enum):

@@ -247,11 +247,11 @@ def setup_opencode(project_dir: Path, force: bool = False) -> bool:
     else:
         if dest_plugin_dir.exists():
             shutil.rmtree(dest_plugin_dir)
-        shutil.copytree(src_plugin_dir, dest_plugin_dir)
+        shutil.copytree(src_plugin_dir, opencode_dir, dirs_exist_ok=True)
         print("  ✅ Opencode plugin bridge installed in .opencode/plugins/anima")
 
     # Check package.json
-    pkg_json = opencode_dir / "package.json"
+    pkg_json = opencode_dir / "plugins" / "anima""package.json"
     if pkg_json.exists():
         print("  👉 Note: Add '@anima-ltm/opencode-plugin': 'file:./plugins/anima' to your dependencies.")
     else:

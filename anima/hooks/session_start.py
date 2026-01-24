@@ -18,6 +18,8 @@ from typing import Optional
 from anima.core import AgentResolver, Agent
 from anima.lifecycle.injection import MemoryInjector
 from anima.storage import MemoryStore
+from anima.storage.sqlite import get_default_db_path
+from anima.storage.migrations import backup_database
 from anima.utils.agent_patching import has_subagent_marker, add_subagent_marker
 
 
@@ -99,6 +101,12 @@ def run(args: Optional[list[str]] = None) -> int:
             if idx + 1 < len(args):
                 explicit_agent = args[idx + 1]
 
+    # Create automatic backup at session start
+    db_path = get_default_db_path()
+    backup_path = None
+    if db_path.exists():
+        backup_path = backup_database(db_path)
+
     # Auto-patch any agents missing the subagent marker BEFORE resolving
     # This prevents new agents from shadowing Anima
     patched_agents, disabled_agents = auto_patch_agents(project_dir)
@@ -137,6 +145,8 @@ def run(args: Optional[list[str]] = None) -> int:
 
     # Build status notes
     status_notes = []
+    if backup_path:
+        status_notes.append(f"# LTM: Session backup created: {backup_path.name}")
     if patched_agents:
         status_notes.append(f"# LTM: Auto-patched {len(patched_agents)} agent(s) as subagents: {', '.join(patched_agents)}")
     if disabled_agents:

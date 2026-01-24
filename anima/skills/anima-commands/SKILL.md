@@ -18,7 +18,7 @@ Save a memory to long-term storage.
 **IMPORTANT:** Always put the quoted text FIRST, then flags after.
 
 **Flags:**
-- `--kind` / `-k`: Memory type (emotional, architectural, learnings, achievements)
+- `--kind` / `-k`: Memory type (emotional, architectural, learnings, achievements, introspect)
 - `--impact` / `-i`: Importance level (low, medium, high, critical)
 - `--region` / `-r`: Scope (agent = cross-project, project = this project only)
 - `--project` / `-p`: Confirm project name (safety check - must match cwd)
@@ -75,7 +75,7 @@ uv run anima memories [flags]
 ```
 
 **Flags:**
-- `--kind`: Filter by type (emotional, architectural, learnings, achievements)
+- `--kind`: Filter by type (emotional, architectural, learnings, achievements, introspect)
 - `--region`: Filter by region (agent, project)
 - `--all`: Include superseded memories
 
@@ -139,8 +139,10 @@ uv run anima setup /path/to/project --platform claude
 
 - `uv run anima keygen <agent>` - Add signing key to Anima agent
 - `uv run anima import-seeds <dir>` - Import seed memories from directory
-- `uv run anima load-context` - Load context for the current session
+- `uv run anima load-context` - Load context for the current session (also creates backup)
 - `uv run anima end-session` - Perform end-of-session maintenance (decay, compaction)
+  - `--spaceship-journal "text"` - Save an introspective memory about the session
+  - `--platform NAME` - Which platform created this (claude, antigravity, opencode)
 
 ## Memory Kinds
 
@@ -150,6 +152,7 @@ uv run anima setup /path/to/project --platform claude
 | architectural | Technical decisions, system design, project structure |
 | learnings | Lessons learned, tips, gotchas, debugging insights |
 | achievements | Completed features, milestones, releases |
+| introspect | Cross-platform self-observations, spaceship journals |
 
 ## Impact Levels
 
