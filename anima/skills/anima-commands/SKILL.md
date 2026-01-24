@@ -22,6 +22,7 @@ Save a memory to long-term storage.
 - `--impact` / `-i`: Importance level (low, medium, high, critical)
 - `--region` / `-r`: Scope (agent = cross-project, project = this project only)
 - `--project` / `-p`: Confirm project name (safety check - must match cwd)
+- `--platform`: Which spaceship created this memory (claude, antigravity, opencode) - **recommended for tracking**
 
 **Examples:**
 ```bash
@@ -32,7 +33,7 @@ uv run anima remember "User prefers tabs over spaces"
 uv run anima remember "Implemented caching layer" --kind achievements --impact high
 
 # Cross-project memory (travels with Anima)
-uv run anima remember "Matt likes concise responses" --region agent
+uv run anima remember "Matt likes concise responses" --region agent --platform claude
 
 # Project-specific with safety check
 uv run anima remember "Project-specific learning" --region project --project MyProject

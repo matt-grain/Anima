@@ -13,7 +13,8 @@ Optional flags:
   --kind, -k {emotional,architectural,learnings,achievements,introspect}: Memory type
   --impact, -i {low,medium,high,critical}: Importance level
   --project, -p PROJECT: Confirm project name (must match cwd project for safety)
+  --platform: Track which spaceship created this (always use `opencode` for this platform)
 
-!`uv run anima remember <parameters> "text"`
+!`uv run anima remember <parameters> --platform opencode "text"`
 
 Memory saved successfully.
