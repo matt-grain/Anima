@@ -16,7 +16,6 @@ from anima.storage.curiosity import (
     CuriosityStore,
     get_last_research,
     get_setting,
-    set_last_research,
     set_setting,
 )
 from anima.core import RegionType
@@ -290,10 +289,9 @@ class TestLastResearch:
 
     def test_get_last_research_none(self, temp_db):
         """Test getting last research when never set."""
-        # Clear default db path behavior
-        result = get_last_research()
         # Will return None if no setting exists
         # (or from the actual db if it exists - this is a simple test)
+        _ = get_last_research()  # Just verify it doesn't raise
 
     def test_set_and_get_last_research(self, temp_db):
         """Test setting and getting last research time."""
