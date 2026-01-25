@@ -23,5 +23,5 @@ Display statistics about stored memories for the current agent.
 $ARGUMENTS
 
 ```bash
-uv run anima stats $ARGUMENTS
+uv run anima memory-stats $ARGUMENTS
 ```

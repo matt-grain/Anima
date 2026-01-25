@@ -25,5 +25,5 @@ Import memories from a previously exported JSON file.
 $ARGUMENTS
 
 ```bash
-uv run anima import-memories $ARGUMENTS
+uv run anima memory-import $ARGUMENTS
 ```

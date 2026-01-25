@@ -26,6 +26,12 @@ def main() -> int:
         print("  end-session       Process memory decay and stats")
         print("  detect-achievements [hours] Detect and promote achievements")
         print("  setup             Set up LTM in current project")
+        print("  memory-graph      Visualize memory relationships")
+        print("  memory-stats      Show memory statistics")
+        print("  memory-export     Export memories to JSON")
+        print("  memory-import     Import memories from JSON")
+        print("  sign-memories     Sign unsigned memories")
+        print("  refresh-memories  Re-inject memories into context (alias for load-context)")
         return 0
 
     command = sys.argv[1]
@@ -83,6 +89,30 @@ def main() -> int:
             return run(args)
         case "setup":
             from anima.tools.setup import run
+
+            return run(args)
+        case "memory-graph" | "graph":
+            from anima.commands.graph import run
+
+            return run(args)
+        case "memory-stats" | "stats":
+            from anima.commands.stats import run
+
+            return run(args)
+        case "memory-export" | "export-memories":
+            from anima.commands.export_memories import run
+
+            return run(args)
+        case "memory-import" | "import-memories":
+            from anima.commands.import_memories import run
+
+            return run(args)
+        case "sign-memories":
+            from anima.tools.sign_memories import run
+
+            return run(args)
+        case "refresh-memories":
+            from anima.hooks.session_start import run
 
             return run(args)
         case _:

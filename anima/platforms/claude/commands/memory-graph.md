@@ -23,5 +23,5 @@ Show memory chains and supersession relationships in ASCII format.
 $ARGUMENTS
 
 ```bash
-uv run anima graph $ARGUMENTS
+uv run anima memory-graph $ARGUMENTS
 ```

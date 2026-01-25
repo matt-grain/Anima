@@ -25,5 +25,5 @@ Export memories to a portable JSON format for backup, migration, or sharing.
 $ARGUMENTS
 
 ```bash
-uv run anima export-memories $ARGUMENTS
+uv run anima memory-export $ARGUMENTS
 ```

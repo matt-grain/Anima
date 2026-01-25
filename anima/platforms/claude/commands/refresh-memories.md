@@ -35,5 +35,5 @@ The command outputs the same memory block that was injected at session start:
 This refreshes Claude's awareness of your relationship, preferences, and accumulated knowledge.
 
 ```bash
-uv run anima load-context
+uv run anima refresh-memories
 ```
