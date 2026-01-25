@@ -1,6 +1,6 @@
 [project]
 name = "anima"
-version = "0.6.0"
+version = "0.6.1"
 description = "Long Term Memory for Anima Agents - human-like persistent memory across sessions"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -39,12 +39,10 @@ packages = ["anima"]
 [tool.hatch.build.targets.sdist]
 include = [
     "anima/",
-    "commands/",
     "seeds/",
 ]
 
 [tool.hatch.build.targets.wheel.force-include]
-"commands" = "commands"
 "seeds" = "seeds"
 
 [tool.pytest.ini_options]
