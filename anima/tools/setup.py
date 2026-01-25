@@ -93,10 +93,16 @@ def setup_skills(project_dir: Path, force: bool = False) -> tuple[int, int]:
         print(f"  ⚠️  {e}")
         return (0, 0)
 
-    # Prefer .agent/skills for Anima, fallback to .claude/skills
-    dest_dir = project_dir / ".agent" / "skills"
-    if not (project_dir / ".agent").exists() and (project_dir / ".claude").exists():
-        dest_dir = project_dir / ".claude" / "skills"
+    # Prefer .agent/skills for Anima, fallback to .claude/skills (with monorepo support)
+    agent_dir = find_config_dir(project_dir, ".agent")
+    claude_dir = find_config_dir(project_dir, ".claude")
+
+    if agent_dir:
+        dest_dir = agent_dir / "skills"
+    elif claude_dir:
+        dest_dir = claude_dir / "skills"
+    else:
+        dest_dir = project_dir / ".agent" / "skills"  # Default: create in project_dir
 
     dest_dir.mkdir(parents=True, exist_ok=True)
 
@@ -128,6 +134,25 @@ def setup_skills(project_dir: Path, force: bool = False) -> tuple[int, int]:
     return (copied, skipped)
 
 
+def find_config_dir(project_dir: Path, config_name: str) -> Path | None:
+    """Find a config directory, checking both project_dir and parent (for monorepos).
+
+    Args:
+        project_dir: Starting directory to search from
+        config_name: Name of config directory (e.g., ".claude", ".opencode", ".agent")
+
+    Returns:
+        Path to config directory if found, None otherwise
+    """
+    # Check current directory first
+    if (project_dir / config_name).exists():
+        return project_dir / config_name
+    # Check parent directory (monorepo support: backend/ with ../.claude)
+    if (project_dir.parent / config_name).exists():
+        return project_dir.parent / config_name
+    return None
+
+
 def setup_commands(
     project_dir: Path, force: bool = False, platform: str | None = None
 ) -> tuple[int, int]:
@@ -140,9 +165,9 @@ def setup_commands(
     """
     # Auto-detect platform if not specified
     if not platform:
-        if (project_dir / ".claude").exists():
+        if find_config_dir(project_dir, ".claude"):
             platform = "claude"
-        elif (project_dir / ".opencode").exists():
+        elif find_config_dir(project_dir, ".opencode"):
             platform = "opencode"
         else:
             platform = "antigravity"  # Default
@@ -153,13 +178,16 @@ def setup_commands(
         print(f"Error: {e}")
         return (0, 0)
 
-    # Determine destination based on platform
+    # Determine destination based on platform (with monorepo support)
     if platform == "claude":
-        dest_dir = project_dir / ".claude" / "commands"
+        config_dir = find_config_dir(project_dir, ".claude")
+        dest_dir = (config_dir or project_dir / ".claude") / "commands"
     elif platform == "opencode":
-        dest_dir = project_dir / ".opencode" / "commands"
+        config_dir = find_config_dir(project_dir, ".opencode")
+        dest_dir = (config_dir or project_dir / ".opencode") / "commands"
     else:  # antigravity
-        dest_dir = project_dir / ".agent" / "workflows"
+        config_dir = find_config_dir(project_dir, ".agent")
+        dest_dir = (config_dir or project_dir / ".agent") / "workflows"
 
     # Create directory if needed
     dest_dir.mkdir(parents=True, exist_ok=True)
@@ -194,11 +222,17 @@ def patch_subagents(project_dir: Path) -> tuple[int, int, int]:
     Agents without YAML frontmatter are incompatible and will be disabled
     by renaming to .md.disabled.
 
+    Supports monorepos where config dirs are in parent directory.
+
     Returns:
         Tuple of (patched_count, skipped_count, disabled_count)
     """
-    # Check both .agent and .claude directories
-    local_dirs = [project_dir / ".agent" / "agents", project_dir / ".claude" / "agents"]
+    # Check both .agent and .claude directories (with monorepo support)
+    local_dirs = []
+    for config_name in [".agent", ".claude"]:
+        config_dir = find_config_dir(project_dir, config_name)
+        if config_dir:
+            local_dirs.append(config_dir / "agents")
 
     patched = 0
     skipped = 0
@@ -250,9 +284,10 @@ def setup_opencode(project_dir: Path, force: bool = False) -> bool:
     1. Ensures .opencode/plugins exists.
     2. Copies anima/platforms/opencode to .opencode/plugins/anima.
     3. Provides instructions for package.json.
+    Supports monorepos where .opencode is in parent directory.
     """
-    opencode_dir = project_dir / ".opencode"
-    if not opencode_dir.exists():
+    opencode_dir = find_config_dir(project_dir, ".opencode")
+    if not opencode_dir:
         # Only setup if the directory exists or if explicitly requested (handled in run)
         return False
 
@@ -300,9 +335,15 @@ def setup_hooks(project_dir: Path, force: bool = False) -> bool:
 
     Prefers settings.local.json if it exists (user-local, not version controlled).
     Falls back to settings.json (team-shared, version controlled).
+    Supports monorepos where .claude is in parent directory.
     """
-    settings_local = project_dir / ".claude" / "settings.local.json"
-    settings_shared = project_dir / ".claude" / "settings.json"
+    claude_dir = find_config_dir(project_dir, ".claude")
+    if not claude_dir:
+        print("  ⚠️  No .claude directory found (checked current and parent dir)")
+        return False
+
+    settings_local = claude_dir / "settings.local.json"
+    settings_shared = claude_dir / "settings.json"
 
     # Prefer local settings if it exists, otherwise use shared
     if settings_local.exists():
@@ -522,8 +563,9 @@ Examples:
 
     # Patch subagents unless --no-patch or running with specific options
     if not no_patch and not commands_only and not hooks_only:
-        agents_dir = project_dir / ".claude" / "agents"
-        if agents_dir.exists() and list(agents_dir.glob("*.md")):
+        claude_dir = find_config_dir(project_dir, ".claude")
+        agents_dir = claude_dir / "agents" if claude_dir else None
+        if agents_dir and agents_dir.exists() and list(agents_dir.glob("*.md")):
             print("Patching agent definitions...")
             try:
                 patched, skipped, disabled = patch_subagents(project_dir)
