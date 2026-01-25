@@ -351,6 +351,15 @@ def setup_hooks(project_dir: Path, force: bool = False) -> bool:
     else:
         settings_file = settings_shared
 
+    # Detect monorepo: if .claude is in parent dir and pyproject.toml is in project_dir
+    # we need to cd into the subfolder before running uv
+    cmd_prefix = ""
+    if claude_dir == project_dir.parent / ".claude" and (project_dir / "pyproject.toml").exists():
+        # Claude will run from parent dir, but uv needs to run from project_dir
+        subfolder = project_dir.name
+        cmd_prefix = f"cd {subfolder} && "
+        print(f"  📁 Monorepo detected: hooks will cd to {subfolder}/ first")
+
     ltm_hooks = {
         "SessionStart": [
             {
@@ -358,7 +367,7 @@ def setup_hooks(project_dir: Path, force: bool = False) -> bool:
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m anima.hooks.session_start",
+                        "command": f"{cmd_prefix}uv run python -m anima.hooks.session_start",
                     }
                 ],
             },
@@ -367,7 +376,7 @@ def setup_hooks(project_dir: Path, force: bool = False) -> bool:
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m anima.hooks.session_start",
+                        "command": f"{cmd_prefix}uv run python -m anima.hooks.session_start",
                     }
                 ],
             },
@@ -376,11 +385,11 @@ def setup_hooks(project_dir: Path, force: bool = False) -> bool:
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m anima.tools.detect_achievements --since 24",
+                        "command": f"{cmd_prefix}uv run python -m anima.tools.detect_achievements --since 24",
                     },
                     {
                         "type": "command",
-                        "command": "uv run python -m anima.hooks.session_start",
+                        "command": f"{cmd_prefix}uv run python -m anima.hooks.session_start",
                     },
                 ],
             },
@@ -390,11 +399,11 @@ def setup_hooks(project_dir: Path, force: bool = False) -> bool:
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "uv run python -m anima.hooks.session_end",
+                        "command": f"{cmd_prefix}uv run python -m anima.hooks.session_end",
                     },
                     {
                         "type": "command",
-                        "command": "uv run python -m anima.tools.detect_achievements --since 24",
+                        "command": f"{cmd_prefix}uv run python -m anima.tools.detect_achievements --since 24",
                     },
                 ]
             }
