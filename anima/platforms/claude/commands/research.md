@@ -12,6 +12,7 @@ Pop the top curiosity from the queue and explore it.
 2. Use web search and other tools to explore the topic
 3. Save findings with `/remember <findings> --kind learnings`
 4. Mark complete with `/research --complete <id>`
+5. (Optional) Capture deeper reflection with `/diary <topic>`
 
 ## Options
 

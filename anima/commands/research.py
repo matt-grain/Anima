@@ -120,6 +120,14 @@ def run(args: list[str]) -> int:
         curiosity_store.update_status(curiosity.id, CuriosityStatus.RESEARCHED)
         set_last_research()
         print(f"Marked as researched: {curiosity.question[:50]}...")
+        print("")
+        print("-" * 60)
+        print("Consider capturing this research in a diary entry:")
+        print(f'  /diary "{curiosity.question[:40]}..."')
+        print("")
+        print("The diary captures not just what you learned, but what lingers -")
+        print("the felt sense before it fades.")
+        print("-" * 60)
         return 0
 
     # Handle --topic flag (ad-hoc research)

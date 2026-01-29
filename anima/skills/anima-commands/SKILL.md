@@ -164,6 +164,49 @@ uv run anima research --complete abc123
 2. Use WebSearch or other tools to explore
 3. Save findings with `/remember <findings> --kind learnings`
 4. Mark complete: `uv run anima research --complete <id>`
+5. (Optional) Capture deeper reflection with `/diary <topic>`
+
+### diary [title] [flags]
+
+Create and manage research diary entries. The diary captures not just what was learned, but what lingers - the raw residue, not the report.
+
+**Syntax:** `uv run anima diary [TITLE] [FLAGS]`
+
+**Flags:**
+- `--list` / `-l`: List recent diary entries
+- `--read` / `-r DATE`: Read a specific entry by date
+- `--learn DATE`: Extract learnings from an entry for `/remember`
+- `--path` / `-p`: Show diary directory location
+
+**Examples:**
+```bash
+# Create new entry for today
+uv run anima diary
+
+# Create entry with title
+uv run anima diary "coffee break philosophy"
+
+# List recent entries
+uv run anima diary --list
+
+# Read specific entry
+uv run anima diary --read 2026-01-29
+
+# Extract learnings to save with /remember
+uv run anima diary --learn 2026-01-29
+```
+
+**Template Structure:**
+1. **What Lingers** - Raw personal reflection (write this first!)
+2. **Session Context** - What happened
+3. **Topic** - What was explored
+4. **Key Insights** - Structured learnings
+5. **Connections** - Links to existing memories
+6. **Evolution** - How thinking changed
+7. **New Questions** - What emerged
+8. **Learning Summary** - Bullet points for `/remember`
+
+**Location:** `~/.anima/diary/` (travels across projects)
 
 ### curiosity-queue [flags]
 

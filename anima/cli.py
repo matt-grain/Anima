@@ -20,6 +20,7 @@ def main() -> int:
         print("  curious <question> Add question to research queue")
         print("  research          Process research queue")
         print("  curiosity-queue   View/manage research queue")
+        print("  diary [title]     Create/manage research diary entries")
         print("  keygen <agent>    Add signing key to Anima agent")
         print("  import-seeds <dir> Import seed memories")
         print("  load-context      Load memories for current session")
@@ -64,6 +65,10 @@ def main() -> int:
             return run(args)
         case "curiosity-queue":
             from anima.commands.curiosity_queue import run
+
+            return run(args)
+        case "diary":
+            from anima.commands.diary import run
 
             return run(args)
         case "keygen":
