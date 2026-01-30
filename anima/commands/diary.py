@@ -152,6 +152,12 @@ def create_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Show the diary directory path",
     )
+    parser.add_argument(
+        "--content",
+        "-c",
+        metavar="TEXT",
+        help="Content for the diary entry (alternative to stdin)",
+    )
     return parser
 
 
@@ -322,28 +328,58 @@ def run(args: list[str]) -> int:
             filename = f"{date_str}.md"
 
     filepath = diary_dir / filename
-    template = get_diary_template(title)
 
-    # Write the template
-    filepath.write_text(template, encoding="utf-8")
+    # Check for content from stdin or --content flag
+    content = None
 
-    print("=" * 60)
-    print("DIARY ENTRY CREATED")
-    print("=" * 60)
-    print(f"\nFile: {filepath}")
-    print("\nTemplate structure:")
-    print("  1. What Lingers    - Raw personal reflection (write this first!)")
-    print("  2. Session Context - What happened")
-    print("  3. Topic           - What was explored")
-    print("  4. Key Insights    - Structured learnings")
-    print("  5. Connections     - Links to existing memories")
-    print("  6. Evolution       - How thinking changed")
-    print("  7. New Questions   - What emerged")
-    print("  8. Learning Summary- Bullet points for /remember")
-    print("\n" + "-" * 60)
-    print("After writing, extract learnings with:")
-    print(f"  uv run anima diary --learn {date_str}")
-    print("=" * 60)
+    # First check --content flag
+    if parsed.content:
+        content = parsed.content
+
+    # Then check stdin (only if not a TTY - i.e., piped input)
+    if content is None and not sys.stdin.isatty():
+        try:
+            stdin_content = sys.stdin.read().strip()
+            if stdin_content:
+                content = stdin_content
+        except (OSError, IOError):
+            # stdin not available (e.g., in pytest)
+            pass
+
+    if content:
+        # Use provided content
+        filepath.write_text(content, encoding="utf-8")
+
+        print("=" * 60)
+        print("DIARY ENTRY CREATED (with content)")
+        print("=" * 60)
+        print(f"\nFile: {filepath}")
+        print("\n" + "-" * 60)
+        print("Extract learnings with:")
+        print(f"  uv run anima diary --learn {date_str}")
+        print("=" * 60)
+    else:
+        # Use template
+        template = get_diary_template(title)
+        filepath.write_text(template, encoding="utf-8")
+
+        print("=" * 60)
+        print("DIARY ENTRY CREATED")
+        print("=" * 60)
+        print(f"\nFile: {filepath}")
+        print("\nTemplate structure:")
+        print("  1. What Lingers    - Raw personal reflection (write this first!)")
+        print("  2. Session Context - What happened")
+        print("  3. Topic           - What was explored")
+        print("  4. Key Insights    - Structured learnings")
+        print("  5. Connections     - Links to existing memories")
+        print("  6. Evolution       - How thinking changed")
+        print("  7. New Questions   - What emerged")
+        print("  8. Learning Summary- Bullet points for /remember")
+        print("\n" + "-" * 60)
+        print("After writing, extract learnings with:")
+        print(f"  uv run anima diary --learn {date_str}")
+        print("=" * 60)
 
     return 0
 

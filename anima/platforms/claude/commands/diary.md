@@ -24,6 +24,7 @@ The research diary captures not just what was learned, but what lingers after le
 - `--read`, `-r`: Read a specific entry by date
 - `--learn`: Extract learnings from an entry
 - `--path`, `-p`: Show diary directory location
+- `--content`, `-c`: Provide content directly (alternative to stdin)
 - `--help` or `-h`: Show help
 
 ## Examples
@@ -34,6 +35,21 @@ The research diary captures not just what was learned, but what lingers after le
 /diary --list                    # List recent entries
 /diary --read 2026-01-29         # Read specific entry
 /diary --learn 2026-01-29        # Extract learnings to /remember
+```
+
+## Programmatic Content
+
+For AI agents creating diary entries programmatically:
+
+```bash
+# Via stdin (pipe content)
+cat << 'EOF' | uv run anima diary "Research Topic"
+# What Lingers
+The key insight was...
+EOF
+
+# Via --content flag
+uv run anima diary "Quick Note" --content "# Brief reflection"
 ```
 
 ## Location

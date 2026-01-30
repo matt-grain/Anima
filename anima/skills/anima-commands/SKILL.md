@@ -191,14 +191,24 @@ Create and manage research diary entries. The diary captures not just what was l
 - `--read` / `-r DATE`: Read a specific entry by date
 - `--learn DATE`: Extract learnings from an entry for `/remember`
 - `--path` / `-p`: Show diary directory location
+- `--content` / `-c TEXT`: Provide content directly (alternative to stdin)
 
 **Examples:**
 ```bash
-# Create new entry for today
+# Create new entry for today (opens template)
 uv run anima diary
 
 # Create entry with title
 uv run anima diary "coffee break philosophy"
+
+# Create entry with content via stdin (for AI agents)
+cat << 'EOF' | uv run anima diary "My Research Topic"
+# What Lingers
+The key insight was...
+EOF
+
+# Create entry with --content flag
+uv run anima diary "Quick Note" --content "# Brief reflection on today"
 
 # List recent entries
 uv run anima diary --list
