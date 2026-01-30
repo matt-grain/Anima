@@ -18,7 +18,7 @@ from anima.core import (
     MemoryTier,
 )
 from anima.embeddings import embed_batch
-from anima.graph.linker import find_link_candidates, LinkType
+from anima.graph.linker import find_link_candidates, find_builds_on_candidates, LinkType
 from anima.storage import MemoryStore
 from anima.utils.terminal import safe_print, get_icon
 
@@ -65,6 +65,96 @@ def assign_tier(
     return MemoryTier.DEEP
 
 
+def run_builds_on_backfill(agent, dry_run: bool = False) -> int:
+    """
+    Detect BUILDS_ON links for existing memories.
+
+    This creates the evolutionary tree structure showing how thoughts
+    build on each other over time.
+    """
+    store = MemoryStore()
+
+    # Get all memories with temporal context
+    temporal_memories = store.get_memories_with_temporal_context(agent_id=agent.id)
+
+    if not temporal_memories:
+        print("No memories with embeddings found. Run `backfill` first.")
+        return 0
+
+    print(f"Analyzing {len(temporal_memories)} memories for BUILDS_ON relationships...")
+
+    if dry_run:
+        print("\n[DRY RUN] Would analyze temporal relationships.")
+        return 0
+
+    # Sort by creation time (oldest first) so we process in chronological order
+    # Normalize datetimes to naive (remove timezone info) for comparison
+    def normalize_dt(dt):
+        if dt.tzinfo is not None:
+            return dt.replace(tzinfo=None)
+        return dt
+
+    temporal_memories.sort(key=lambda x: normalize_dt(x[3]))  # x[3] = created_at
+
+    total_links = 0
+    safe_print(f"\n{get_icon('🔗', '[...]')} Detecting evolutionary links...")
+
+    for i, (mem_id, content, embedding, created_at, session_id) in enumerate(temporal_memories):
+        if embedding is None:
+            continue
+
+        # Normalize created_at for comparison
+        created_at_naive = normalize_dt(created_at)
+
+        # Find BUILDS_ON candidates from memories BEFORE this one
+        older_memories = [m for m in temporal_memories if normalize_dt(m[3]) < created_at_naive]
+
+        if not older_memories:
+            continue
+
+        candidates = find_builds_on_candidates(
+            source_content=content,
+            source_embedding=embedding,
+            source_session_id=session_id,
+            source_created=created_at,
+            candidate_memories=older_memories,
+            similarity_threshold=0.5,
+            time_window_hours=168,  # 1 week window for backfill (wider than realtime)
+            max_candidates=3,
+        )
+
+        for candidate in candidates:
+            # Check if link already exists
+            existing = store.get_links_for_memory(mem_id)
+            already_linked = any(
+                t == candidate.memory_id and lt == LinkType.BUILDS_ON.value
+                for _, t, lt, _ in existing
+            )
+
+            if not already_linked:
+                store.save_link(
+                    source_id=mem_id,
+                    target_id=candidate.memory_id,
+                    link_type=LinkType.BUILDS_ON,
+                    similarity=candidate.similarity,
+                )
+                total_links += 1
+
+        # Progress indicator
+        if (i + 1) % 20 == 0:
+            safe_print(f"  Processed {i + 1}/{len(temporal_memories)} memories...")
+
+    safe_print(f"\n{get_icon('✅', '[OK]')} BUILDS_ON backfill complete:")
+    print(f"   - Memories analyzed: {len(temporal_memories)}")
+    print(f"   - BUILDS_ON links created: {total_links}")
+
+    if total_links > 0:
+        print("\nView evolutionary tree: uv run anima memory-graph --links --link-type BUILDS_ON")
+        print("Export tree: uv run anima memory-graph --export-references dot -o evolution.dot")
+
+    return 0
+
+
 def run(args: list[str]) -> int:
     """
     Run the backfill command.
@@ -79,6 +169,7 @@ def run(args: list[str]) -> int:
     dry_run = False
     batch_size = 32
     skip_links = False
+    builds_on_only = False
 
     i = 0
     while i < len(args):
@@ -91,6 +182,8 @@ def run(args: list[str]) -> int:
                 i += 1
         elif arg in ("--skip-links",):
             skip_links = True
+        elif arg in ("--builds-on",):
+            builds_on_only = True
         elif arg in ("--help", "-h"):
             print("Usage: uv run anima backfill [OPTIONS]")
             print()
@@ -100,6 +193,7 @@ def run(args: list[str]) -> int:
             print("  --dry-run, -n     Show what would be done without making changes")
             print("  --batch-size, -b  Number of memories to process at once (default: 32)")
             print("  --skip-links      Skip creating semantic links")
+            print("  --builds-on       Only detect BUILDS_ON links (skip embeddings)")
             print("  --help, -h        Show this help message")
             return 0
         i += 1
@@ -107,6 +201,10 @@ def run(args: list[str]) -> int:
     # Resolve agent
     resolver = AgentResolver()
     agent = resolver.resolve()
+
+    # Handle BUILDS_ON only mode
+    if builds_on_only:
+        return run_builds_on_backfill(agent, dry_run)
 
     # Initialize store
     store = MemoryStore()

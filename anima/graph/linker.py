@@ -232,6 +232,13 @@ class BuildsOnCandidate:
     confidence: float = 0.0  # How confident we are this is a BUILDS_ON
 
 
+def _normalize_datetime(dt: datetime) -> datetime:
+    """Normalize datetime to naive (remove timezone info) for comparison."""
+    if dt.tzinfo is not None:
+        return dt.replace(tzinfo=None)
+    return dt
+
+
 def find_builds_on_candidates(
     source_content: str,
     source_embedding: list[float],
@@ -271,17 +278,23 @@ def find_builds_on_candidates(
     time_window = timedelta(hours=time_window_hours)
     has_reference = has_builds_on_pattern(source_content)
 
+    # Normalize source datetime for comparison
+    source_created_naive = _normalize_datetime(source_created)
+
     for mem_id, content, embedding, created_at, session_id in candidate_memories:
         # Skip if no embedding
         if embedding is None:
             continue
 
+        # Normalize candidate datetime for comparison
+        created_at_naive = _normalize_datetime(created_at)
+
         # Skip if newer than source (can't build on future)
-        if created_at >= source_created:
+        if created_at_naive >= source_created_naive:
             continue
 
         # Skip if outside time window
-        if source_created - created_at > time_window:
+        if source_created_naive - created_at_naive > time_window:
             continue
 
         # Calculate similarity
@@ -293,7 +306,7 @@ def find_builds_on_candidates(
         confidence = 0.0
 
         # Temporal proximity boost
-        hours_apart = (source_created - created_at).total_seconds() / 3600
+        hours_apart = (source_created_naive - created_at_naive).total_seconds() / 3600
         if hours_apart <= 24:
             confidence += 0.3
         elif hours_apart <= 48:
