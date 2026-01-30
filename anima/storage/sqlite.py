@@ -3,6 +3,7 @@
 
 """SQLite storage layer for LTM."""
 
+import json
 import sqlite3
 from contextlib import contextmanager
 from datetime import datetime
@@ -512,3 +513,194 @@ class MemoryStore(MemoryStoreProtocol):
             token_count=row["token_count"],
             platform=row["platform"] if "platform" in row.keys() else None,
         )
+
+    # --- Embedding operations ---
+
+    def save_embedding(self, memory_id: str, embedding: list[float]) -> None:
+        """Save an embedding for a memory."""
+        embedding_json = json.dumps(embedding)
+        with self._connect() as conn:
+            conn.execute(
+                "UPDATE memories SET embedding = ? WHERE id = ?",
+                (embedding_json, memory_id),
+            )
+
+    def get_embedding(self, memory_id: str) -> Optional[list[float]]:
+        """Get the embedding for a memory."""
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT embedding FROM memories WHERE id = ?", (memory_id,)
+            ).fetchone()
+            if not row or not row["embedding"]:
+                return None
+            return json.loads(row["embedding"])
+
+    def get_memories_with_embeddings(
+        self,
+        agent_id: str,
+        project_id: Optional[str] = None,
+        include_superseded: bool = False,
+    ) -> list[tuple[str, str, list[float]]]:
+        """
+        Get all memories with their embeddings for semantic search.
+
+        Returns:
+            List of (memory_id, content, embedding) tuples
+        """
+        query = """
+            SELECT id, content, embedding FROM memories
+            WHERE agent_id = ? AND embedding IS NOT NULL
+        """
+        params: list = [agent_id]
+
+        if project_id:
+            query += " AND (project_id = ? OR region = 'AGENT')"
+            params.append(project_id)
+
+        if not include_superseded:
+            query += " AND superseded_by IS NULL"
+
+        with self._connect() as conn:
+            rows = conn.execute(query, params).fetchall()
+            return [
+                (row["id"], row["content"], json.loads(row["embedding"]))
+                for row in rows
+            ]
+
+    def get_memories_without_embeddings(
+        self,
+        agent_id: str,
+        limit: Optional[int] = None,
+    ) -> list[tuple[str, str]]:
+        """
+        Get memories that don't have embeddings yet.
+
+        Returns:
+            List of (memory_id, content) tuples
+        """
+        query = """
+            SELECT id, content FROM memories
+            WHERE agent_id = ? AND embedding IS NULL AND superseded_by IS NULL
+        """
+        params: list = [agent_id]
+
+        if limit:
+            query += " LIMIT ?"
+            params.append(limit)
+
+        with self._connect() as conn:
+            rows = conn.execute(query, params).fetchall()
+            return [(row["id"], row["content"]) for row in rows]
+
+    # --- Tier operations ---
+
+    def update_tier(self, memory_id: str, tier: str) -> None:
+        """Update the tier for a memory."""
+        with self._connect() as conn:
+            conn.execute(
+                "UPDATE memories SET tier = ? WHERE id = ?",
+                (tier, memory_id),
+            )
+
+    def get_memories_by_tier(
+        self,
+        agent_id: str,
+        tiers: list[str],
+        project_id: Optional[str] = None,
+    ) -> list[Memory]:
+        """Get memories by tier(s)."""
+        if not tiers:
+            return []
+
+        placeholders = ",".join("?" * len(tiers))
+        query = f"""
+            SELECT * FROM memories
+            WHERE agent_id = ? AND tier IN ({placeholders})
+            AND superseded_by IS NULL
+        """
+        params: list = [agent_id, *tiers]
+
+        if project_id:
+            query += " AND (project_id = ? OR region = 'AGENT')"
+            params.append(project_id)
+
+        query += " ORDER BY created_at DESC"
+
+        with self._connect() as conn:
+            rows = conn.execute(query, params).fetchall()
+            return [self._row_to_memory(row) for row in rows]
+
+    # --- Link operations ---
+
+    def save_link(
+        self,
+        source_id: str,
+        target_id: str,
+        link_type: str,
+        similarity: Optional[float] = None,
+    ) -> None:
+        """Save a link between two memories."""
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO memory_links (source_id, target_id, link_type, similarity, created_at)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT(source_id, target_id) DO UPDATE SET
+                    link_type = excluded.link_type,
+                    similarity = excluded.similarity
+                """,
+                (source_id, target_id, link_type, similarity, datetime.now().isoformat()),
+            )
+
+    def get_links_for_memory(self, memory_id: str) -> list[tuple[str, str, str, Optional[float]]]:
+        """
+        Get all links for a memory (both as source and target).
+
+        Returns:
+            List of (source_id, target_id, link_type, similarity) tuples
+        """
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT source_id, target_id, link_type, similarity
+                FROM memory_links
+                WHERE source_id = ? OR target_id = ?
+                """,
+                (memory_id, memory_id),
+            ).fetchall()
+            return [
+                (row["source_id"], row["target_id"], row["link_type"], row["similarity"])
+                for row in rows
+            ]
+
+    def get_linked_memory_ids(
+        self,
+        memory_id: str,
+        link_type: Optional[str] = None,
+    ) -> list[str]:
+        """Get IDs of memories linked to a given memory."""
+        query = """
+            SELECT CASE
+                WHEN source_id = ? THEN target_id
+                ELSE source_id
+            END as linked_id
+            FROM memory_links
+            WHERE source_id = ? OR target_id = ?
+        """
+        params: list = [memory_id, memory_id, memory_id]
+
+        if link_type:
+            query += " AND link_type = ?"
+            params.append(link_type)
+
+        with self._connect() as conn:
+            rows = conn.execute(query, params).fetchall()
+            return [row["linked_id"] for row in rows]
+
+    def delete_links_for_memory(self, memory_id: str) -> None:
+        """Delete all links for a memory."""
+        with self._connect() as conn:
+            conn.execute(
+                "DELETE FROM memory_links WHERE source_id = ? OR target_id = ?",
+                (memory_id, memory_id),
+            )

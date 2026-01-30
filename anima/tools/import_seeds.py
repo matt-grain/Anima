@@ -17,6 +17,7 @@ from typing import Optional
 from anima.core import Memory, MemoryKind, ImpactLevel, RegionType, AgentResolver
 from anima.lifecycle.injection import ensure_token_count
 from anima.storage import MemoryStore
+from anima.utils.terminal import safe_print, get_icon
 
 
 def parse_seed_file(file_path: Path) -> Optional[dict]:
@@ -173,14 +174,14 @@ def run(args: list[str]) -> int:
 
         parsed = parse_seed_file(seed_file)
         if not parsed:
-            print("  ⚠️  Failed to parse, skipping")
+            safe_print(f"  {get_icon('⚠️', '[!]')}  Failed to parse, skipping")
             skipped += 1
             continue
 
         # Check if already imported (by ID)
         existing = store.get_memory(parsed["id"])
         if existing:
-            print("  ⏭️  Already imported, skipping")
+            safe_print(f"  {get_icon('⏭️', '[>>]')}  Already imported, skipping")
             skipped += 1
             continue
 
@@ -219,7 +220,7 @@ def run(args: list[str]) -> int:
         store.save_memory(memory)
         imported += 1
 
-        print(f"  ✅ Imported: {parsed['kind'].value} ({parsed['impact'].value})")
+        safe_print(f"  {get_icon('✅', '[OK]')} Imported: {parsed['kind'].value} ({parsed['impact'].value})")
 
     print(f"\nImport complete: {imported} imported, {skipped} skipped")
 

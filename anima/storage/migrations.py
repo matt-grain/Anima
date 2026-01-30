@@ -16,12 +16,13 @@ from typing import Optional
 
 
 # Current schema version - increment when schema changes
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 # Migration history:
 # v1: Original schema (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS)
 # v2: Added INTROSPECT kind + platform column for spaceship tracking
 # v3: Added curiosity_queue table + settings table for autonomous research
+# v4: Semantic Memory Layer - embeddings, tiers, memory_links graph
 
 
 def get_schema_version(db_path: Path) -> int:
@@ -124,6 +125,56 @@ def migrate_v1_to_v2(conn: sqlite3.Connection) -> None:
     )
 
 
+def migrate_v3_to_v4(conn: sqlite3.Connection) -> None:
+    """
+    Migrate from v3 to v4: Semantic Memory Layer.
+
+    Adds:
+    - embedding BLOB column to memories (for FastEmbed vectors)
+    - tier TEXT column to memories (CORE/ACTIVE/CONTEXTUAL/DEEP)
+    - memory_links table for knowledge graph
+    """
+    # Add embedding column (BLOB for JSON-encoded float array)
+    try:
+        conn.execute("ALTER TABLE memories ADD COLUMN embedding BLOB")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
+    # Add tier column with default CONTEXTUAL
+    try:
+        conn.execute(
+            "ALTER TABLE memories ADD COLUMN tier TEXT DEFAULT 'CONTEXTUAL'"
+        )
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
+    # Create memory_links table for knowledge graph
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS memory_links (
+            source_id TEXT NOT NULL,
+            target_id TEXT NOT NULL,
+            link_type TEXT NOT NULL CHECK (link_type IN ('RELATES_TO', 'BUILDS_ON', 'CONTRADICTS', 'SUPERSEDES')),
+            similarity REAL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (source_id, target_id),
+            FOREIGN KEY (source_id) REFERENCES memories(id),
+            FOREIGN KEY (target_id) REFERENCES memories(id)
+        )
+    """)
+
+    # Create indexes for efficient lookups
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_memory_links_source ON memory_links(source_id)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_memory_links_target ON memory_links(target_id)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_memory_links_type ON memory_links(link_type)"
+    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_tier ON memories(tier)")
+
+
 def migrate_v2_to_v3(conn: sqlite3.Connection) -> None:
     """
     Migrate from v2 to v3: Add curiosity_queue and settings tables.
@@ -223,6 +274,9 @@ def run_migrations(
 
         if current < 3 and target >= 3:
             migrate_v2_to_v3(conn)
+
+        if current < 4 and target >= 4:
+            migrate_v3_to_v4(conn)
 
         set_schema_version(conn, target)
         conn.commit()

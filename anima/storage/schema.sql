@@ -37,12 +37,26 @@ CREATE TABLE IF NOT EXISTS memories (
     signature TEXT,
     token_count INTEGER,
     platform TEXT,  -- Which spaceship created this memory (claude, antigravity, opencode)
+    embedding BLOB,  -- v4: FastEmbed embedding vector (384 dimensions)
+    tier TEXT DEFAULT 'CONTEXTUAL' CHECK (tier IN ('CORE', 'ACTIVE', 'CONTEXTUAL', 'DEEP')),  -- v4: Memory tier for loading
 
     FOREIGN KEY (agent_id) REFERENCES agents(id),
     FOREIGN KEY (project_id) REFERENCES projects(id),
     FOREIGN KEY (previous_memory_id) REFERENCES memories(id),
     FOREIGN KEY (superseded_by) REFERENCES memories(id),
     CHECK (region = 'AGENT' OR project_id IS NOT NULL)
+);
+
+-- Memory links table (v4: semantic relationships between memories)
+CREATE TABLE IF NOT EXISTS memory_links (
+    source_id TEXT NOT NULL,
+    target_id TEXT NOT NULL,
+    link_type TEXT NOT NULL CHECK (link_type IN ('RELATES_TO', 'BUILDS_ON', 'CONTRADICTS', 'SUPERSEDES')),
+    similarity REAL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (source_id, target_id),
+    FOREIGN KEY (source_id) REFERENCES memories(id),
+    FOREIGN KEY (target_id) REFERENCES memories(id)
 );
 
 -- Indexes for fast retrieval
@@ -52,6 +66,12 @@ CREATE INDEX IF NOT EXISTS idx_memories_kind ON memories(kind);
 CREATE INDEX IF NOT EXISTS idx_memories_created ON memories(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_memories_impact ON memories(impact);
 CREATE INDEX IF NOT EXISTS idx_memories_superseded ON memories(superseded_by);
+CREATE INDEX IF NOT EXISTS idx_memories_tier ON memories(tier);
+
+-- Indexes for memory links
+CREATE INDEX IF NOT EXISTS idx_links_source ON memory_links(source_id);
+CREATE INDEX IF NOT EXISTS idx_links_target ON memory_links(target_id);
+CREATE INDEX IF NOT EXISTS idx_links_type ON memory_links(link_type);
 
 -- Curiosity queue table for autonomous research
 CREATE TABLE IF NOT EXISTS curiosity_queue (

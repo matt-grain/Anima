@@ -12,6 +12,7 @@ import sys
 from datetime import datetime
 
 from anima.core import AgentResolver
+from anima.utils.terminal import safe_print, get_icon
 from anima.storage import (
     MemoryStore,
     CuriosityStore,
@@ -205,13 +206,13 @@ def run(args: list[str]) -> int:
             print(f"\nResearched ({len(researched)}):")
             print("-" * 40)
             for c in researched:
-                print(f"✓ [{c.id}] {c.question[:50]}...")
+                safe_print(f"{get_icon('✓', '[OK]')} [{c.id}] {c.question[:50]}...")
 
         if dismissed:
             print(f"\nDismissed ({len(dismissed)}):")
             print("-" * 40)
             for c in dismissed:
-                print(f"✗ [{c.id}] {c.question[:50]}...")
+                safe_print(f"{get_icon('✗', '[X]')} [{c.id}] {c.question[:50]}...")
 
     # Show commands
     print("-" * 60)

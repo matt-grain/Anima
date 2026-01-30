@@ -1,6 +1,6 @@
 # Core data models and types for LTM
 
-from anima.core.types import RegionType, MemoryKind, ImpactLevel
+from anima.core.types import RegionType, MemoryKind, ImpactLevel, MemoryTier
 from anima.core.memory import Memory, MemoryBlock
 from anima.core.agent import Agent, Project, AgentResolver
 from anima.core.signing import sign_memory, verify_signature, should_sign, should_verify
@@ -23,6 +23,7 @@ __all__ = [
     "RegionType",
     "MemoryKind",
     "ImpactLevel",
+    "MemoryTier",
     "Memory",
     "MemoryBlock",
     "Agent",

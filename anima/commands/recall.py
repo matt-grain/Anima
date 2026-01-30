@@ -12,7 +12,10 @@ import sys
 from pathlib import Path
 
 from anima.core import AgentResolver
+from anima.embeddings import embed_text
+from anima.embeddings.similarity import find_similar
 from anima.storage import MemoryStore
+from anima.utils.terminal import safe_print, get_icon
 
 
 def lookup_by_id(memory_id: str) -> int:
@@ -67,12 +70,96 @@ def lookup_by_id(memory_id: str) -> int:
         )
         print(f"Platform: {spaceship_icon} {memory.platform}")
     if memory.superseded_by:
-        print(f"⚠️  Superseded by: {memory.superseded_by}")
+        safe_print(f"{get_icon('⚠️', '[!]')}  Superseded by: {memory.superseded_by}")
     print()
     print("Content:")
     print("-" * 40)
     print(memory.content)
     print("-" * 40)
+
+    return 0
+
+
+def semantic_search(query: str, agent_id: str, project_id: str | None, show_full: bool, limit: int = 10) -> int:
+    """
+    Perform semantic search using embeddings.
+
+    Args:
+        query: Search query text
+        agent_id: Agent ID to search within
+        project_id: Project ID for scoping (or None for agent-wide)
+        show_full: Whether to show full content
+        limit: Maximum results to return
+
+    Returns:
+        Exit code (0 for success)
+    """
+    store = MemoryStore()
+
+    # Get memories with embeddings: list of (id, content, embedding)
+    candidate_memories = store.get_memories_with_embeddings(
+        agent_id=agent_id,
+        project_id=project_id,
+    )
+
+    if not candidate_memories:
+        print("No embedded memories found. Try keyword search without --semantic.")
+        return 0
+
+    # Generate embedding for query
+    safe_print(f"{get_icon('🧠', '[SEM]')} Searching semantically...")
+    query_embedding = embed_text(query, quiet=True)
+
+    # Build candidates as (memory_id, embedding) tuples for find_similar
+    # Also keep a lookup dict for content
+    content_lookup: dict[str, str] = {}
+    candidates: list[tuple[str, list[float]]] = []
+    for mem_id, content, emb in candidate_memories:
+        if emb is not None:
+            candidates.append((mem_id, emb))
+            content_lookup[mem_id] = content
+
+    results = find_similar(query_embedding, candidates, top_k=limit, threshold=0.3)
+
+    if not results:
+        print(f'No semantically similar memories found for "{query}"')
+        return 0
+
+    print(f'Found {len(results)} semantically similar memories for "{query}":\n')
+
+    # Get all memories once for full details
+    all_memories = store.get_memories_for_agent(agent_id=agent_id, project_id=project_id)
+    memory_lookup = {m.id: m for m in all_memories}
+
+    for i, result in enumerate(results, 1):
+        mem_id = result.item  # The memory ID
+        content = content_lookup.get(mem_id, "")
+        memory = memory_lookup.get(mem_id)
+
+        if memory:
+            confidence_marker = "?" if memory.is_low_confidence() else ""
+            date_str = memory.created_at.strftime("%Y-%m-%d")
+            similarity_pct = int(result.score * 100)
+
+            if show_full:
+                print(
+                    f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] "
+                    f"({date_str}) [🎯 {similarity_pct}%]"
+                )
+                print(f"   ID: {memory.id}")
+                print(f"   Region: {memory.region.value}")
+                print("   Content:")
+                for line in memory.content.split("\n"):
+                    print(f"   {line}")
+                print()
+            else:
+                print(
+                    f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] "
+                    f"{content[:70]}{'...' if len(content) > 70 else ''} "
+                    f"({date_str}) [🎯 {similarity_pct}%]"
+                )
+                print(f"   ID: {mem_id[:8]}")
+                print()
 
     return 0
 
@@ -90,6 +177,7 @@ def run(args: list[str]) -> int:
     # Parse flags
     show_full = False
     lookup_id = None
+    use_semantic = False
     query_words = []
 
     i = 0
@@ -97,6 +185,8 @@ def run(args: list[str]) -> int:
         arg = args[i]
         if arg in ("--full", "-f"):
             show_full = True
+        elif arg in ("--semantic", "-s"):
+            use_semantic = True
         elif arg in ("--id", "-i"):
             # Next argument is the memory ID
             if i + 1 < len(args):
@@ -106,17 +196,19 @@ def run(args: list[str]) -> int:
                 print("Error: --id requires a memory ID")
                 return 1
         elif arg in ("--help", "-h"):
-            print("Usage: uv run anima recall [--full] <query>")
+            print("Usage: uv run anima recall [--full] [--semantic] <query>")
             print("       uv run anima recall --id <memory_id>")
             print()
             print("Search memories matching the query, or look up by ID.")
             print()
             print("Options:")
-            print("  --full, -f    Show full memory content")
-            print("  --id, -i      Look up a specific memory by ID (full or partial)")
-            print("  --help, -h    Show this help message")
+            print("  --full, -f      Show full memory content")
+            print("  --semantic, -s  Use semantic (embedding) search")
+            print("  --id, -i        Look up a specific memory by ID (full or partial)")
+            print("  --help, -h      Show this help message")
             print()
             print("Example: uv run anima recall logging")
+            print("Example: uv run anima recall --semantic how does memory decay work")
             print("Example: uv run anima recall --full architecture")
             print("Example: uv run anima recall --id f0087ff3")
             return 0
@@ -129,9 +221,10 @@ def run(args: list[str]) -> int:
         return lookup_by_id(lookup_id)
 
     if not query_words:
-        print("Usage: uv run anima recall [--full] <query>")
+        print("Usage: uv run anima recall [--full] [--semantic] <query>")
         print("       uv run anima recall --id <memory_id>")
         print("Example: uv run anima recall logging")
+        print("Example: uv run anima recall --semantic how does memory decay work")
         return 1
 
     query = " ".join(query_words)
@@ -141,7 +234,11 @@ def run(args: list[str]) -> int:
     agent = resolver.resolve()
     project = resolver.resolve_project()
 
-    # Search memories
+    # Use semantic search if requested
+    if use_semantic:
+        return semantic_search(query, agent.id, project.id, show_full)
+
+    # Search memories using keyword search
     store = MemoryStore()
     memories = store.search_memories(
         agent_id=agent.id, query=query, project_id=project.id, limit=10

@@ -18,6 +18,7 @@ from typing import Optional
 from anima.core import Memory, MemoryKind, ImpactLevel, RegionType, AgentResolver
 from anima.lifecycle.injection import ensure_token_count
 from anima.storage import MemoryStore
+from anima.utils.terminal import safe_print, get_icon
 
 
 # Patterns that suggest significant achievements
@@ -214,7 +215,7 @@ def run(args: list[str]) -> int:
         )
 
         if existing:
-            print(f"  ⏭️  Already recorded: {message[:50]}...")
+            safe_print(f"  {get_icon('⏭️', '[>>]')}  Already recorded: {message[:50]}...")
             skipped += 1
             continue
 
@@ -222,7 +223,7 @@ def run(args: list[str]) -> int:
         content = f"{achievement_text} (commit: {commit['hash'][:8]})"
 
         if dry_run:
-            print(f"  🏆 Would save [{impact.value}]: {content[:60]}...")
+            safe_print(f"  {get_icon('🏆', '[ACH]')} Would save [{impact.value}]: {content[:60]}...")
         else:
             memory = Memory(
                 agent_id=agent.id,
@@ -235,7 +236,7 @@ def run(args: list[str]) -> int:
             )
             ensure_token_count(memory)
             store.save_memory(memory)
-            print(f"  🏆 Saved [{impact.value}]: {content[:60]}...")
+            safe_print(f"  {get_icon('🏆', '[ACH]')} Saved [{impact.value}]: {content[:60]}...")
 
         achievements_found += 1
 

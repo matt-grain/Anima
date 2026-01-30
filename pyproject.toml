@@ -1,6 +1,6 @@
 [project]
 name = "anima"
-version = "0.7.0"
+version = "0.9.0"
 description = "Long Term Memory for Anima Agents - human-like persistent memory across sessions"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -10,6 +10,7 @@ authors = [
 license = { text = "MIT" }
 dependencies = [
     "tiktoken>=0.8.0",
+    "fastembed>=0.4.0",
 ]
 
 [project.scripts]

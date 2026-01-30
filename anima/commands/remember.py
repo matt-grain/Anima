@@ -22,6 +22,8 @@ from anima.core import (
     sign_memory,
     should_sign,
 )
+from anima.embeddings import embed_text
+from anima.graph.linker import find_link_candidates, LinkType
 from anima.lifecycle.injection import ensure_token_count
 from anima.storage import MemoryStore
 
@@ -336,6 +338,42 @@ def run(args: list[str]) -> int:
     # Save it
     store.save_memory(memory)
 
+    # Generate embedding and find semantic links
+    semantic_links = 0
+    try:
+        # Generate embedding for this memory
+        embedding = embed_text(text, quiet=True)
+        store.save_embedding(memory.id, embedding)
+
+        # Find similar memories to create links
+        candidate_memories = store.get_memories_with_embeddings(
+            agent_id=agent.id,
+            project_id=project.id if region == RegionType.PROJECT else None,
+        )
+
+        if candidate_memories:
+            candidates = find_link_candidates(
+                source_embedding=embedding,
+                candidate_memories=candidate_memories,
+                threshold=0.5,
+                max_links=5,
+                exclude_ids={memory.id},
+            )
+
+            # Create links for similar memories
+            for candidate in candidates:
+                store.save_link(
+                    source_id=memory.id,
+                    target_id=candidate.memory_id,
+                    link_type=LinkType.RELATES_TO,
+                    similarity=candidate.similarity,
+                )
+                semantic_links += 1
+
+    except Exception as e:
+        # Embedding/linking is optional - don't fail the save
+        print(f"Note: Could not generate embeddings ({e})")
+
     # Output confirmation
     region_str = (
         f"PROJECT ({project.name})" if region == RegionType.PROJECT else "AGENT"
@@ -344,9 +382,10 @@ def run(args: list[str]) -> int:
         f"\nLinked to previous {kind.value.lower()} memory." if previous else ""
     )
     signed_str = " [signed]" if memory.signature else ""
+    semantic_str = f"\n🔗 Connected to {semantic_links} related memories." if semantic_links > 0 else ""
 
     print(
-        f"Remembered as {kind.value} ({impact.value} impact) in {region_str} region.{linked_str}"
+        f"Remembered as {kind.value} ({impact.value} impact) in {region_str} region.{linked_str}{semantic_str}"
     )
     print(f"Memory ID: {memory.id[:8]}{signed_str}")
 

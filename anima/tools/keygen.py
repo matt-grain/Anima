@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Optional
 
 from anima.storage import MemoryStore
+from anima.utils.terminal import safe_print, get_icon
 
 
 def generate_key(length: int = 32) -> str:
@@ -123,7 +124,7 @@ def run(args: list[str]) -> int:
     agent_file, is_global = find_agent_file(agent_id)
 
     if not agent_file:
-        print(f"❌ Agent '{agent_name}' not found.")
+        safe_print(f"{get_icon('❌', '[X]')} Agent '{agent_name}' not found.")
         print("")
         print("Looked in:")
         print(f"  {Path.cwd() / '.claude' / 'agents' / f'{agent_id}.md'}")
@@ -135,7 +136,7 @@ def run(args: list[str]) -> int:
     # Check if key already exists
     existing_key = get_key_from_agent_file(agent_file)
     if existing_key:
-        print(f"⚠️  Agent '{agent_display}' already has a signing key in:")
+        safe_print(f"{get_icon('⚠️', '[!]')}  Agent '{agent_display}' already has a signing key in:")
         print(f"   {agent_file}")
         print("   To regenerate, remove 'signing_key' from that file first.")
         return 1
@@ -145,7 +146,7 @@ def run(args: list[str]) -> int:
     add_key_to_agent_file(agent_file, key)
 
     location = "global" if is_global else "project"
-    print(f"✓ Generated signing key for agent '{agent_display}'")
+    safe_print(f"{get_icon('✓', '[OK]')} Generated signing key for agent '{agent_display}'")
     print(f"  Added to: {agent_file} ({location})")
 
     # Also update agent in database
@@ -178,10 +179,10 @@ def run(args: list[str]) -> int:
         for memory in unsigned:
             memory.signature = sign_memory(memory, key)
             store.save_memory(memory)
-        print(f"  ✓ Signed {len(unsigned)} memories")
+        safe_print(f"  {get_icon('✓', '[OK]')} Signed {len(unsigned)} memories")
 
     print("")
-    print("🔐 Done! All memories are now signed.")
+    safe_print(f"{get_icon('🔐', '[OK]')} Done! All memories are now signed.")
 
     return 0
 

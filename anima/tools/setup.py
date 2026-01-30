@@ -15,6 +15,69 @@ from importlib import resources
 from pathlib import Path
 
 from anima.utils.agent_patching import has_subagent_marker, add_subagent_marker
+from anima.utils.terminal import safe_print, get_icon
+
+
+def detect_platform(project_dir: Path) -> tuple[str | None, list[str]]:
+    """Detect which platform(s) are configured in the project.
+
+    Returns:
+        Tuple of (detected_platform, list_of_found_configs).
+        - If exactly one config found: (platform_name, [config_name])
+        - If none found: (None, [])
+        - If multiple found: (None, [config1, config2, ...])
+    """
+    found = []
+
+    if find_config_dir(project_dir, ".claude"):
+        found.append("claude")
+    if find_config_dir(project_dir, ".opencode"):
+        found.append("opencode")
+    if find_config_dir(project_dir, ".agent"):
+        found.append("antigravity")
+
+    if len(found) == 1:
+        return (found[0], found)
+    return (None, found)
+
+
+def prompt_platform_choice(found_configs: list[str]) -> str | None:
+    """Prompt user to choose a platform when auto-detection is ambiguous.
+
+    Args:
+        found_configs: List of detected config directories (may be empty or multiple)
+
+    Returns:
+        Selected platform name, or None if user cancels
+    """
+    safe_print(f"\n{get_icon('⚠️', '[!]')}  Platform auto-detection failed.")
+
+    if len(found_configs) == 0:
+        print("   No platform config directory found (.claude, .opencode, .agent)")
+    else:
+        print(f"   Multiple configs found: {', '.join(found_configs)}")
+
+    print("\nWhich platform are you setting up?")
+    print("  1. claude      (Claude Code - creates .claude/)")
+    print("  2. antigravity (Google Antigravity - creates .agent/)")
+    print("  3. opencode    (Opencode - creates .opencode/)")
+    print("  q. Cancel")
+
+    platforms = {"1": "claude", "2": "antigravity", "3": "opencode"}
+
+    try:
+        choice = input("\nEnter choice [1/2/3/q]: ").strip().lower()
+        if choice in platforms:
+            return platforms[choice]
+        elif choice in ("q", "quit", "exit", ""):
+            print("Setup cancelled.")
+            return None
+        else:
+            print(f"Invalid choice: {choice}")
+            return None
+    except (EOFError, KeyboardInterrupt):
+        print("\nSetup cancelled.")
+        return None
 
 
 def get_package_commands_dir(platform: str) -> Path:
@@ -90,7 +153,7 @@ def setup_skills(project_dir: Path, force: bool = False) -> tuple[int, int]:
     try:
         src_dir = get_package_skills_dir()
     except FileNotFoundError as e:
-        print(f"  ⚠️  {e}")
+        safe_print(f"  {get_icon('⚠️', '[!]')}  {e}")
         return (0, 0)
 
     # Prefer .agent/skills for Anima, fallback to .claude/skills (with monorepo support)
@@ -120,7 +183,7 @@ def setup_skills(project_dir: Path, force: bool = False) -> tuple[int, int]:
         dest_skill_dir = dest_dir / skill_dir.name
 
         if dest_skill_dir.exists() and not force:
-            print(f"  ⏭️  {skill_dir.name}/ (exists, use --force to overwrite)")
+            safe_print(f"  {get_icon('⏭️', '[>>]')}  {skill_dir.name}/ (exists, use --force to overwrite)")
             skipped += 1
             continue
 
@@ -128,7 +191,7 @@ def setup_skills(project_dir: Path, force: bool = False) -> tuple[int, int]:
         if dest_skill_dir.exists():
             shutil.rmtree(dest_skill_dir)
         shutil.copytree(skill_dir, dest_skill_dir)
-        print(f"  ✅ {skill_dir.name}/")
+        safe_print(f"  {get_icon('✅', '[OK]')} {skill_dir.name}/")
         copied += 1
 
     return (copied, skipped)
@@ -165,12 +228,12 @@ def setup_commands(
     """
     # Auto-detect platform if not specified
     if not platform:
-        if find_config_dir(project_dir, ".claude"):
-            platform = "claude"
-        elif find_config_dir(project_dir, ".opencode"):
-            platform = "opencode"
+        detected, found = detect_platform(project_dir)
+        if detected:
+            platform = detected
         else:
-            platform = "antigravity"  # Default
+            # This shouldn't happen if run() prompts first, but fallback to claude
+            platform = "claude"
 
     try:
         src_dir = get_package_commands_dir(platform)
@@ -199,12 +262,12 @@ def setup_commands(
         dest_file = dest_dir / src_file.name
 
         if dest_file.exists() and not force:
-            print(f"  ⏭️  {src_file.name} (exists, use --force to overwrite)")
+            safe_print(f"  {get_icon('⏭️', '[>>]')}  {src_file.name} (exists, use --force to overwrite)")
             skipped += 1
             continue
 
         shutil.copy2(src_file, dest_file)
-        print(f"  ✅ {src_file.name}")
+        safe_print(f"  {get_icon('✅', '[OK]')} {src_file.name}")
         copied += 1
 
     return (copied, skipped)
@@ -269,7 +332,7 @@ def patch_subagents(project_dir: Path) -> tuple[int, int, int]:
 
             if new_content != content:
                 agent_file.write_text(new_content, encoding="utf-8")
-                print(f"  ✅ {agent_file.name} (marked as subagent)")
+                safe_print(f"  {get_icon('✅', '[OK]')} {agent_file.name} (marked as subagent)")
                 patched += 1
             else:
                 skipped += 1
@@ -307,16 +370,16 @@ def setup_opencode(project_dir: Path, force: bool = False) -> bool:
         src_plugin_dir = Path(__file__).parent.parent / "platforms" / "opencode"
 
     if not src_plugin_dir.exists():
-        print("  ⚠️  Opencode plugin source not found in package")
+        safe_print(f"  {get_icon('⚠️', '[!]')}  Opencode plugin source not found in package")
         return False
 
     if dest_plugin_dir.exists() and not force:
-        print("  ⏭️  Opencode plugin exists (use --force to overwrite)")
+        safe_print(f"  {get_icon('⏭️', '[>>]')}  Opencode plugin exists (use --force to overwrite)")
     else:
         if dest_plugin_dir.exists():
             shutil.rmtree(dest_plugin_dir)
         shutil.copytree(src_plugin_dir, opencode_dir, dirs_exist_ok=True)
-        print("  ✅ Opencode plugin bridge installed in .opencode/plugins/anima")
+        safe_print(f"  {get_icon('✅', '[OK]')} Opencode plugin bridge installed in .opencode/plugins/anima")
 
     # Check package.json
     pkg_json = opencode_dir / "plugins" / "animapackage.json"
@@ -325,7 +388,7 @@ def setup_opencode(project_dir: Path, force: bool = False) -> bool:
             "  👉 Note: Add '@anima-ltm/opencode-plugin': 'file:./plugins/anima' to your dependencies."
         )
     else:
-        print("  👉 Note: Create .opencode/package.json to register the anima plugin.")
+        safe_print(f"  {get_icon('👉', '->')} Note: Create .opencode/package.json to register the anima plugin.")
 
     return True
 
@@ -339,7 +402,7 @@ def setup_hooks(project_dir: Path, force: bool = False) -> bool:
     """
     claude_dir = find_config_dir(project_dir, ".claude")
     if not claude_dir:
-        print("  ⚠️  No .claude directory found (checked current and parent dir)")
+        safe_print(f"  {get_icon('⚠️', '[!]')}  No .claude directory found (checked current and parent dir)")
         return False
 
     settings_local = claude_dir / "settings.local.json"
@@ -358,7 +421,7 @@ def setup_hooks(project_dir: Path, force: bool = False) -> bool:
         # Claude will run from parent dir, but uv needs to run from project_dir
         subfolder = project_dir.name
         cmd_prefix = f"cd {subfolder} && "
-        print(f"  📁 Monorepo detected: hooks will cd to {subfolder}/ first")
+        safe_print(f"  {get_icon('📁', '[D]')} Monorepo detected: hooks will cd to {subfolder}/ first")
 
     ltm_hooks = {
         "SessionStart": [
@@ -415,7 +478,7 @@ def setup_hooks(project_dir: Path, force: bool = False) -> bool:
         try:
             settings = json.loads(settings_file.read_text())
         except json.JSONDecodeError:
-            print(f"  ⚠️  Invalid JSON in {settings_file}, creating backup")
+            safe_print(f"  {get_icon('⚠️', '[!]')}  Invalid JSON in {settings_file}, creating backup")
             shutil.copy2(settings_file, settings_file.with_suffix(".json.bak"))
             settings = {}
     else:
@@ -426,7 +489,7 @@ def setup_hooks(project_dir: Path, force: bool = False) -> bool:
     if "hooks" in settings and not force:
         existing_hooks = settings.get("hooks", {})
         if "SessionStart" in existing_hooks or "Stop" in existing_hooks:
-            print("  ⚠️  Hooks already configured (use --force to overwrite)")
+            safe_print(f"  {get_icon('⚠️', '[!]')}  Hooks already configured (use --force to overwrite)")
             return False
 
     # Merge hooks
@@ -437,7 +500,7 @@ def setup_hooks(project_dir: Path, force: bool = False) -> bool:
 
     # Write back
     settings_file.write_text(json.dumps(settings, indent=2) + "\n")
-    print(f"  ✅ Hooks configured in {settings_file}")
+    safe_print(f"  {get_icon('✅', '[OK]')} Hooks configured in {settings_file}")
     return True
 
 
@@ -516,7 +579,23 @@ Examples:
         print(f"Error: Project directory not found: {project_dir}")
         return 1
 
-    print(f"Setting up LTM in: {project_dir}\n")
+    # Auto-detect platform if not specified
+    if not target_platform:
+        detected, found = detect_platform(project_dir)
+        if detected:
+            target_platform = detected
+            print(f"Setting up LTM in: {project_dir}")
+            print(f"Detected platform: {target_platform}\n")
+        else:
+            # Ambiguous - prompt user
+            target_platform = prompt_platform_choice(found)
+            if not target_platform:
+                return 1  # User cancelled
+            print(f"\nSetting up LTM in: {project_dir}")
+            print(f"Selected platform: {target_platform}\n")
+    else:
+        print(f"Setting up LTM in: {project_dir}")
+        print(f"Target platform: {target_platform}\n")
 
     # Default: install both
     install_commands = not hooks_only
@@ -564,7 +643,7 @@ Examples:
             try:
                 if not setup_opencode(project_dir, force):
                     if target_platform == "opencode":
-                        print("  ⚠️  Opencode directory (.opencode) not found.")
+                        safe_print(f"  {get_icon('⚠️', '[!]')}  Opencode directory (.opencode) not found.")
                 print()
             except Exception as e:
                 print(f"  Error configuring Opencode: {e}\n")

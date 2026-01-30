@@ -16,6 +16,7 @@ import tiktoken
 from anima.core import (
     Memory,
     MemoryBlock,
+    MemoryTier,
     RegionType,
     Agent,
     Project,
@@ -134,24 +135,28 @@ class MemoryInjector:
         self.budget = get_memory_budget(context_size)
 
     def inject(
-        self, agent: Union[Agent, list[Agent]], project: Optional[Project] = None
+        self, agent: Union[Agent, list[Agent]], project: Optional[Project] = None,
+        use_tiered_loading: bool = True
     ) -> str:
         """
         Get formatted memories for injection into context.
 
-        Retrieves both AGENT region memories and PROJECT region memories
-        (if a project is specified), formats them in DSL, and ensures
-        we stay within token budget.
+        With tiered loading enabled (default), loads memories by tier:
+        1. CORE: Always loaded (CRITICAL emotional memories)
+        2. ACTIVE: Recently accessed memories
+        3. CONTEXTUAL: Project-specific memories
+        4. DEEP: Not auto-loaded (available via semantic search)
+
+        Without tiered loading, falls back to priority-based loading.
 
         Args:
             agent: The current agent
             project: The current project (optional)
+            use_tiered_loading: Whether to use tiered loading (default: True)
 
         Returns:
             Formatted memory block as a string, or empty string if no memories
         """
-        memories: list[Memory] = []
-
         if isinstance(agent, Agent):
             agents = [agent]
         else:
@@ -159,22 +164,10 @@ class MemoryInjector:
 
         primary_agent = agents[0]
 
-        for a in agents:
-            # Get AGENT region memories (cross-project)
-            agent_memories = self.store.get_memories_for_agent(
-                agent_id=a.id, region=RegionType.AGENT, include_superseded=False
-            )
-            memories.extend(agent_memories)
-
-            # Get PROJECT region memories (project-specific)
-            if project:
-                project_memories = self.store.get_memories_for_agent(
-                    agent_id=a.id,
-                    region=RegionType.PROJECT,
-                    project_id=project.id,
-                    include_superseded=False,
-                )
-                memories.extend(project_memories)
+        if use_tiered_loading:
+            memories = self._load_tiered_memories(agents, project)
+        else:
+            memories = self._load_all_memories(agents, project)
 
         if not memories:
             return ""
@@ -223,6 +216,60 @@ class MemoryInjector:
             return ""
 
         return block.to_dsl()
+
+    def _load_tiered_memories(
+        self, agents: list[Agent], project: Optional[Project]
+    ) -> list[Memory]:
+        """
+        Load memories by tier: CORE -> ACTIVE -> CONTEXTUAL.
+
+        DEEP tier is not auto-loaded (available via semantic search).
+        """
+        memories: list[Memory] = []
+        seen_ids: set[str] = set()
+
+        # Load tiers in order: CORE, ACTIVE, CONTEXTUAL
+        # DEEP is not loaded automatically (on-demand via semantic search)
+        tiers_to_load = [MemoryTier.CORE, MemoryTier.ACTIVE, MemoryTier.CONTEXTUAL]
+
+        for tier in tiers_to_load:
+            for a in agents:
+                tier_memories = self.store.get_memories_by_tier(
+                    agent_id=a.id,
+                    tiers=[tier],
+                    project_id=project.id if project else None,
+                )
+                for mem in tier_memories:
+                    if mem.id not in seen_ids:
+                        memories.append(mem)
+                        seen_ids.add(mem.id)
+
+        return memories
+
+    def _load_all_memories(
+        self, agents: list[Agent], project: Optional[Project]
+    ) -> list[Memory]:
+        """Load all memories without tier filtering (fallback mode)."""
+        memories: list[Memory] = []
+
+        for a in agents:
+            # Get AGENT region memories (cross-project)
+            agent_memories = self.store.get_memories_for_agent(
+                agent_id=a.id, region=RegionType.AGENT, include_superseded=False
+            )
+            memories.extend(agent_memories)
+
+            # Get PROJECT region memories (project-specific)
+            if project:
+                project_memories = self.store.get_memories_for_agent(
+                    agent_id=a.id,
+                    region=RegionType.PROJECT,
+                    project_id=project.id,
+                    include_superseded=False,
+                )
+                memories.extend(project_memories)
+
+        return memories
 
     def _prioritize_memories(self, memories: list[Memory]) -> list[Memory]:
         """

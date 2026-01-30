@@ -30,3 +30,12 @@ class ImpactLevel(str, Enum):
     MEDIUM = "MEDIUM"  # Moderate decay after 1 week
     HIGH = "HIGH"  # Gentle decay after 1 month
     CRITICAL = "CRITICAL"  # Never decay, keep full detail
+
+
+class MemoryTier(str, Enum):
+    """Memory loading tiers for tiered injection."""
+
+    CORE = "CORE"  # Always loaded: CRITICAL emotional memories
+    ACTIVE = "ACTIVE"  # Recently accessed memories
+    CONTEXTUAL = "CONTEXTUAL"  # Project-specific, loaded by default
+    DEEP = "DEEP"  # Rarely accessed, loaded on-demand via semantic search

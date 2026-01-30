@@ -52,20 +52,34 @@ uv run anima remember "Fixed bug: user's input wasn't validated" --kind learning
 
 ### recall "query" [flags]
 
-Search memories by content.
+Search memories by content. Supports both keyword search and semantic (embedding-based) search.
 
 **Syntax:** `uv run anima recall "QUERY" [FLAGS]`
 
 **Flags:**
 - `--full` / `-f`: Show complete memory content (default shows truncated)
+- `--semantic` / `-s`: Use semantic search (embedding similarity) instead of keyword matching
 - `--id`: Look up a specific memory by ID
 
 **Examples:**
 ```bash
+# Keyword search (default)
 uv run anima recall "caching"
+
+# Semantic search (finds conceptually related memories)
+uv run anima recall "how does memory decay work" --semantic
+
+# Full content view
 uv run anima recall "user preferences" --full
+
+# Direct ID lookup
 uv run anima recall --id abc123
 ```
+
+**Semantic Search Notes:**
+- Uses embedding similarity (cosine distance) to find conceptually related memories
+- Returns results with similarity percentage (e.g., "🎯 85%")
+- Requires embeddings to be generated (run `backfill` for existing memories)
 
 ### memories [flags]
 
@@ -254,9 +268,25 @@ uv run anima setup [flags] [project-dir]
 - `--no-patch`: Skip patching existing agents as subagents
 - `--force`: Overwrite existing files
 
+**Platform Detection:**
+- If a single config directory exists (`.claude/`, `.agent/`, or `.opencode/`), that platform is auto-detected
+- If no config directory exists, or multiple exist, you'll be prompted to choose:
+  ```
+  ⚠️  Platform auto-detection failed.
+     No platform config directory found (.claude, .opencode, .agent)
+
+  Which platform are you setting up?
+    1. claude      (Claude Code - creates .claude/)
+    2. antigravity (Google Antigravity - creates .agent/)
+    3. opencode    (Opencode - creates .opencode/)
+    q. Cancel
+
+  Enter choice [1/2/3/q]:
+  ```
+
 **Examples:**
 ```bash
-# Auto-detect all platforms in current directory
+# Auto-detect platform (prompts if ambiguous)
 uv run anima setup
 
 # Explicitly setup Opencode
@@ -266,11 +296,125 @@ uv run anima setup --platform opencode
 uv run anima setup /path/to/project --platform claude
 ```
 
-# What it installs:
+**What it installs:**
 - Slash commands to `.agent/workflows/` or `.claude/commands/`
 - Skills to `.agent/skills/` or `.claude/skills/`
 - SessionStart/Stop hooks in `.claude/settings.json` (for legacy)
 - Patches existing agent files to mark as subagents (so they don't shadow Anima)
+
+### memory-graph [flags]
+
+Visualize memory relationships, chains, and semantic links.
+
+**Syntax:** `uv run anima memory-graph [FLAGS]`
+
+**View Options:**
+- `--all` / `-a`: Show all memories including standalone
+- `--links` / `-l`: Show semantic links between memories
+- `--tiers` / `-t`: Show memory tier distribution
+- `--embeddings` / `-e`: Show embedding status
+
+**Filter Options:**
+- `--kind` / `-k TYPE`: Filter by kind (emotional, architectural, etc.)
+- `--tier TIER`: Filter by tier (CORE, ACTIVE, CONTEXTUAL, DEEP)
+- `--link-type TYPE`: Filter links by type (RELATES_TO, BUILDS_ON, etc.)
+- `--top N`: Number of links to show (default: 20)
+
+**Examples:**
+```bash
+# Show supersession chains
+uv run anima memory-graph
+
+# Show semantic links between memories
+uv run anima memory-graph --links
+
+# Filter links by type
+uv run anima memory-graph --links --link-type RELATES_TO
+
+# Show tier distribution
+uv run anima memory-graph --tiers
+
+# Show embedding coverage
+uv run anima memory-graph --embeddings
+
+# Filter by tier
+uv run anima memory-graph --tier CORE --all
+```
+
+### backfill [flags]
+
+Generate embeddings and assign tiers for existing memories. Required for semantic search and tiered loading to work with memories created before the Semantic Memory Layer was added.
+
+**Syntax:** `uv run anima backfill [FLAGS]`
+
+**Flags:**
+- `--dry-run` / `-n`: Show what would be done without making changes
+- `--batch-size` / `-b`: Number of memories to process at once (default: 32)
+- `--skip-links`: Skip creating semantic links between memories
+
+**Examples:**
+```bash
+# Preview what would be done
+uv run anima backfill --dry-run
+
+# Full backfill
+uv run anima backfill
+
+# Process in smaller batches (for low-memory systems)
+uv run anima backfill --batch-size 16
+```
+
+**What it does:**
+1. Generates FastEmbed embeddings (384 dimensions) for each memory
+2. Assigns tiers based on impact, kind, and recency
+3. Creates semantic links (RELATES_TO) between similar memories
+4. Shows progress and summary statistics
+
+### Version Management
+
+Commands to check and update Anima.
+
+#### version
+
+Show the currently installed version.
+
+```bash
+uv run anima version
+```
+
+**Output:** `Anima v0.9.0`
+
+#### check-update
+
+Check if a newer version is available on GitHub.
+
+```bash
+uv run anima check-update
+```
+
+**Output:**
+```
+Current version: v0.9.0
+Checking matt-grain/Anima for updates...
+
+  New version available: v0.10.0
+  Release: https://github.com/matt-grain/Anima/releases/tag/v0.10.0
+
+  Run 'anima update' to upgrade
+```
+
+#### update
+
+Update to the latest version from GitHub releases.
+
+```bash
+uv run anima update
+```
+
+**What it does:**
+1. Fetches latest release from GitHub
+2. Downloads and installs the wheel via `uv add --dev`
+3. Runs `setup --force` to refresh hooks, commands, and skills
 
 ### Other Commands
 
@@ -304,3 +448,24 @@ uv run anima setup /path/to/project --platform claude
 
 - **agent**: Memory travels with Anima across all projects
 - **project**: Memory only loads in this specific project
+
+## Memory Tiers (Semantic Memory Layer)
+
+The Semantic Memory Layer uses tiered loading to efficiently manage memory injection:
+
+| Tier | Loading | Assignment Criteria |
+|------|---------|-------------------|
+| CORE | Always loaded | CRITICAL impact emotional memories |
+| ACTIVE | Auto-loaded | Accessed within the last 7 days |
+| CONTEXTUAL | Auto-loaded | Created within 30 days OR HIGH/CRITICAL impact |
+| DEEP | On-demand | Older, lower-impact memories (via semantic search) |
+
+**How Tiered Loading Works:**
+1. **Session Start**: CORE, ACTIVE, and CONTEXTUAL tiers are auto-loaded within token budget
+2. **DEEP Tier**: Not auto-loaded; available via `recall --semantic` when needed
+3. **Budget Respect**: Memories are loaded in tier order until 10% context budget is reached
+
+**Automatic Embedding & Linking:**
+- New memories get embeddings generated automatically via `/remember`
+- Similar memories are auto-linked with RELATES_TO connections
+- Links show in `memory-graph` visualization

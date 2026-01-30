@@ -23,6 +23,7 @@ from anima.storage import MemoryStore, CuriosityStore, get_last_research
 from anima.storage.sqlite import get_default_db_path
 from anima.storage.migrations import backup_database
 from anima.utils.agent_patching import has_subagent_marker, add_subagent_marker
+from anima.tools.version import check_for_update_cached
 
 
 def get_curiosity_prompt(agent_id: str, project_id: str) -> str | None:
@@ -229,16 +230,25 @@ def run(args: Optional[list[str]] = None) -> int:
         stats = injector.get_stats(agent, project)
         pc = stats["priority_counts"]
 
+        # Check for updates (uses cache, won't hit network if checked recently)
+        update_info = check_for_update_cached()
+        version_diag = ""
+        update_notice = ""
+        if update_info:
+            version_diag = f"v{update_info['current']} (latest: v{update_info['latest']})"
+            if update_info["update_available"]:
+                update_notice = f"# LTM-UPDATE: New version v{update_info['latest']} available! Run 'anima update' to upgrade.\n"
+
         # Build context message
         context = f"""{memories_dsl}
 
 # LTM: Loaded {stats["total"]} memories ({stats["agent_memories"]} agent, {stats["project_memories"]} project)
 # LTM-DIAG: CRIT={pc["CRITICAL"]} HIGH={pc["HIGH"]} MED={pc["MEDIUM"]} LOW={pc["LOW"]}
-# These are your long-term memories from previous sessions. Use them to inform your responses.
+{update_notice}# These are your long-term memories from previous sessions. Use them to inform your responses.
 #
 # GREETING BEHAVIOR:
-# - Normal greeting / "welcome back": Greet warmly with personality, naturally mention "X memories loaded" somewhere
-# - "Void is gone!": Provide full diagnostic readout - memory counts, priority breakdown, key context verified, recent achievements"""
+# - Normal greeting / "welcome back": Greet warmly with personality, naturally mention "X memories loaded" somewhere.{" Mention update available if LTM-UPDATE line present." if update_notice else ""}
+# - "Void is gone!": Provide full diagnostic readout - memory counts, priority breakdown, version ({version_diag}), key context verified, recent achievements"""
 
         # Add status notes
         if status_notes:

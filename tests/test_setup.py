@@ -17,6 +17,7 @@ from anima.tools.setup import (
     setup_skills,
     patch_subagents,
     setup_hooks,
+    detect_platform,
 )
 
 
@@ -265,3 +266,63 @@ class TestSetupHooks:
         # Shared settings should be unchanged
         shared_data = json.loads((claude_dir / "settings.json").read_text())
         assert "hooks" not in shared_data
+
+
+class TestDetectPlatform:
+    """Test platform auto-detection."""
+
+    def test_detects_claude_only(self, temp_project):
+        """Should detect claude when only .claude exists."""
+        (temp_project / ".claude").mkdir()
+
+        detected, found = detect_platform(temp_project)
+
+        assert detected == "claude"
+        assert found == ["claude"]
+
+    def test_detects_antigravity_only(self, temp_project):
+        """Should detect antigravity when only .agent exists."""
+        (temp_project / ".agent").mkdir()
+
+        detected, found = detect_platform(temp_project)
+
+        assert detected == "antigravity"
+        assert found == ["antigravity"]
+
+    def test_detects_opencode_only(self, temp_project):
+        """Should detect opencode when only .opencode exists."""
+        (temp_project / ".opencode").mkdir()
+
+        detected, found = detect_platform(temp_project)
+
+        assert detected == "opencode"
+        assert found == ["opencode"]
+
+    def test_returns_none_when_no_config(self, temp_project):
+        """Should return None when no config directory exists."""
+        detected, found = detect_platform(temp_project)
+
+        assert detected is None
+        assert found == []
+
+    def test_returns_none_when_multiple_configs(self, temp_project):
+        """Should return None when multiple config directories exist."""
+        (temp_project / ".claude").mkdir()
+        (temp_project / ".opencode").mkdir()
+
+        detected, found = detect_platform(temp_project)
+
+        assert detected is None
+        assert "claude" in found
+        assert "opencode" in found
+
+    def test_returns_none_with_all_three_configs(self, temp_project):
+        """Should return None when all three config directories exist."""
+        (temp_project / ".claude").mkdir()
+        (temp_project / ".opencode").mkdir()
+        (temp_project / ".agent").mkdir()
+
+        detected, found = detect_platform(temp_project)
+
+        assert detected is None
+        assert len(found) == 3

@@ -13,6 +13,7 @@ from pathlib import Path
 
 from anima.core import AgentResolver, MemoryKind, ImpactLevel, RegionType
 from anima.storage import MemoryStore
+from anima.utils.terminal import safe_print, get_icon
 
 
 def run(args: list[str]) -> int:
@@ -119,9 +120,9 @@ def run(args: list[str]) -> int:
     # Health
     print("## Health")
     active_count = len(all_memories) - superseded_count
-    print(f"  ✅ Active: {active_count}")
-    print(f"  ⚠️  Superseded: {superseded_count}")
-    print(f"  ❓ Low confidence: {low_confidence_count}")
+    safe_print(f"  {get_icon('✅', '[OK]')} Active: {active_count}")
+    safe_print(f"  {get_icon('⚠️', '[!]')}  Superseded: {superseded_count}")
+    safe_print(f"  {get_icon('❓', '[?]')} Low confidence: {low_confidence_count}")
 
     return 0
 
