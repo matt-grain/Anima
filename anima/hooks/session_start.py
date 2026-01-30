@@ -19,6 +19,7 @@ from datetime import datetime
 
 from anima.core import AgentResolver, Agent
 from anima.lifecycle.injection import MemoryInjector
+from anima.lifecycle.session import start_session
 from anima.storage import MemoryStore, CuriosityStore, get_last_research
 from anima.storage.sqlite import get_default_db_path
 from anima.storage.migrations import backup_database
@@ -172,6 +173,10 @@ def run(args: Optional[list[str]] = None) -> int:
     backup_path = None
     if db_path.exists():
         backup_path = backup_database(db_path)
+
+    # Start a new session for temporal memory tracking
+    # (session_id is stored in settings, retrieved by /remember commands)
+    start_session()
 
     # Auto-patch any agents missing the subagent marker BEFORE resolving
     # This prevents new agents from shadowing Anima

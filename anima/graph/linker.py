@@ -5,14 +5,45 @@
 Auto-linking logic for the memory knowledge graph.
 
 Finds semantically similar memories and creates links between them.
+Supports two types of relationships:
+- RELATES_TO: Semantic similarity (creates cluster/web topology)
+- BUILDS_ON: Causal/evolutionary (creates tree/chain topology)
+
+The distinction matters for recall:
+- "What topics cluster together?" -> RELATES_TO
+- "How did my thinking evolve?" -> BUILDS_ON
 """
 
+import re
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import Optional
 
 from anima.embeddings import cosine_similarity
+
+
+# Patterns that suggest one memory BUILDS_ON another
+BUILDS_ON_PATTERNS = [
+    # Direct reference patterns
+    r"\bas (?:I|we) (?:mentioned|discussed|noted|observed|said)",
+    r"\bbuilding on\b",
+    r"\bfollowing up on\b",
+    r"\bextending\b.*\b(?:earlier|previous)",
+    r"\b(?:as|per) (?:our|the) (?:earlier|previous|last) (?:discussion|conversation|session)",
+    # Update/evolution markers
+    r"^(?:Update|Correction|Evolution|Revision|Addendum):",
+    r"\bupdate(?:d|ing)?\b.*\b(?:earlier|previous|my)\b",
+    r"\b(?:now|actually)\b.*\brealiz(?:e|ed)\b",
+    r"\bon (?:second|further) thought\b",
+    # Continuation markers
+    r"\bcontinuing\b.*\bthought",
+    r"\b(?:furthermore|moreover|additionally)\b",
+    r"\bthis (?:builds|extends|adds) (?:on|to)\b",
+]
+
+# Compile patterns for efficiency
+BUILDS_ON_COMPILED = [re.compile(p, re.IGNORECASE) for p in BUILDS_ON_PATTERNS]
 
 
 class LinkType(str, Enum):
@@ -128,28 +159,175 @@ def create_links_for_memory(
     return links
 
 
+def has_builds_on_pattern(content: str) -> bool:
+    """
+    Check if content contains patterns suggesting it builds on earlier thoughts.
+
+    Args:
+        content: The memory content to analyze
+
+    Returns:
+        True if BUILDS_ON patterns are detected
+    """
+    for pattern in BUILDS_ON_COMPILED:
+        if pattern.search(content):
+            return True
+    return False
+
+
 def suggest_link_type(
     source_content: str,
     target_content: str,
     similarity: float,
+    source_created: Optional[datetime] = None,
+    target_created: Optional[datetime] = None,
+    same_session: bool = False,
 ) -> LinkType:
     """
-    Suggest a link type based on content analysis.
+    Suggest a link type based on content and temporal analysis.
 
-    Currently returns RELATES_TO for all cases.
-    Future: Could use LLM or heuristics to detect BUILDS_ON, CONTRADICTS.
+    BUILDS_ON is suggested when:
+    1. Source has reference patterns ("as I mentioned", "building on", etc.)
+    2. High semantic similarity (>0.6) AND source is newer than target
+    3. Same session AND high similarity
 
     Args:
-        source_content: Content of the source memory
-        target_content: Content of the target memory
+        source_content: Content of the source (newer) memory
+        target_content: Content of the target (older) memory
         similarity: Cosine similarity between embeddings
+        source_created: When source was created
+        target_created: When target was created
+        same_session: Whether both memories are from the same session
 
     Returns:
         Suggested LinkType
     """
-    # For now, always return RELATES_TO
-    # Future enhancements could detect:
-    # - BUILDS_ON: if source references or extends target
-    # - CONTRADICTS: if source negates target
-    # - SUPERSEDES: if source is a newer version of target
+    # Check for explicit BUILDS_ON patterns in source
+    if has_builds_on_pattern(source_content):
+        return LinkType.BUILDS_ON
+
+    # High similarity + same session suggests evolution of thought
+    if same_session and similarity >= 0.6:
+        return LinkType.BUILDS_ON
+
+    # High similarity + source is newer suggests building on earlier work
+    if source_created and target_created:
+        if source_created > target_created and similarity >= 0.7:
+            # Very high similarity with temporal ordering = likely evolution
+            return LinkType.BUILDS_ON
+
+    # Default to semantic relationship
     return LinkType.RELATES_TO
+
+
+@dataclass
+class BuildsOnCandidate:
+    """A candidate for BUILDS_ON relationship."""
+
+    memory_id: str
+    content: str
+    similarity: float
+    created_at: datetime
+    session_id: Optional[str] = None
+    confidence: float = 0.0  # How confident we are this is a BUILDS_ON
+
+
+def find_builds_on_candidates(
+    source_content: str,
+    source_embedding: list[float],
+    source_session_id: Optional[str],
+    source_created: datetime,
+    candidate_memories: list[tuple[str, str, list[float], datetime, Optional[str]]],
+    similarity_threshold: float = 0.5,
+    time_window_hours: int = 48,
+    max_candidates: int = 3,
+) -> list[BuildsOnCandidate]:
+    """
+    Find memories that the source memory likely BUILDS_ON.
+
+    Unlike RELATES_TO (symmetric similarity), BUILDS_ON is directional:
+    source BUILDS_ON target means target is older and source extends it.
+
+    Detection signals (additive confidence):
+    - Temporal proximity within time window: +0.3
+    - Same session: +0.4
+    - Reference patterns in source: +0.5
+    - High semantic similarity: +0.2 per 0.1 above threshold
+
+    Args:
+        source_content: Content of the new memory
+        source_embedding: Embedding of the new memory
+        source_session_id: Session ID of the new memory
+        source_created: Creation time of the new memory
+        candidate_memories: List of (id, content, embedding, created_at, session_id)
+        similarity_threshold: Minimum similarity to consider
+        time_window_hours: Only consider memories within this window
+        max_candidates: Maximum BUILDS_ON links to create
+
+    Returns:
+        List of BuildsOnCandidate sorted by confidence descending
+    """
+    candidates: list[BuildsOnCandidate] = []
+    time_window = timedelta(hours=time_window_hours)
+    has_reference = has_builds_on_pattern(source_content)
+
+    for mem_id, content, embedding, created_at, session_id in candidate_memories:
+        # Skip if no embedding
+        if embedding is None:
+            continue
+
+        # Skip if newer than source (can't build on future)
+        if created_at >= source_created:
+            continue
+
+        # Skip if outside time window
+        if source_created - created_at > time_window:
+            continue
+
+        # Calculate similarity
+        similarity = cosine_similarity(source_embedding, embedding)
+        if similarity < similarity_threshold:
+            continue
+
+        # Calculate confidence score
+        confidence = 0.0
+
+        # Temporal proximity boost
+        hours_apart = (source_created - created_at).total_seconds() / 3600
+        if hours_apart <= 24:
+            confidence += 0.3
+        elif hours_apart <= 48:
+            confidence += 0.15
+
+        # Same session boost
+        same_session = (
+            source_session_id is not None
+            and session_id is not None
+            and source_session_id == session_id
+        )
+        if same_session:
+            confidence += 0.4
+
+        # Reference pattern boost
+        if has_reference:
+            confidence += 0.5
+
+        # Similarity boost (0.2 per 0.1 above threshold)
+        similarity_boost = (similarity - similarity_threshold) * 2.0
+        confidence += max(0, similarity_boost)
+
+        # Only include if confidence is meaningful
+        if confidence >= 0.3:
+            candidates.append(BuildsOnCandidate(
+                memory_id=mem_id,
+                content=content,
+                similarity=similarity,
+                created_at=created_at,
+                session_id=session_id,
+                confidence=confidence,
+            ))
+
+    # Sort by confidence descending
+    candidates.sort(key=lambda c: c.confidence, reverse=True)
+
+    return candidates[:max_candidates]

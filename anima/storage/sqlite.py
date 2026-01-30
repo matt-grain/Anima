@@ -281,9 +281,10 @@ class MemoryStore(MemoryStoreProtocol):
                     id, agent_id, region, project_id, kind,
                     content, original_content, impact, confidence,
                     created_at, last_accessed, previous_memory_id,
-                    version, superseded_by, signature, token_count, platform
+                    version, superseded_by, signature, token_count, platform,
+                    session_id
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id) DO UPDATE SET
                     content = excluded.content,
                     confidence = excluded.confidence,
@@ -292,7 +293,8 @@ class MemoryStore(MemoryStoreProtocol):
                     superseded_by = excluded.superseded_by,
                     signature = excluded.signature,
                     token_count = excluded.token_count,
-                    platform = excluded.platform
+                    platform = excluded.platform,
+                    session_id = excluded.session_id
                 """,
                 (
                     memory.id,
@@ -312,6 +314,7 @@ class MemoryStore(MemoryStoreProtocol):
                     memory.signature,
                     memory.token_count,
                     memory.platform,
+                    memory.session_id,
                 ),
             )
 
@@ -427,6 +430,84 @@ class MemoryStore(MemoryStoreProtocol):
         with self._connect() as conn:
             conn.execute("DELETE FROM memories WHERE id = ?", (memory_id,))
 
+    # --- Session-based queries (Phase 3: Temporal Infrastructure) ---
+
+    def get_memories_by_session(
+        self,
+        session_id: str,
+        agent_id: Optional[str] = None,
+        project_id: Optional[str] = None,
+    ) -> list[Memory]:
+        """
+        Get all memories from a specific session.
+
+        This enables temporal queries like "what did we discuss last session?"
+
+        Args:
+            session_id: The session ID to query
+            agent_id: Optional filter by agent
+            project_id: Optional filter by project
+
+        Returns:
+            List of memories from that session, ordered by creation time
+        """
+        query = "SELECT * FROM memories WHERE session_id = ?"
+        params: list = [session_id]
+
+        if agent_id:
+            query += " AND agent_id = ?"
+            params.append(agent_id)
+
+        if project_id:
+            query += " AND project_id = ?"
+            params.append(project_id)
+
+        query += " ORDER BY created_at ASC"
+
+        with self._connect() as conn:
+            rows = conn.execute(query, params).fetchall()
+            return [self._row_to_memory(row) for row in rows]
+
+    def get_distinct_sessions(
+        self,
+        agent_id: Optional[str] = None,
+        project_id: Optional[str] = None,
+        limit: int = 10,
+    ) -> list[str]:
+        """
+        Get the most recent distinct session IDs.
+
+        Useful for queries like "last N sessions" or finding the previous session.
+
+        Args:
+            agent_id: Optional filter by agent
+            project_id: Optional filter by project
+            limit: Maximum number of sessions to return
+
+        Returns:
+            List of session IDs, most recent first
+        """
+        query = """
+            SELECT DISTINCT session_id FROM memories
+            WHERE session_id IS NOT NULL
+        """
+        params: list = []
+
+        if agent_id:
+            query += " AND agent_id = ?"
+            params.append(agent_id)
+
+        if project_id:
+            query += " AND project_id = ?"
+            params.append(project_id)
+
+        query += " ORDER BY created_at DESC LIMIT ?"
+        params.append(limit)
+
+        with self._connect() as conn:
+            rows = conn.execute(query, params).fetchall()
+            return [row[0] for row in rows]
+
     def search_memories(
         self,
         agent_id: str,
@@ -512,6 +593,7 @@ class MemoryStore(MemoryStoreProtocol):
             signature=row["signature"],
             token_count=row["token_count"],
             platform=row["platform"] if "platform" in row.keys() else None,
+            session_id=row["session_id"] if "session_id" in row.keys() else None,
         )
 
     # --- Embedding operations ---
@@ -566,6 +648,49 @@ class MemoryStore(MemoryStoreProtocol):
                 (row["id"], row["content"], json.loads(row["embedding"]))
                 for row in rows
             ]
+
+    def get_memories_with_temporal_context(
+        self,
+        agent_id: str,
+        project_id: Optional[str] = None,
+        include_superseded: bool = False,
+    ) -> list[tuple[str, str, list[float], datetime, Optional[str]]]:
+        """
+        Get memories with embeddings and temporal context for BUILDS_ON detection.
+
+        Returns:
+            List of (memory_id, content, embedding, created_at, session_id) tuples
+        """
+        query = """
+            SELECT id, content, embedding, created_at, session_id FROM memories
+            WHERE agent_id = ? AND embedding IS NOT NULL
+        """
+        params: list = [agent_id]
+
+        if project_id:
+            query += " AND (project_id = ? OR region = 'AGENT')"
+            params.append(project_id)
+
+        if not include_superseded:
+            query += " AND superseded_by IS NULL"
+
+        query += " ORDER BY created_at DESC"
+
+        with self._connect() as conn:
+            rows = conn.execute(query, params).fetchall()
+            result = []
+            for row in rows:
+                embedding = json.loads(row["embedding"]) if row["embedding"] else None
+                created_at = datetime.fromisoformat(row["created_at"])
+                session_id = row["session_id"] if "session_id" in row.keys() else None
+                result.append((
+                    row["id"],
+                    row["content"],
+                    embedding,
+                    created_at,
+                    session_id,
+                ))
+            return result
 
     def get_memories_without_embeddings(
         self,

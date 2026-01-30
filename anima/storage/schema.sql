@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS memories (
     platform TEXT,  -- Which spaceship created this memory (claude, antigravity, opencode)
     embedding BLOB,  -- v4: FastEmbed embedding vector (384 dimensions)
     tier TEXT DEFAULT 'CONTEXTUAL' CHECK (tier IN ('CORE', 'ACTIVE', 'CONTEXTUAL', 'DEEP')),  -- v4: Memory tier for loading
+    session_id TEXT,  -- v5: Groups memories by conversation session for temporal queries
 
     FOREIGN KEY (agent_id) REFERENCES agents(id),
     FOREIGN KEY (project_id) REFERENCES projects(id),
@@ -67,6 +68,7 @@ CREATE INDEX IF NOT EXISTS idx_memories_created ON memories(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_memories_impact ON memories(impact);
 CREATE INDEX IF NOT EXISTS idx_memories_superseded ON memories(superseded_by);
 CREATE INDEX IF NOT EXISTS idx_memories_tier ON memories(tier);
+CREATE INDEX IF NOT EXISTS idx_memories_session ON memories(session_id);
 
 -- Indexes for memory links
 CREATE INDEX IF NOT EXISTS idx_links_source ON memory_links(source_id);

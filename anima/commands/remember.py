@@ -23,8 +23,9 @@ from anima.core import (
     should_sign,
 )
 from anima.embeddings import embed_text
-from anima.graph.linker import find_link_candidates, LinkType
+from anima.graph.linker import find_link_candidates, find_builds_on_candidates, LinkType
 from anima.lifecycle.injection import ensure_token_count
+from anima.lifecycle.session import get_current_session_id
 from anima.storage import MemoryStore
 
 
@@ -312,6 +313,9 @@ def run(args: list[str]) -> int:
         project_id=project.id if region == RegionType.PROJECT else None,
     )
 
+    # Get current session ID (set at SessionStart)
+    session_id = get_current_session_id()
+
     # Create the memory
     memory = Memory(
         agent_id=agent.id,
@@ -326,6 +330,7 @@ def run(args: list[str]) -> int:
         last_accessed=now,
         previous_memory_id=previous.id if previous else None,
         platform=parsed.platform,  # Track which spaceship created this
+        session_id=session_id,  # Group with current session for temporal queries
     )
 
     # Sign memory if agent has a signing key
@@ -340,12 +345,13 @@ def run(args: list[str]) -> int:
 
     # Generate embedding and find semantic links
     semantic_links = 0
+    builds_on_links = 0
     try:
         # Generate embedding for this memory
         embedding = embed_text(text, quiet=True)
         store.save_embedding(memory.id, embedding)
 
-        # Find similar memories to create links
+        # Find similar memories to create RELATES_TO links
         candidate_memories = store.get_memories_with_embeddings(
             agent_id=agent.id,
             project_id=project.id if region == RegionType.PROJECT else None,
@@ -360,7 +366,7 @@ def run(args: list[str]) -> int:
                 exclude_ids={memory.id},
             )
 
-            # Create links for similar memories
+            # Create RELATES_TO links for similar memories
             for candidate in candidates:
                 store.save_link(
                     source_id=memory.id,
@@ -369,6 +375,34 @@ def run(args: list[str]) -> int:
                     similarity=candidate.similarity,
                 )
                 semantic_links += 1
+
+        # Find BUILDS_ON candidates (evolutionary/causal links)
+        temporal_candidates = store.get_memories_with_temporal_context(
+            agent_id=agent.id,
+            project_id=project.id if region == RegionType.PROJECT else None,
+        )
+
+        if temporal_candidates:
+            builds_on = find_builds_on_candidates(
+                source_content=text,
+                source_embedding=embedding,
+                source_session_id=session_id,
+                source_created=now,
+                candidate_memories=temporal_candidates,
+                similarity_threshold=0.5,
+                time_window_hours=48,
+                max_candidates=3,
+            )
+
+            # Create BUILDS_ON links
+            for candidate in builds_on:
+                store.save_link(
+                    source_id=memory.id,
+                    target_id=candidate.memory_id,
+                    link_type=LinkType.BUILDS_ON,
+                    similarity=candidate.similarity,
+                )
+                builds_on_links += 1
 
     except Exception as e:
         # Embedding/linking is optional - don't fail the save
@@ -382,10 +416,11 @@ def run(args: list[str]) -> int:
         f"\nLinked to previous {kind.value.lower()} memory." if previous else ""
     )
     signed_str = " [signed]" if memory.signature else ""
-    semantic_str = f"\n🔗 Connected to {semantic_links} related memories." if semantic_links > 0 else ""
+    semantic_str = f"\n-> Connected to {semantic_links} related memories." if semantic_links > 0 else ""
+    builds_on_str = f"\n-> Builds on {builds_on_links} earlier thought(s)." if builds_on_links > 0 else ""
 
     print(
-        f"Remembered as {kind.value} ({impact.value} impact) in {region_str} region.{linked_str}{semantic_str}"
+        f"Remembered as {kind.value} ({impact.value} impact) in {region_str} region.{linked_str}{semantic_str}{builds_on_str}"
     )
     print(f"Memory ID: {memory.id[:8]}{signed_str}")
 

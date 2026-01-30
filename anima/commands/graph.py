@@ -58,6 +58,13 @@ def get_tier_icon(tier: str) -> str:
 # Export format types
 EXPORT_FORMATS = ["dot", "json", "csv"]
 
+# Export filter modes
+EXPORT_MODES = {
+    "all": None,  # All link types
+    "clusters": LinkType.RELATES_TO,  # Semantic similarity web
+    "references": LinkType.BUILDS_ON,  # Evolutionary tree
+}
+
 
 def build_chains(memories: list[Memory]) -> dict[str, list[Memory]]:
     """
@@ -138,24 +145,46 @@ def export_graph(
     memories: list[Memory],
     export_format: str,
     output_file: Optional[str] = None,
+    link_type_filter: Optional[LinkType] = None,
 ) -> None:
-    """Export memory graph in various formats."""
+    """
+    Export memory graph in various formats.
+
+    Args:
+        store: Memory store for fetching links
+        memories: List of memories to include
+        export_format: Output format (dot, json, csv)
+        output_file: File path or None for stdout
+        link_type_filter: Only include links of this type (None = all)
+    """
     import json
 
     by_id = {m.id: m for m in memories}
 
-    # Collect all links
+    # Collect links (filtered by type if specified)
     edges: list[dict] = []
     seen_pairs: set[tuple[str, str]] = set()
 
     for memory in memories:
         links = store.get_links_for_memory(memory.id)
         for source_id, target_id, link_type, similarity in links:
-            pair_list = sorted([source_id, target_id])
-            pair = (pair_list[0], pair_list[1])
-            if pair in seen_pairs:
+            # Apply link type filter
+            if link_type_filter and link_type != link_type_filter.value:
                 continue
-            seen_pairs.add(pair)
+
+            # For RELATES_TO, treat as undirected (skip duplicates)
+            if link_type == LinkType.RELATES_TO.value:
+                pair_list = sorted([source_id, target_id])
+                pair = (pair_list[0], pair_list[1])
+                if pair in seen_pairs:
+                    continue
+                seen_pairs.add(pair)
+            else:
+                # BUILDS_ON is directed, so include both directions if they exist
+                pair = (source_id, target_id)
+                if pair in seen_pairs:
+                    continue
+                seen_pairs.add(pair)
 
             if source_id not in by_id or target_id not in by_id:
                 continue
@@ -182,7 +211,12 @@ def export_graph(
 
     if export_format == "dot":
         # Graphviz DOT format
-        output_lines.append("graph MemoryGraph {")
+        # Use digraph if we have BUILDS_ON links (directed), graph otherwise
+        has_directed = any(e["link_type"] == LinkType.BUILDS_ON.value for e in edges)
+        graph_type = "digraph" if has_directed else "graph"
+        edge_op = "->" if has_directed else "--"
+
+        output_lines.append(f"{graph_type} MemoryGraph {{")
         output_lines.append("  // Graph settings")
         output_lines.append("  layout=neato;")
         output_lines.append("  overlap=false;")
@@ -213,14 +247,25 @@ def export_graph(
         output_lines.append("")
         output_lines.append("  // Edges")
 
-        # Edges with weight based on similarity
+        # Edges with style based on link type
         for edge in edges:
             weight = edge["similarity"]
-            # Thicker lines for higher similarity
             penwidth = 0.5 + (weight * 3)
+
+            # Style based on link type
+            link_type = edge["link_type"]
+            if link_type == LinkType.BUILDS_ON.value:
+                # BUILDS_ON: solid arrow, blue
+                style = 'style="solid", color="#4477AA"'
+                op = "->"
+            else:
+                # RELATES_TO: dotted gray line
+                style = 'style="dotted", color="#888888"'
+                op = edge_op
+
             output_lines.append(
-                f'  "{edge["source"][:8]}" -- "{edge["target"][:8]}" '
-                f'[weight={weight:.2f}, penwidth={penwidth:.1f}];'
+                f'  "{edge["source"][:8]}" {op} "{edge["target"][:8]}" '
+                f'[weight={weight:.2f}, penwidth={penwidth:.1f}, {style}];'
             )
 
         output_lines.append("}")
@@ -252,7 +297,10 @@ def export_graph(
     if output_file:
         from pathlib import Path
         Path(output_file).write_text(output_text, encoding="utf-8")
-        print(f"Exported {len(nodes)} nodes and {len(edges)} edges to {output_file}")
+        filter_desc = ""
+        if link_type_filter:
+            filter_desc = f" ({link_type_filter.value} links only)"
+        print(f"Exported {len(nodes)} nodes and {len(edges)} edges{filter_desc} to {output_file}")
     else:
         print(output_text)
 
@@ -541,20 +589,26 @@ def run(args: list[str]) -> int:
         print()
         print("Export Options:")
         print("  --export FORMAT     Export graph (dot, json, csv)")
+        print("  --export-clusters   Export only RELATES_TO links (semantic web)")
+        print("  --export-references Export only BUILDS_ON links (evolutionary tree)")
         print("  --output, -o FILE   Output file (default: stdout)")
         print()
         print("Examples:")
         print("  uv run anima memory-graph --links")
         print("  uv run anima memory-graph --links --link-type RELATES_TO")
+        print("  uv run anima memory-graph --links --link-type BUILDS_ON")
         print("  uv run anima memory-graph --tiers")
         print("  uv run anima memory-graph --tier CORE --all")
         print("  uv run anima memory-graph --export dot -o memories.dot")
-        print("  uv run anima memory-graph --export json -o memories.json")
+        print("  uv run anima memory-graph --export-clusters dot -o clusters.dot")
+        print("  uv run anima memory-graph --export-references dot -o evolution.dot")
         print()
         print("  --help, -h          Show this help message")
         return 0
 
     # Parse flags with values
+    export_link_filter: Optional[LinkType] = None
+
     for i, arg in enumerate(args):
         if arg in ("--kind", "-k") and i + 1 < len(args):
             filter_kind = args[i + 1].upper()
@@ -573,6 +627,18 @@ def run(args: list[str]) -> int:
                 print(f"Unknown export format: {export_format}")
                 print(f"Valid formats: {', '.join(EXPORT_FORMATS)}")
                 return 1
+        elif arg == "--export-clusters" and i + 1 < len(args):
+            export_format = args[i + 1].lower()
+            if export_format not in EXPORT_FORMATS:
+                print(f"Unknown export format: {export_format}")
+                return 1
+            export_link_filter = LinkType.RELATES_TO
+        elif arg == "--export-references" and i + 1 < len(args):
+            export_format = args[i + 1].lower()
+            if export_format not in EXPORT_FORMATS:
+                print(f"Unknown export format: {export_format}")
+                return 1
+            export_link_filter = LinkType.BUILDS_ON
         elif arg in ("--output", "-o") and i + 1 < len(args):
             output_file = args[i + 1]
 
@@ -625,7 +691,7 @@ def run(args: list[str]) -> int:
 
     # Export if requested
     if export_format:
-        export_graph(store, all_memories, export_format, output_file)
+        export_graph(store, all_memories, export_format, output_file, export_link_filter)
         return 0
 
     safe_print(f"# Memory Graph for {agent.name}")

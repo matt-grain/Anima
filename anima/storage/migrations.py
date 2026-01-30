@@ -16,13 +16,14 @@ from typing import Optional
 
 
 # Current schema version - increment when schema changes
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 # Migration history:
 # v1: Original schema (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS)
 # v2: Added INTROSPECT kind + platform column for spaceship tracking
 # v3: Added curiosity_queue table + settings table for autonomous research
 # v4: Semantic Memory Layer - embeddings, tiers, memory_links graph
+# v5: Temporal Infrastructure - session_id for grouping memories by conversation
 
 
 def get_schema_version(db_path: Path) -> int:
@@ -226,6 +227,28 @@ def migrate_v2_to_v3(conn: sqlite3.Connection) -> None:
     """)
 
 
+def migrate_v4_to_v5(conn: sqlite3.Connection) -> None:
+    """
+    Migrate from v4 to v5: Temporal Infrastructure.
+
+    Adds:
+    - session_id TEXT column to memories for grouping by conversation session
+
+    This enables temporal queries like "as we discussed last session" by
+    converting time-based cues into spatial coordinates (session + project + timestamp).
+    """
+    # Add session_id column (nullable for backward compatibility)
+    try:
+        conn.execute("ALTER TABLE memories ADD COLUMN session_id TEXT")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
+    # Create index for efficient session-based queries
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_memories_session ON memories(session_id)"
+    )
+
+
 def has_memories_table(db_path: Path) -> bool:
     """Check if the memories table exists in the database."""
     try:
@@ -277,6 +300,9 @@ def run_migrations(
 
         if current < 4 and target >= 4:
             migrate_v3_to_v4(conn)
+
+        if current < 5 and target >= 5:
+            migrate_v4_to_v5(conn)
 
         set_schema_version(conn, target)
         conn.commit()

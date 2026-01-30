@@ -61,6 +61,9 @@ class Memory:
         None  # Which platform created this memory (claude, antigravity, opencode)
     )
 
+    # Session tracking (Phase 3: Temporal Infrastructure)
+    session_id: Optional[str] = None  # Groups memories by conversation session
+
     def __post_init__(self):
         """Ensure original_content is set if not provided."""
         if not self.original_content and self.content:
