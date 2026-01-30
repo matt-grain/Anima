@@ -8,6 +8,7 @@ Tests embeddings, tiered loading, semantic search, and memory linking.
 
 import pytest
 from datetime import datetime, timedelta
+from pathlib import Path
 from unittest.mock import patch
 
 from anima.core import (
@@ -56,7 +57,7 @@ class TestStorageEmbeddings:
     @pytest.fixture
     def project(self):
         """Create a test project."""
-        return Project(id="test-project", name="TestProject", path="/test")
+        return Project(id="test-project", name="TestProject", path=Path("/test"))
 
     def test_save_and_get_embedding(self, store, agent):
         """Should save and retrieve embeddings."""
@@ -393,7 +394,7 @@ class TestTieredInjection:
     @pytest.fixture
     def project(self):
         """Create a test project."""
-        return Project(id="test-project", name="TestProject", path="/test")
+        return Project(id="test-project", name="TestProject", path=Path("/test"))
 
     def test_tiered_loading_prioritizes_core(self, store, agent, project):
         """CORE tier should always be loaded first."""
