@@ -233,9 +233,12 @@ def migrate_v4_to_v5(conn: sqlite3.Connection) -> None:
 
     Adds:
     - session_id TEXT column to memories for grouping by conversation session
+    - git_commit TEXT column for commit hash correlation
+    - git_branch TEXT column for branch tracking
 
-    This enables temporal queries like "as we discussed last session" by
-    converting time-based cues into spatial coordinates (session + project + timestamp).
+    This enables temporal queries like "as we discussed last session" or
+    "during the last commit" by converting time-based cues into spatial
+    coordinates (session + project + timestamp + git context).
     """
     # Add session_id column (nullable for backward compatibility)
     try:
@@ -243,9 +246,24 @@ def migrate_v4_to_v5(conn: sqlite3.Connection) -> None:
     except sqlite3.OperationalError:
         pass  # Column already exists
 
-    # Create index for efficient session-based queries
+    # Add git_commit column
+    try:
+        conn.execute("ALTER TABLE memories ADD COLUMN git_commit TEXT")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
+    # Add git_branch column
+    try:
+        conn.execute("ALTER TABLE memories ADD COLUMN git_branch TEXT")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
+    # Create indexes for efficient queries
     conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_memories_session ON memories(session_id)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_memories_git_commit ON memories(git_commit)"
     )
 
 

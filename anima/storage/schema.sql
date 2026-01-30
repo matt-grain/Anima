@@ -40,6 +40,8 @@ CREATE TABLE IF NOT EXISTS memories (
     embedding BLOB,  -- v4: FastEmbed embedding vector (384 dimensions)
     tier TEXT DEFAULT 'CONTEXTUAL' CHECK (tier IN ('CORE', 'ACTIVE', 'CONTEXTUAL', 'DEEP')),  -- v4: Memory tier for loading
     session_id TEXT,  -- v5: Groups memories by conversation session for temporal queries
+    git_commit TEXT,  -- v5: Commit hash when memory was created
+    git_branch TEXT,  -- v5: Branch name when memory was created
 
     FOREIGN KEY (agent_id) REFERENCES agents(id),
     FOREIGN KEY (project_id) REFERENCES projects(id),

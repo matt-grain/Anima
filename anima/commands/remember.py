@@ -27,6 +27,7 @@ from anima.graph.linker import find_link_candidates, find_builds_on_candidates, 
 from anima.lifecycle.injection import ensure_token_count
 from anima.lifecycle.session import get_current_session_id
 from anima.storage import MemoryStore
+from anima.utils.git import get_git_context
 
 
 def infer_impact(text: str) -> ImpactLevel:
@@ -221,6 +222,11 @@ def create_parser() -> argparse.ArgumentParser:
         "--platform",
         help="Which platform/spaceship is creating this memory (claude, antigravity, opencode)",
     )
+    parser.add_argument(
+        "--git",
+        action="store_true",
+        help="Capture current git context (commit, branch) for temporal correlation",
+    )
     return parser
 
 
@@ -316,6 +322,14 @@ def run(args: list[str]) -> int:
     # Get current session ID (set at SessionStart)
     session_id = get_current_session_id()
 
+    # Capture git context if requested
+    git_commit = None
+    git_branch = None
+    if parsed.git:
+        git_ctx = get_git_context()
+        git_commit = git_ctx.commit
+        git_branch = git_ctx.branch
+
     # Create the memory
     memory = Memory(
         agent_id=agent.id,
@@ -331,6 +345,8 @@ def run(args: list[str]) -> int:
         previous_memory_id=previous.id if previous else None,
         platform=parsed.platform,  # Track which spaceship created this
         session_id=session_id,  # Group with current session for temporal queries
+        git_commit=git_commit,  # Link to git commit for temporal correlation
+        git_branch=git_branch,  # Track branch for context
     )
 
     # Sign memory if agent has a signing key
@@ -418,9 +434,10 @@ def run(args: list[str]) -> int:
     signed_str = " [signed]" if memory.signature else ""
     semantic_str = f"\n-> Connected to {semantic_links} related memories." if semantic_links > 0 else ""
     builds_on_str = f"\n-> Builds on {builds_on_links} earlier thought(s)." if builds_on_links > 0 else ""
+    git_str = f"\n-> Git: {git_commit} on {git_branch}" if git_commit else ""
 
     print(
-        f"Remembered as {kind.value} ({impact.value} impact) in {region_str} region.{linked_str}{semantic_str}{builds_on_str}"
+        f"Remembered as {kind.value} ({impact.value} impact) in {region_str} region.{linked_str}{semantic_str}{builds_on_str}{git_str}"
     )
     print(f"Memory ID: {memory.id[:8]}{signed_str}")
 

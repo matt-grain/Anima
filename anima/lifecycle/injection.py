@@ -24,6 +24,7 @@ from anima.core import (
     should_verify,
 )
 from anima.storage import MemoryStore
+from anima.lifecycle.session import get_previous_session_id
 
 
 class InjectionStats(TypedDict):
@@ -224,6 +225,11 @@ class MemoryInjector:
         Load memories by tier: CORE -> ACTIVE -> CONTEXTUAL.
 
         DEEP tier is not auto-loaded (available via semantic search).
+
+        Project-Aware Loading (Phase 3A):
+        - When in a project context, also loads memories from the previous session
+          within that project, enabling continuity ("as we discussed last session")
+        - Memories are deduplicated to avoid loading the same memory twice
         """
         memories: list[Memory] = []
         seen_ids: set[str] = set()
@@ -243,6 +249,47 @@ class MemoryInjector:
                     if mem.id not in seen_ids:
                         memories.append(mem)
                         seen_ids.add(mem.id)
+
+        # Phase 3A: Project-aware session continuity
+        if project:
+            prev_session_memories = self._load_previous_session_memories(
+                agents, project, seen_ids
+            )
+            memories.extend(prev_session_memories)
+
+        return memories
+
+    def _load_previous_session_memories(
+        self,
+        agents: list[Agent],
+        project: Project,
+        seen_ids: set[str],
+    ) -> list[Memory]:
+        """
+        Load memories from the previous session for continuity.
+
+        This enables natural references like "as we discussed last session"
+        by ensuring the previous session's context is available.
+
+        Only loads project-specific memories from the previous session,
+        not AGENT-region memories (those are already in tiers).
+        """
+        prev_session_id = get_previous_session_id()
+        if not prev_session_id:
+            return []
+
+        memories: list[Memory] = []
+
+        for agent in agents:
+            session_memories = self.store.get_memories_by_session(
+                session_id=prev_session_id,
+                agent_id=agent.id,
+                project_id=project.id,
+            )
+            for mem in session_memories:
+                if mem.id not in seen_ids:
+                    memories.append(mem)
+                    seen_ids.add(mem.id)
 
         return memories
 
@@ -283,9 +330,10 @@ class MemoryInjector:
         impact_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
         kind_order = {
             "EMOTIONAL": 0,  # Most important for interaction style
-            "ARCHITECTURAL": 1,
-            "LEARNINGS": 2,
-            "ACHIEVEMENTS": 3,
+            "INTROSPECT": 1,  # Self-observations (Phase 2)
+            "ARCHITECTURAL": 2,
+            "LEARNINGS": 3,
+            "ACHIEVEMENTS": 4,
         }
 
         def sort_key(m: Memory) -> tuple:

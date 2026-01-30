@@ -64,6 +64,10 @@ class Memory:
     # Session tracking (Phase 3: Temporal Infrastructure)
     session_id: Optional[str] = None  # Groups memories by conversation session
 
+    # Git event correlation (Phase 3: Temporal Infrastructure)
+    git_commit: Optional[str] = None  # Commit hash when memory was created
+    git_branch: Optional[str] = None  # Branch name when memory was created
+
     def __post_init__(self):
         """Ensure original_content is set if not provided."""
         if not self.original_content and self.content:

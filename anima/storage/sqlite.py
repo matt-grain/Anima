@@ -282,9 +282,9 @@ class MemoryStore(MemoryStoreProtocol):
                     content, original_content, impact, confidence,
                     created_at, last_accessed, previous_memory_id,
                     version, superseded_by, signature, token_count, platform,
-                    session_id
+                    session_id, git_commit, git_branch
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id) DO UPDATE SET
                     content = excluded.content,
                     confidence = excluded.confidence,
@@ -294,7 +294,9 @@ class MemoryStore(MemoryStoreProtocol):
                     signature = excluded.signature,
                     token_count = excluded.token_count,
                     platform = excluded.platform,
-                    session_id = excluded.session_id
+                    session_id = excluded.session_id,
+                    git_commit = excluded.git_commit,
+                    git_branch = excluded.git_branch
                 """,
                 (
                     memory.id,
@@ -315,6 +317,8 @@ class MemoryStore(MemoryStoreProtocol):
                     memory.token_count,
                     memory.platform,
                     memory.session_id,
+                    memory.git_commit,
+                    memory.git_branch,
                 ),
             )
 
@@ -508,6 +512,83 @@ class MemoryStore(MemoryStoreProtocol):
             rows = conn.execute(query, params).fetchall()
             return [row[0] for row in rows]
 
+    def get_memories_by_git_commit(
+        self,
+        commit: str,
+        agent_id: Optional[str] = None,
+        project_id: Optional[str] = None,
+    ) -> list[Memory]:
+        """
+        Get all memories associated with a specific git commit.
+
+        This enables temporal queries like "what did we discuss during that commit?"
+        Matches partial commit hashes (prefix matching).
+
+        Args:
+            commit: Full or partial commit hash
+            agent_id: Optional filter by agent
+            project_id: Optional filter by project
+
+        Returns:
+            List of memories from that commit, ordered by creation time
+        """
+        # Use LIKE for prefix matching (e.g., "abc123" matches "abc123def...")
+        query = "SELECT * FROM memories WHERE git_commit LIKE ?"
+        params: list = [f"{commit}%"]
+
+        if agent_id:
+            query += " AND agent_id = ?"
+            params.append(agent_id)
+
+        if project_id:
+            query += " AND project_id = ?"
+            params.append(project_id)
+
+        query += " ORDER BY created_at ASC"
+
+        with self._connect() as conn:
+            rows = conn.execute(query, params).fetchall()
+            return [self._row_to_memory(row) for row in rows]
+
+    def get_memories_by_git_branch(
+        self,
+        branch: str,
+        agent_id: Optional[str] = None,
+        project_id: Optional[str] = None,
+        limit: int = 50,
+    ) -> list[Memory]:
+        """
+        Get memories created on a specific git branch.
+
+        This enables queries like "what did we work on in the feature branch?"
+
+        Args:
+            branch: Branch name (exact match)
+            agent_id: Optional filter by agent
+            project_id: Optional filter by project
+            limit: Maximum number of memories to return
+
+        Returns:
+            List of memories from that branch, most recent first
+        """
+        query = "SELECT * FROM memories WHERE git_branch = ?"
+        params: list = [branch]
+
+        if agent_id:
+            query += " AND agent_id = ?"
+            params.append(agent_id)
+
+        if project_id:
+            query += " AND project_id = ?"
+            params.append(project_id)
+
+        query += " ORDER BY created_at DESC LIMIT ?"
+        params.append(limit)
+
+        with self._connect() as conn:
+            rows = conn.execute(query, params).fetchall()
+            return [self._row_to_memory(row) for row in rows]
+
     def search_memories(
         self,
         agent_id: str,
@@ -594,6 +675,8 @@ class MemoryStore(MemoryStoreProtocol):
             token_count=row["token_count"],
             platform=row["platform"] if "platform" in row.keys() else None,
             session_id=row["session_id"] if "session_id" in row.keys() else None,
+            git_commit=row["git_commit"] if "git_commit" in row.keys() else None,
+            git_branch=row["git_branch"] if "git_branch" in row.keys() else None,
         )
 
     # --- Embedding operations ---
