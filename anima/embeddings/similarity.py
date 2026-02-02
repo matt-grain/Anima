@@ -94,7 +94,4 @@ def batch_similarities(
     Returns:
         List of similarity scores in the same order as embeddings
     """
-    return [
-        cosine_similarity(query_embedding, emb) if emb else 0.0
-        for emb in embeddings
-    ]
+    return [cosine_similarity(query_embedding, emb) if emb else 0.0 for emb in embeddings]

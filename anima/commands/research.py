@@ -173,11 +173,7 @@ def run(args: list[str]) -> int:
     print("=" * 60)
     print("RESEARCH MODE")
     print("=" * 60)
-    region_str = (
-        "AGENT (cross-project)"
-        if top.region.value == "AGENT"
-        else f"PROJECT ({project.name})"
-    )
+    region_str = "AGENT (cross-project)" if top.region.value == "AGENT" else f"PROJECT ({project.name})"
     print(f"\nRegion: {region_str}")
     print(f"Priority: {top.priority_score} (asked {top.recurrence_count}x)")
     if top.context:

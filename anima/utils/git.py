@@ -147,9 +147,7 @@ def get_commit_info(commit_ref: str, cwd: Optional[Path] = None) -> Optional[dic
         return None
 
 
-def get_recent_commits(
-    count: int = 5, cwd: Optional[Path] = None
-) -> list[dict]:
+def get_recent_commits(count: int = 5, cwd: Optional[Path] = None) -> list[dict]:
     """
     Get recent commits for the repository.
 
@@ -189,12 +187,14 @@ def get_recent_commits(
             except ValueError:
                 commit_time = None
 
-            commits.append({
-                "hash": full_hash[:8],
-                "full_hash": full_hash,
-                "time": commit_time,
-                "subject": subject,
-            })
+            commits.append(
+                {
+                    "hash": full_hash[:8],
+                    "full_hash": full_hash,
+                    "time": commit_time,
+                    "subject": subject,
+                }
+            )
 
     except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
         pass

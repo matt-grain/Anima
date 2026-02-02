@@ -70,7 +70,6 @@ SOCIAL_PATTERNS: list[tuple[str, SocialCueType, int]] = [
         SocialCueType.SHARED_DISCUSSION,
         1,
     ),
-
     # Agent statement patterns (user refers to what I said)
     (
         r"you\s+(?:mentioned|said|suggested|recommended|noted)\s+(?:that\s+)?(.+?)(?:\.|,|$)",
@@ -87,7 +86,6 @@ SOCIAL_PATTERNS: list[tuple[str, SocialCueType, int]] = [
         SocialCueType.AGENT_STATEMENT,
         1,
     ),
-
     # Shared decision patterns
     (
         r"we\s+(?:agreed|decided|determined)\s+(?:that\s+)?(.+?)(?:\.|,|$)",
@@ -99,7 +97,6 @@ SOCIAL_PATTERNS: list[tuple[str, SocialCueType, int]] = [
         SocialCueType.SHARED_DECISION,
         1,
     ),
-
     # Collaborative work patterns
     (
         r"we\s+(?:built|implemented|created|designed|fixed)\s+(.+?)(?:\.|,|$)",
@@ -111,14 +108,12 @@ SOCIAL_PATTERNS: list[tuple[str, SocialCueType, int]] = [
         SocialCueType.COLLABORATIVE_WORK,
         1,
     ),
-
     # Shared knowledge patterns
     (
         r"(?:as\s+)?we\s+(?:know|understand)\s+(?:that\s+)?(.+?)(?:\.|,|$)",
         SocialCueType.SHARED_KNOWLEDGE,
         1,
     ),
-
     # Explicit recall requests
     (
         r"(?:do\s+you\s+)?remember\s+(?:when\s+we\s+)?(.+?)(?:\?|$)",

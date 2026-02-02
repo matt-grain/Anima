@@ -145,9 +145,7 @@ class CuriosityStore:
         """Get a curiosity by ID (supports partial ID matching)."""
         with self._connect() as conn:
             # Try exact match first
-            row = conn.execute(
-                "SELECT * FROM curiosity_queue WHERE id = ?", (curiosity_id,)
-            ).fetchone()
+            row = conn.execute("SELECT * FROM curiosity_queue WHERE id = ?", (curiosity_id,)).fetchone()
 
             if not row:
                 # Try prefix match
@@ -306,15 +304,11 @@ def get_setting(key: str, db_path: Optional[Path] = None) -> Optional[str]:
     conn = sqlite3.connect(db_path, timeout=5.0)
     try:
         # Check if settings table exists (may not if database not migrated to v3)
-        cursor = conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='settings'"
-        )
+        cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='settings'")
         if not cursor.fetchone():
             return None  # Table doesn't exist yet
 
-        row = conn.execute(
-            "SELECT value FROM settings WHERE key = ?", (key,)
-        ).fetchone()
+        row = conn.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
         return row[0] if row else None
     finally:
         conn.close()
@@ -326,9 +320,7 @@ def set_setting(key: str, value: str, db_path: Optional[Path] = None) -> None:
     conn = sqlite3.connect(db_path, timeout=5.0)
     try:
         # Check if settings table exists (may not if database not migrated to v3)
-        cursor = conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='settings'"
-        )
+        cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='settings'")
         if not cursor.fetchone():
             # Create the table if it doesn't exist
             conn.execute("""

@@ -71,13 +71,15 @@ def get_linked_memories(
 
                 _, content = memory_data
 
-                results.append(LinkedMemory(
-                    memory_id=target_id,
-                    content=content,
-                    link_type=link.link_type,
-                    similarity=link.similarity,
-                    depth=depth,
-                ))
+                results.append(
+                    LinkedMemory(
+                        memory_id=target_id,
+                        content=content,
+                        link_type=link.link_type,
+                        similarity=link.similarity,
+                        depth=depth,
+                    )
+                )
 
                 visited.add(target_id)
                 next_ids.add(target_id)

@@ -76,9 +76,7 @@ def run(args: list[str]) -> int:
     store = MemoryStore()
 
     # Get all memories
-    all_memories = store.get_memories_for_agent(
-        agent_id=agent.id, project_id=project.id
-    )
+    all_memories = store.get_memories_for_agent(agent_id=agent.id, project_id=project.id)
 
     # Apply filters
     if agent_only:
@@ -124,9 +122,7 @@ def run(args: list[str]) -> int:
             "impact": memory.impact.value,
             "confidence": memory.confidence,
             "created_at": memory.created_at.isoformat(),
-            "last_accessed": memory.last_accessed.isoformat()
-            if memory.last_accessed
-            else None,
+            "last_accessed": memory.last_accessed.isoformat() if memory.last_accessed else None,
         }
 
         # Optional fields

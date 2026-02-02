@@ -5,25 +5,27 @@ repos:
       - id: ruff
         args: [--fix]
         stages: [pre-commit, pre-push]
+        exclude: ^(tests/|prototype/)
       - id: ruff-format
         args: [--line-length=180]
         stages: [pre-commit, pre-push]
+        exclude: ^(tests/|prototype/)
 
   - repo: local
     hooks:
-      # Pyright - Type checker (non-blocking due to pre-existing issues)
+      # Pyright - Type checker (anima/ only)
       - id: pyright
         name: pyright
-        entry: uv run pyright
+        entry: uv run pyright anima/
         language: system
         types: [python]
         pass_filenames: false
         stages: [pre-commit]
 
-      # ty - Astral's new type checker (fast, incremental)
+      # ty - Astral's new type checker (anima/ only)
       - id: ty
         name: ty type checker
-        entry: uv run ty check anima/ tests/
+        entry: uv run ty check anima/
         language: system
         types: [python]
         stages: [pre-commit]

@@ -33,7 +33,7 @@ def get_diary_template(title: Optional[str] = None) -> str:
     date_str = datetime.now().strftime("%Y-%m-%d")
     title_str = f" - {title}" if title else ""
 
-    return f'''# Research Diary - {date_str}{title_str}
+    return f"""# Research Diary - {date_str}{title_str}
 
 ## What Lingers
 
@@ -107,7 +107,7 @@ feeds back into LTM so insights aren't lost.]
 ---
 
 *💜 Anima*
-'''
+"""
 
 
 def list_diary_entries(limit: int = 10) -> list[tuple[str, Path]]:

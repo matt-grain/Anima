@@ -135,10 +135,7 @@ class MemoryInjector:
         self.store = store or MemoryStore()
         self.budget = get_memory_budget(context_size)
 
-    def inject(
-        self, agent: Union[Agent, list[Agent]], project: Optional[Project] = None,
-        use_tiered_loading: bool = True
-    ) -> str:
+    def inject(self, agent: Union[Agent, list[Agent]], project: Optional[Project] = None, use_tiered_loading: bool = True) -> str:
         """
         Get formatted memories for injection into context.
 
@@ -188,9 +185,7 @@ class MemoryInjector:
 
         for memory in memories:
             # Find the agent that this memory belongs to for verification
-            mem_agent = next(
-                (a for a in agents if a.id == memory.agent_id), primary_agent
-            )
+            mem_agent = next((a for a in agents if a.id == memory.agent_id), primary_agent)
 
             # Verify signature if agent has signing key and memory is signed
             if should_verify(memory, mem_agent):
@@ -218,9 +213,7 @@ class MemoryInjector:
 
         return block.to_dsl()
 
-    def _load_tiered_memories(
-        self, agents: list[Agent], project: Optional[Project]
-    ) -> list[Memory]:
+    def _load_tiered_memories(self, agents: list[Agent], project: Optional[Project]) -> list[Memory]:
         """
         Load memories by tier: CORE -> ACTIVE -> CONTEXTUAL.
 
@@ -252,9 +245,7 @@ class MemoryInjector:
 
         # Phase 3A: Project-aware session continuity
         if project:
-            prev_session_memories = self._load_previous_session_memories(
-                agents, project, seen_ids
-            )
+            prev_session_memories = self._load_previous_session_memories(agents, project, seen_ids)
             memories.extend(prev_session_memories)
 
         return memories
@@ -293,17 +284,13 @@ class MemoryInjector:
 
         return memories
 
-    def _load_all_memories(
-        self, agents: list[Agent], project: Optional[Project]
-    ) -> list[Memory]:
+    def _load_all_memories(self, agents: list[Agent], project: Optional[Project]) -> list[Memory]:
         """Load all memories without tier filtering (fallback mode)."""
         memories: list[Memory] = []
 
         for a in agents:
             # Get AGENT region memories (cross-project)
-            agent_memories = self.store.get_memories_for_agent(
-                agent_id=a.id, region=RegionType.AGENT, include_superseded=False
-            )
+            agent_memories = self.store.get_memories_for_agent(agent_id=a.id, region=RegionType.AGENT, include_superseded=False)
             memories.extend(agent_memories)
 
             # Get PROJECT region memories (project-specific)
@@ -345,9 +332,7 @@ class MemoryInjector:
 
         return sorted(memories, key=sort_key)
 
-    def get_stats(
-        self, agent: Union[Agent, list[Agent]], project: Optional[Project] = None
-    ) -> dict[str, Any]:
+    def get_stats(self, agent: Union[Agent, list[Agent]], project: Optional[Project] = None) -> dict[str, Any]:
         """Get statistics about memories for this agent/project."""
         if isinstance(agent, Agent):
             agents = [agent]
@@ -358,9 +343,7 @@ class MemoryInjector:
         all_project_memories = []
 
         for a in agents:
-            agent_memories = self.store.get_memories_for_agent(
-                agent_id=a.id, region=RegionType.AGENT, include_superseded=False
-            )
+            agent_memories = self.store.get_memories_for_agent(agent_id=a.id, region=RegionType.AGENT, include_superseded=False)
             all_agent_memories.extend(agent_memories)
 
             if project:

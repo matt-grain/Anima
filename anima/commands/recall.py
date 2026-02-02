@@ -36,9 +36,7 @@ def lookup_by_id(memory_id: str) -> int:
     store = MemoryStore()
 
     # Get all memories for this agent and search for matching ID
-    all_memories = store.get_memories_for_agent(
-        agent_id=agent.id, project_id=project.id
-    )
+    all_memories = store.get_memories_for_agent(agent_id=agent.id, project_id=project.id)
 
     # Find memory with matching ID (partial match from start)
     matches = [m for m in all_memories if m.id.startswith(memory_id)]
@@ -65,9 +63,7 @@ def lookup_by_id(memory_id: str) -> int:
     print(f"Created: {date_str}")
     print(f"Confidence: {memory.confidence}")
     if memory.platform:
-        spaceship_icon = {"claude": "🔵", "antigravity": "🟣", "opencode": "🟢"}.get(
-            memory.platform, "🚀"
-        )
+        spaceship_icon = {"claude": "🔵", "antigravity": "🟣", "opencode": "🟢"}.get(memory.platform, "🚀")
         print(f"Platform: {spaceship_icon} {memory.platform}")
     if memory.superseded_by:
         safe_print(f"{get_icon('⚠️', '[!]')}  Superseded by: {memory.superseded_by}")
@@ -142,10 +138,7 @@ def semantic_search(query: str, agent_id: str, project_id: str | None, show_full
             similarity_pct = int(result.score * 100)
 
             if show_full:
-                print(
-                    f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] "
-                    f"({date_str}) [🎯 {similarity_pct}%]"
-                )
+                print(f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] ({date_str}) [🎯 {similarity_pct}%]")
                 print(f"   ID: {memory.id}")
                 print(f"   Region: {memory.region.value}")
                 print("   Content:")
@@ -153,11 +146,7 @@ def semantic_search(query: str, agent_id: str, project_id: str | None, show_full
                     print(f"   {line}")
                 print()
             else:
-                print(
-                    f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] "
-                    f"{content[:70]}{'...' if len(content) > 70 else ''} "
-                    f"({date_str}) [🎯 {similarity_pct}%]"
-                )
+                print(f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] {content[:70]}{'...' if len(content) > 70 else ''} ({date_str}) [🎯 {similarity_pct}%]")
                 print(f"   ID: {mem_id[:8]}")
                 print()
 
@@ -240,9 +229,7 @@ def run(args: list[str]) -> int:
 
     # Search memories using keyword search
     store = MemoryStore()
-    memories = store.search_memories(
-        agent_id=agent.id, query=query, project_id=project.id, limit=10
-    )
+    memories = store.search_memories(agent_id=agent.id, query=query, project_id=project.id, limit=10)
 
     if not memories:
         print(f'No memories found matching "{query}"')
@@ -257,9 +244,7 @@ def run(args: list[str]) -> int:
 
         if show_full:
             # Full output: show complete content
-            print(
-                f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] ({date_str})"
-            )
+            print(f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] ({date_str})")
             print(f"   ID: {memory.id}")
             print(f"   Region: {memory.region.value}")
             print("   Content:")
@@ -268,11 +253,7 @@ def run(args: list[str]) -> int:
             print()
         else:
             # Brief output: truncate content
-            print(
-                f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] "
-                f"{memory.content[:80]}{'...' if len(memory.content) > 80 else ''} "
-                f"({date_str})"
-            )
+            print(f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] {memory.content[:80]}{'...' if len(memory.content) > 80 else ''} ({date_str})")
             print(f"   ID: {memory.id[:8]}")
             print()
 

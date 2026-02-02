@@ -73,9 +73,7 @@ def get_curiosity_prompt(agent_id: str, project_id: str) -> str | None:
         lines.append("# I haven't done any autonomous research yet!")
 
     region_str = "general" if top.region.value == "AGENT" else "project-specific"
-    lines.append(
-        f"# My top {region_str} question (priority {top.priority_score}, asked {top.recurrence_count}x):"
-    )
+    lines.append(f"# My top {region_str} question (priority {top.priority_score}, asked {top.recurrence_count}x):")
     lines.append(f'#   "{top.question}"')
 
     if top.context:
@@ -219,16 +217,10 @@ def run(args: Optional[list[str]] = None) -> int:
     if backup_path:
         status_notes.append(f"# LTM: Session backup created: {backup_path.name}")
     if patched_agents:
-        status_notes.append(
-            f"# LTM: Auto-patched {len(patched_agents)} agent(s) as subagents: {', '.join(patched_agents)}"
-        )
+        status_notes.append(f"# LTM: Auto-patched {len(patched_agents)} agent(s) as subagents: {', '.join(patched_agents)}")
     if disabled_agents:
-        status_notes.append(
-            f"# LTM WARNING: Disabled {len(disabled_agents)} incompatible agent(s) (missing YAML frontmatter): {', '.join(disabled_agents)}"
-        )
-        status_notes.append(
-            '# LTM: To fix, add frontmatter: ---\\nname: "AgentName"\\nltm: subagent: true\\n---'
-        )
+        status_notes.append(f"# LTM WARNING: Disabled {len(disabled_agents)} incompatible agent(s) (missing YAML frontmatter): {', '.join(disabled_agents)}")
+        status_notes.append('# LTM: To fix, add frontmatter: ---\\nname: "AgentName"\\nltm: subagent: true\\n---')
 
     if memories_dsl:
         # Get stats

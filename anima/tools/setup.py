@@ -4,41 +4,19 @@
 """
 LTM setup tool.
 
-Sets up LTM in a project by copying commands and optionally configuring hooks.
-Works for users who installed via wheel and don't have access to the source tree.
+Sets up LTM/Anima in a project by copying commands and configuring hooks.
+Supports multiple platforms: Claude Code, Google Antigravity, Opencode, GitHub Copilot.
 """
 
-import json
-import shutil
 import sys
-from importlib import resources
 from pathlib import Path
 
-from anima.utils.agent_patching import has_subagent_marker, add_subagent_marker
+from anima.tools.platforms import (
+    PLATFORMS,
+    get_platform,
+    detect_platforms,
+)
 from anima.utils.terminal import safe_print, get_icon
-
-
-def detect_platform(project_dir: Path) -> tuple[str | None, list[str]]:
-    """Detect which platform(s) are configured in the project.
-
-    Returns:
-        Tuple of (detected_platform, list_of_found_configs).
-        - If exactly one config found: (platform_name, [config_name])
-        - If none found: (None, [])
-        - If multiple found: (None, [config1, config2, ...])
-    """
-    found = []
-
-    if find_config_dir(project_dir, ".claude"):
-        found.append("claude")
-    if find_config_dir(project_dir, ".opencode"):
-        found.append("opencode")
-    if find_config_dir(project_dir, ".agent"):
-        found.append("antigravity")
-
-    if len(found) == 1:
-        return (found[0], found)
-    return (None, found)
 
 
 def prompt_platform_choice(found_configs: list[str]) -> str | None:
@@ -50,25 +28,27 @@ def prompt_platform_choice(found_configs: list[str]) -> str | None:
     Returns:
         Selected platform name, or None if user cancels
     """
-    safe_print(f"\n{get_icon('⚠️', '[!]')}  Platform auto-detection failed.")
+    safe_print(f"\n{get_icon('', '[!]')}  Platform auto-detection failed.")
 
     if len(found_configs) == 0:
-        print("   No platform config directory found (.claude, .opencode, .agent)")
+        print("   No platform config directory found")
     else:
         print(f"   Multiple configs found: {', '.join(found_configs)}")
 
     print("\nWhich platform are you setting up?")
-    print("  1. claude      (Claude Code - creates .claude/)")
-    print("  2. antigravity (Google Antigravity - creates .agent/)")
-    print("  3. opencode    (Opencode - creates .opencode/)")
+
+    # Build menu from registered platforms
+    platform_list = list(PLATFORMS.keys())
+    for i, name in enumerate(platform_list, 1):
+        platform = get_platform(name)
+        print(f"  {i}. {name:12} ({platform.display_name} - {platform.config_dir}/)")
+
     print("  q. Cancel")
 
-    platforms = {"1": "claude", "2": "antigravity", "3": "opencode"}
-
     try:
-        choice = input("\nEnter choice [1/2/3/q]: ").strip().lower()
-        if choice in platforms:
-            return platforms[choice]
+        choice = input(f"\nEnter choice [1-{len(platform_list)}/q]: ").strip().lower()
+        if choice.isdigit() and 1 <= int(choice) <= len(platform_list):
+            return platform_list[int(choice) - 1]
         elif choice in ("q", "quit", "exit", ""):
             print("Setup cancelled.")
             return None
@@ -80,430 +60,6 @@ def prompt_platform_choice(found_configs: list[str]) -> str | None:
         return None
 
 
-def get_package_commands_dir(platform: str) -> Path:
-    """Get the platform-specific commands directory from the installed package.
-
-    Args:
-        platform: Target platform (antigravity, opencode, claude).
-    """
-    # Try to find commands in the package
-    try:
-        # For Python 3.9+
-        anima_files = resources.files("anima")
-        package_base = Path(str(anima_files))
-
-        platform_commands = package_base / "platforms" / platform / "commands"
-        if platform_commands.exists():
-            return platform_commands
-    except (TypeError, AttributeError):
-        pass
-
-    # Fallback: look relative to this file (for editable installs)
-    platform_commands = (
-        Path(__file__).parent.parent / "platforms" / platform / "commands"
-    )
-    if platform_commands.exists():
-        return platform_commands
-
-    raise FileNotFoundError(
-        f"Could not find commands directory for platform '{platform}'"
-    )
-
-
-def get_package_seeds_dir() -> Path:
-    """Get the seeds directory from the installed package."""
-    try:
-        anima_files = resources.files("anima")
-        seeds_dir = Path(str(anima_files)).parent / "seeds"
-        if seeds_dir.exists():
-            return seeds_dir
-    except (TypeError, AttributeError):
-        pass
-
-    # Fallback: look relative to this file
-    package_root = Path(__file__).parent.parent.parent
-    seeds_dir = package_root / "seeds"
-    if seeds_dir.exists():
-        return seeds_dir
-
-    raise FileNotFoundError("Could not find seeds directory in package")
-
-
-def get_package_skills_dir() -> Path:
-    """Get the skills directory from the installed package."""
-    try:
-        anima_files = resources.files("anima")
-        skills_dir = Path(str(anima_files)) / "skills"
-        if skills_dir.exists():
-            return skills_dir
-    except (TypeError, AttributeError):
-        pass
-
-    # Fallback: look relative to this file (ltm/tools/setup.py -> ltm/skills)
-    package_root = Path(__file__).parent.parent
-    skills_dir = package_root / "skills"
-    if skills_dir.exists():
-        return skills_dir
-
-    raise FileNotFoundError("Could not find skills directory in package")
-
-
-def setup_skills(project_dir: Path, force: bool = False) -> tuple[int, int]:
-    """Copy skill directories to project's .agent/skills (or .claude/skills) directory."""
-    try:
-        src_dir = get_package_skills_dir()
-    except FileNotFoundError as e:
-        safe_print(f"  {get_icon('⚠️', '[!]')}  {e}")
-        return (0, 0)
-
-    # Prefer .agent/skills for Anima, fallback to .claude/skills (with monorepo support)
-    agent_dir = find_config_dir(project_dir, ".agent")
-    claude_dir = find_config_dir(project_dir, ".claude")
-
-    if agent_dir:
-        dest_dir = agent_dir / "skills"
-    elif claude_dir:
-        dest_dir = claude_dir / "skills"
-    else:
-        dest_dir = project_dir / ".agent" / "skills"  # Default: create in project_dir
-
-    dest_dir.mkdir(parents=True, exist_ok=True)
-
-    copied = 0
-    skipped = 0
-
-    for skill_dir in src_dir.iterdir():
-        if not skill_dir.is_dir():
-            continue
-
-        skill_md = skill_dir / "SKILL.md"
-        if not skill_md.exists():
-            continue
-
-        dest_skill_dir = dest_dir / skill_dir.name
-
-        if dest_skill_dir.exists() and not force:
-            safe_print(f"  {get_icon('⏭️', '[>>]')}  {skill_dir.name}/ (exists, use --force to overwrite)")
-            skipped += 1
-            continue
-
-        # Copy entire skill directory
-        if dest_skill_dir.exists():
-            shutil.rmtree(dest_skill_dir)
-        shutil.copytree(skill_dir, dest_skill_dir)
-        safe_print(f"  {get_icon('✅', '[OK]')} {skill_dir.name}/")
-        copied += 1
-
-    return (copied, skipped)
-
-
-def find_config_dir(project_dir: Path, config_name: str) -> Path | None:
-    """Find a config directory, checking both project_dir and parent (for monorepos).
-
-    Args:
-        project_dir: Starting directory to search from
-        config_name: Name of config directory (e.g., ".claude", ".opencode", ".agent")
-
-    Returns:
-        Path to config directory if found, None otherwise
-    """
-    # Check current directory first
-    if (project_dir / config_name).exists():
-        return project_dir / config_name
-    # Check parent directory (monorepo support: backend/ with ../.claude)
-    if (project_dir.parent / config_name).exists():
-        return project_dir.parent / config_name
-    return None
-
-
-def setup_commands(
-    project_dir: Path, force: bool = False, platform: str | None = None
-) -> tuple[int, int]:
-    """Copy command files to project's commands directory.
-
-    Args:
-        project_dir: Target project directory
-        force: Overwrite existing files
-        platform: Target platform (antigravity, opencode, claude) - uses platform-specific templates
-    """
-    # Auto-detect platform if not specified
-    if not platform:
-        detected, found = detect_platform(project_dir)
-        if detected:
-            platform = detected
-        else:
-            # This shouldn't happen if run() prompts first, but fallback to claude
-            platform = "claude"
-
-    try:
-        src_dir = get_package_commands_dir(platform)
-    except FileNotFoundError as e:
-        print(f"Error: {e}")
-        return (0, 0)
-
-    # Determine destination based on platform (with monorepo support)
-    if platform == "claude":
-        config_dir = find_config_dir(project_dir, ".claude")
-        dest_dir = (config_dir or project_dir / ".claude") / "commands"
-    elif platform == "opencode":
-        config_dir = find_config_dir(project_dir, ".opencode")
-        dest_dir = (config_dir or project_dir / ".opencode") / "commands"
-    else:  # antigravity
-        config_dir = find_config_dir(project_dir, ".agent")
-        dest_dir = (config_dir or project_dir / ".agent") / "workflows"
-
-    # Create directory if needed
-    dest_dir.mkdir(parents=True, exist_ok=True)
-
-    copied = 0
-    skipped = 0
-
-    for src_file in src_dir.glob("*.md"):
-        dest_file = dest_dir / src_file.name
-
-        if dest_file.exists() and not force:
-            safe_print(f"  {get_icon('⏭️', '[>>]')}  {src_file.name} (exists, use --force to overwrite)")
-            skipped += 1
-            continue
-
-        shutil.copy2(src_file, dest_file)
-        safe_print(f"  {get_icon('✅', '[OK]')} {src_file.name}")
-        copied += 1
-
-    return (copied, skipped)
-
-
-def patch_subagents(project_dir: Path) -> tuple[int, int, int]:
-    """
-    Patch agent definition files to add subagent: true marker.
-
-    If a project has agent files without ltm: subagent: true,
-    they will shadow the global Anima agent. This function adds the marker
-    so these agents are treated as subagents (invoked via Task tool) rather
-    than the main session identity.
-
-    Agents without YAML frontmatter are incompatible and will be disabled
-    by renaming to .md.disabled.
-
-    Supports monorepos where config dirs are in parent directory.
-
-    Returns:
-        Tuple of (patched_count, skipped_count, disabled_count)
-    """
-    # Check both .agent and .claude directories (with monorepo support)
-    local_dirs = []
-    for config_name in [".agent", ".claude"]:
-        config_dir = find_config_dir(project_dir, config_name)
-        if config_dir:
-            local_dirs.append(config_dir / "agents")
-
-    patched = 0
-    skipped = 0
-    disabled = 0
-
-    for agents_dir in local_dirs:
-        if not agents_dir.exists():
-            continue
-
-        for agent_file in sorted(agents_dir.glob("*.md")):
-            content = agent_file.read_text(encoding="utf-8")
-
-            # Check if it already has ltm: subagent: true
-            if has_subagent_marker(content):
-                skipped += 1
-                continue
-
-            # Check if it has frontmatter at all
-            if not content.startswith("---"):
-                # Incompatible format - disable by renaming
-                disabled_path = agent_file.with_suffix(".md.disabled")
-                agent_file.rename(disabled_path)
-                print(
-                    f"  ⚠️  {agent_file.name} → {disabled_path.name} (missing frontmatter, disabled)"
-                )
-                print(
-                    '      To fix: add ---\\nname: "AgentName"\\nltm: subagent: true\\n--- at top'
-                )
-                disabled += 1
-                continue
-
-            # Add ltm: subagent: true after the opening ---
-            new_content = add_subagent_marker(content)
-
-            if new_content != content:
-                agent_file.write_text(new_content, encoding="utf-8")
-                safe_print(f"  {get_icon('✅', '[OK]')} {agent_file.name} (marked as subagent)")
-                patched += 1
-            else:
-                skipped += 1
-
-    return (patched, skipped, disabled)
-
-
-def setup_opencode(project_dir: Path, force: bool = False) -> bool:
-    """
-    Set up the Opencode plugin bridge.
-
-    1. Ensures .opencode/plugins exists.
-    2. Copies anima/platforms/opencode to .opencode/plugins/anima.
-    3. Provides instructions for package.json.
-    Supports monorepos where .opencode is in parent directory.
-    """
-    opencode_dir = find_config_dir(project_dir, ".opencode")
-    if not opencode_dir:
-        # Only setup if the directory exists or if explicitly requested (handled in run)
-        return False
-
-    plugins_dir = opencode_dir / "plugins"
-    plugins_dir.mkdir(parents=True, exist_ok=True)
-
-    dest_plugin_dir = plugins_dir / "anima"
-
-    # Resolve source from package
-    try:
-        from importlib import resources
-
-        anima_files = resources.files("anima")
-        src_plugin_dir = Path(str(anima_files)) / "platforms" / "opencode"
-    except (TypeError, AttributeError, ImportError):
-        # Fallback for dev/editable installs
-        src_plugin_dir = Path(__file__).parent.parent / "platforms" / "opencode"
-
-    if not src_plugin_dir.exists():
-        safe_print(f"  {get_icon('⚠️', '[!]')}  Opencode plugin source not found in package")
-        return False
-
-    if dest_plugin_dir.exists() and not force:
-        safe_print(f"  {get_icon('⏭️', '[>>]')}  Opencode plugin exists (use --force to overwrite)")
-    else:
-        if dest_plugin_dir.exists():
-            shutil.rmtree(dest_plugin_dir)
-        shutil.copytree(src_plugin_dir, opencode_dir, dirs_exist_ok=True)
-        safe_print(f"  {get_icon('✅', '[OK]')} Opencode plugin bridge installed in .opencode/plugins/anima")
-
-    # Check package.json
-    pkg_json = opencode_dir / "plugins" / "animapackage.json"
-    if pkg_json.exists():
-        print(
-            "  👉 Note: Add '@anima-ltm/opencode-plugin': 'file:./plugins/anima' to your dependencies."
-        )
-    else:
-        safe_print(f"  {get_icon('👉', '->')} Note: Create .opencode/package.json to register the anima plugin.")
-
-    return True
-
-
-def setup_hooks(project_dir: Path, force: bool = False) -> bool:
-    """Add LTM hooks to project's .claude/settings.json or settings.local.json.
-
-    Prefers settings.local.json if it exists (user-local, not version controlled).
-    Falls back to settings.json (team-shared, version controlled).
-    Supports monorepos where .claude is in parent directory.
-    """
-    claude_dir = find_config_dir(project_dir, ".claude")
-    if not claude_dir:
-        safe_print(f"  {get_icon('⚠️', '[!]')}  No .claude directory found (checked current and parent dir)")
-        return False
-
-    settings_local = claude_dir / "settings.local.json"
-    settings_shared = claude_dir / "settings.json"
-
-    # Prefer local settings if it exists, otherwise use shared
-    if settings_local.exists():
-        settings_file = settings_local
-    else:
-        settings_file = settings_shared
-
-    # Detect monorepo: if .claude is in parent dir and pyproject.toml is in project_dir
-    # we need to cd into the subfolder before running uv
-    cmd_prefix = ""
-    if claude_dir == project_dir.parent / ".claude" and (project_dir / "pyproject.toml").exists():
-        # Claude will run from parent dir, but uv needs to run from project_dir
-        subfolder = project_dir.name
-        cmd_prefix = f"cd {subfolder} && "
-        safe_print(f"  {get_icon('📁', '[D]')} Monorepo detected: hooks will cd to {subfolder}/ first")
-
-    ltm_hooks = {
-        "SessionStart": [
-            {
-                "matcher": "startup",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": f"{cmd_prefix}uv run python -m anima.hooks.session_start",
-                    }
-                ],
-            },
-            {
-                "matcher": "compact",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": f"{cmd_prefix}uv run python -m anima.hooks.session_start",
-                    }
-                ],
-            },
-            {
-                "matcher": "clear",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": f"{cmd_prefix}uv run python -m anima.tools.detect_achievements --since 24",
-                    },
-                    {
-                        "type": "command",
-                        "command": f"{cmd_prefix}uv run python -m anima.hooks.session_start",
-                    },
-                ],
-            },
-        ],
-        "Stop": [
-            {
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": f"{cmd_prefix}uv run python -m anima.hooks.session_end",
-                    },
-                    {
-                        "type": "command",
-                        "command": f"{cmd_prefix}uv run python -m anima.tools.detect_achievements --since 24",
-                    },
-                ]
-            }
-        ],
-    }
-
-    # Load existing settings or create new
-    if settings_file.exists():
-        try:
-            settings = json.loads(settings_file.read_text())
-        except json.JSONDecodeError:
-            safe_print(f"  {get_icon('⚠️', '[!]')}  Invalid JSON in {settings_file}, creating backup")
-            shutil.copy2(settings_file, settings_file.with_suffix(".json.bak"))
-            settings = {}
-    else:
-        settings_file.parent.mkdir(parents=True, exist_ok=True)
-        settings = {}
-
-    # Check if hooks already exist
-    if "hooks" in settings and not force:
-        existing_hooks = settings.get("hooks", {})
-        if "SessionStart" in existing_hooks or "Stop" in existing_hooks:
-            safe_print(f"  {get_icon('⚠️', '[!]')}  Hooks already configured (use --force to overwrite)")
-            return False
-
-    # Merge hooks
-    if "hooks" not in settings:
-        settings["hooks"] = {}
-
-    settings["hooks"].update(ltm_hooks)
-
-    # Write back
-    settings_file.write_text(json.dumps(settings, indent=2) + "\n")
-    safe_print(f"  {get_icon('✅', '[OK]')} Hooks configured in {settings_file}")
-    return True
-
-
 def run(args: list[str]) -> int:
     """
     Run the setup tool.
@@ -512,6 +68,7 @@ def run(args: list[str]) -> int:
         ltm setup [options] [project-dir]
 
     Options:
+        --platform <p>  Target platform: claude, antigravity, opencode, copilot
         --commands      Install slash commands only
         --hooks         Configure hooks only
         --no-patch      Skip patching existing agents as subagents
@@ -539,22 +96,40 @@ def run(args: list[str]) -> int:
             target_platform = args[idx + 1].lower()
 
     # Filter out flags to get project dir
-    project_args = [a for a in [arg for arg in args if not arg.startswith("-")]]
-    # Handle the case where platform name was a project_arg if the flag was missing its value
-    if target_platform and target_platform in project_args:
-        project_args.remove(target_platform)
+    flag_args = {
+        "--force",
+        "--commands",
+        "--hooks",
+        "--no-patch",
+        "--help",
+        "-h",
+        "--platform",
+        "--target",
+    }
+    project_args = []
+    skip_next = False
+    for arg in args:
+        if skip_next:
+            skip_next = False
+            continue
+        if arg in ("--platform", "--target"):
+            skip_next = True
+            continue
+        if arg not in flag_args:
+            project_args.append(arg)
 
     project_dir = Path(project_args[0]) if project_args else Path.cwd()
 
     if show_help:
-        print("""
+        platforms_help = "\n".join(f"    {name:12} {get_platform(name).display_name} ({get_platform(name).config_dir}/)" for name in PLATFORMS)
+        print(f"""
 LTM Setup Tool
 
 Usage:
     uv run anima setup [options] [project-dir]
 
 Options:
-    --platform <p>  Target platform: claude, antigravity, opencode
+    --platform <p>  Target platform (see list below)
     --commands      Install slash commands/workflows only
     --hooks         Configure hooks/plugins only
     --no-patch      Skip patching existing agents as subagents
@@ -562,16 +137,17 @@ Options:
     --help          Show this help
 
 Platforms:
-    antigravity     Installs skills and workflows to .agent/
-    claude          Installs skills and commands to .claude/ + settings.json hooks
-    opencode        Installs TS plugin to .opencode/plugins/anima
+{platforms_help}
 
 Examples:
     # Set up everything with auto-detection
     uv run anima setup
 
-    # Force Opencode setup
-    uv run anima setup --platform opencode
+    # Force Copilot setup
+    uv run anima setup --platform copilot
+
+    # Install only commands for Claude
+    uv run anima setup --platform claude --commands
 """)
         return 0
 
@@ -581,9 +157,9 @@ Examples:
 
     # Auto-detect platform if not specified
     if not target_platform:
-        detected, found = detect_platform(project_dir)
-        if detected:
-            target_platform = detected
+        found = detect_platforms(project_dir)
+        if len(found) == 1:
+            target_platform = found[0]
             print(f"Setting up LTM in: {project_dir}")
             print(f"Detected platform: {target_platform}\n")
         else:
@@ -594,90 +170,45 @@ Examples:
             print(f"\nSetting up LTM in: {project_dir}")
             print(f"Selected platform: {target_platform}\n")
     else:
+        # Validate platform name
+        if target_platform not in PLATFORMS:
+            print(f"Error: Unknown platform '{target_platform}'")
+            print(f"Supported platforms: {', '.join(PLATFORMS.keys())}")
+            return 1
         print(f"Setting up LTM in: {project_dir}")
         print(f"Target platform: {target_platform}\n")
 
-    # Default: install both
-    install_commands = not hooks_only
-    install_hooks = not commands_only
-
+    # Get the platform setup instance
+    platform = get_platform(target_platform)
     success = True
 
-    if install_commands:
-        # If platform is specified, we might skip some logic
-        if target_platform in (None, "antigravity", "claude", "opencode"):
-            print(
-                f"Installing commands{f' ({target_platform})' if target_platform else ''}..."
-            )
-            try:
-                copied, skipped = setup_commands(project_dir, force, target_platform)
-                print(f"  Commands: {copied} installed, {skipped} skipped\n")
-            except Exception as e:
-                print(f"  Error installing commands: {e}\n")
-                success = False
-
-            print("Installing skills...")
-            try:
-                copied, skipped = setup_skills(project_dir, force)
-                if copied > 0 or skipped > 0:
-                    print(f"  Skills: {copied} installed, {skipped} skipped\n")
-                else:
-                    print("  No skills found in package\n")
-            except Exception as e:
-                print(f"  Error installing skills: {e}\n")
-                success = False
-
-    if install_hooks:
-        if target_platform in (None, "claude"):
-            print("Configuring Claude hooks...")
-            try:
-                if not setup_hooks(project_dir, force):
-                    pass  # Warning already printed
-                print()
-            except Exception as e:
-                print(f"  Error configuring hooks: {e}\n")
-                success = False
-
-        if target_platform in (None, "opencode"):
-            print("Configuring Opencode bridge...")
-            try:
-                if not setup_opencode(project_dir, force):
-                    if target_platform == "opencode":
-                        safe_print(f"  {get_icon('⚠️', '[!]')}  Opencode directory (.opencode) not found.")
-                print()
-            except Exception as e:
-                print(f"  Error configuring Opencode: {e}\n")
-                success = False
-
-    # Patch subagents unless --no-patch or running with specific options
-    if not no_patch and not commands_only and not hooks_only:
-        claude_dir = find_config_dir(project_dir, ".claude")
-        agents_dir = claude_dir / "agents" if claude_dir else None
-        if agents_dir and agents_dir.exists() and list(agents_dir.glob("*.md")):
-            print("Patching agent definitions...")
-            try:
-                patched, skipped, disabled = patch_subagents(project_dir)
-                if patched > 0 or skipped > 0 or disabled > 0:
-                    parts = []
-                    if patched > 0:
-                        parts.append(f"{patched} patched")
-                    if skipped > 0:
-                        parts.append(f"{skipped} skipped")
-                    if disabled > 0:
-                        parts.append(f"{disabled} disabled")
-                    print(f"  Agents: {', '.join(parts)}\n")
-                else:
-                    print("  No agent files found\n")
-            except Exception as e:
-                print(f"  Error patching agents: {e}\n")
-                success = False
+    # Handle specific options
+    if commands_only:
+        print(f"Installing commands ({target_platform})...")
+        try:
+            copied, skipped = platform.setup_commands(project_dir, force)
+            print(f"  Commands: {copied} installed, {skipped} skipped\n")
+        except Exception as e:
+            print(f"  Error installing commands: {e}\n")
+            success = False
+    elif hooks_only:
+        print(f"Configuring {platform.display_name} hooks...")
+        try:
+            platform.setup_hooks(project_dir, force)
+            print()
+        except Exception as e:
+            print(f"  Error configuring hooks: {e}\n")
+            success = False
+    else:
+        # Full setup
+        success = platform.run_full_setup(project_dir, force, no_patch)
 
     if success:
         print("Setup complete!")
         print("\nNext steps:")
         print("  1. Import starter seeds:")
         print("     uv run anima import-seeds seeds/")
-        print("  2. If using Anima, check .agent/rules/anima.md is configured.")
+        print("  2. If using Anima, check your platform's rules/agent file is configured.")
         print("  3. Start a new session and say 'Welcome back'")
 
     return 0 if success else 1

@@ -55,6 +55,7 @@ def get_tier_icon(tier: str) -> str:
     emoji, fallback = icons.get(tier, ("•", "*"))
     return get_icon(emoji, fallback)
 
+
 # Export format types
 EXPORT_FORMATS = ["dot", "json", "csv"]
 
@@ -118,9 +119,7 @@ def build_chains(memories: list[Memory]) -> dict[str, list[Memory]]:
     return chains
 
 
-def format_memory_node(
-    memory: Memory, is_superseded: bool = False, truncated_size: int = 80
-) -> str:
+def format_memory_node(memory: Memory, is_superseded: bool = False, truncated_size: int = 80) -> str:
     """Format a single memory as a node."""
     icon = get_kind_icon(memory.kind)
     status = "~~" if is_superseded else ""
@@ -189,23 +188,27 @@ def export_graph(
             if source_id not in by_id or target_id not in by_id:
                 continue
 
-            edges.append({
-                "source": source_id,
-                "target": target_id,
-                "link_type": link_type,
-                "similarity": similarity or 0.0,
-            })
+            edges.append(
+                {
+                    "source": source_id,
+                    "target": target_id,
+                    "link_type": link_type,
+                    "similarity": similarity or 0.0,
+                }
+            )
 
     # Build nodes list
     nodes: list[dict] = []
     for m in memories:
-        nodes.append({
-            "id": m.id,
-            "label": m.content[:50].replace("\n", " "),
-            "kind": m.kind.value,
-            "impact": m.impact.value,
-            "created": m.created_at.isoformat(),
-        })
+        nodes.append(
+            {
+                "id": m.id,
+                "label": m.content[:50].replace("\n", " "),
+                "kind": m.kind.value,
+                "impact": m.impact.value,
+                "created": m.created_at.isoformat(),
+            }
+        )
 
     output_lines: list[str] = []
 
@@ -223,16 +226,16 @@ def export_graph(
         output_lines.append("  splines=true;")
         output_lines.append("")
         output_lines.append("  // Node styles by kind")
-        output_lines.append('  node [style=filled, fontsize=10];')
+        output_lines.append("  node [style=filled, fontsize=10];")
         output_lines.append("")
 
         # Color mapping for kinds
         kind_colors = {
-            "EMOTIONAL": "#E6B8E6",      # Purple
+            "EMOTIONAL": "#E6B8E6",  # Purple
             "ARCHITECTURAL": "#B8D4E6",  # Blue
-            "LEARNINGS": "#B8E6C8",      # Green
-            "ACHIEVEMENTS": "#E6D4B8",   # Gold
-            "INTROSPECT": "#D4B8E6",     # Lavender
+            "LEARNINGS": "#B8E6C8",  # Green
+            "ACHIEVEMENTS": "#E6D4B8",  # Gold
+            "INTROSPECT": "#D4B8E6",  # Lavender
         }
 
         # Nodes
@@ -240,9 +243,7 @@ def export_graph(
         for node in nodes:
             color = kind_colors.get(node["kind"], "#CCCCCC")
             label = node["label"].replace('"', '\\"')[:40]
-            output_lines.append(
-                f'  "{node["id"][:8]}" [label="{label}", fillcolor="{color}"];'
-            )
+            output_lines.append(f'  "{node["id"][:8]}" [label="{label}", fillcolor="{color}"];')
 
         output_lines.append("")
         output_lines.append("  // Edges")
@@ -263,10 +264,7 @@ def export_graph(
                 style = 'style="dotted", color="#888888"'
                 op = edge_op
 
-            output_lines.append(
-                f'  "{edge["source"][:8]}" {op} "{edge["target"][:8]}" '
-                f'[weight={weight:.2f}, penwidth={penwidth:.1f}, {style}];'
-            )
+            output_lines.append(f'  "{edge["source"][:8]}" {op} "{edge["target"][:8]}" [weight={weight:.2f}, penwidth={penwidth:.1f}, {style}];')
 
         output_lines.append("}")
 
@@ -279,7 +277,7 @@ def export_graph(
                 "total_nodes": len(nodes),
                 "total_edges": len(edges),
                 "exported_at": datetime.now().isoformat(),
-            }
+            },
         }
         output_lines.append(json.dumps(graph_data, indent=2))
 
@@ -287,15 +285,13 @@ def export_graph(
         # Simple CSV edge list
         output_lines.append("source,target,link_type,similarity")
         for edge in edges:
-            output_lines.append(
-                f'{edge["source"]},{edge["target"]},'
-                f'{edge["link_type"]},{edge["similarity"]:.4f}'
-            )
+            output_lines.append(f"{edge['source']},{edge['target']},{edge['link_type']},{edge['similarity']:.4f}")
 
     output_text = "\n".join(output_lines)
 
     if output_file:
         from pathlib import Path
+
         Path(output_file).write_text(output_text, encoding="utf-8")
         filter_desc = ""
         if link_type_filter:
@@ -650,9 +646,7 @@ def run(args: list[str]) -> int:
     store = MemoryStore()
 
     # Get all memories
-    all_memories = store.get_memories_for_agent(
-        agent_id=agent.id, project_id=project.id
-    )
+    all_memories = store.get_memories_for_agent(agent_id=agent.id, project_id=project.id)
 
     if not all_memories:
         print(f"No memories found for agent '{agent.name}'")
@@ -671,6 +665,7 @@ def run(args: list[str]) -> int:
     # Filter by tier if specified
     if filter_tier:
         from anima.core import MemoryTier
+
         try:
             tier = MemoryTier(filter_tier)
             tier_memories = store.get_memories_by_tier(

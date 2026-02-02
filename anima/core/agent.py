@@ -180,9 +180,7 @@ class AgentResolver:
     def resolve_project(self) -> Project:
         """Resolve the current project from working directory."""
         project_name = self.project_path.name
-        return Project(
-            id=slugify(project_name), name=project_name, path=self.project_path
-        )
+        return Project(id=slugify(project_name), name=project_name, path=self.project_path)
 
     def _find_agent_by_name(self, name: str) -> Optional[Agent]:
         """Find an agent by name in local or global dirs."""

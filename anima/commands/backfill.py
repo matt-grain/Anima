@@ -126,10 +126,7 @@ def run_builds_on_backfill(agent, dry_run: bool = False) -> int:
         for candidate in candidates:
             # Check if link already exists
             existing = store.get_links_for_memory(mem_id)
-            already_linked = any(
-                t == candidate.memory_id and lt == LinkType.BUILDS_ON.value
-                for _, t, lt, _ in existing
-            )
+            already_linked = any(t == candidate.memory_id and lt == LinkType.BUILDS_ON.value for _, t, lt, _ in existing)
 
             if not already_linked:
                 store.save_link(
@@ -233,7 +230,7 @@ def run(args: list[str]) -> int:
     total_tiers_assigned = 0
 
     for batch_start in range(0, len(memories_to_embed), batch_size):
-        batch = memories_to_embed[batch_start:batch_start + batch_size]
+        batch = memories_to_embed[batch_start : batch_start + batch_size]
         texts = [content for _, content in batch]
 
         print(f"\nProcessing batch {batch_start // batch_size + 1}...")

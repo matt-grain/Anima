@@ -34,6 +34,7 @@ def main() -> int:
         print("  sign-memories          Sign unsigned memories")
         print("  refresh-memories       Re-inject memories into context (alias for load-context)")
         print("  backfill               Generate embeddings and tiers for existing memories")
+        print("  dream                  Between-session memory processing")
         print("  version                Show installed version")
         print("  check-update           Check for new version on GitHub")
         print("  update                 Update to latest version from GitHub")
@@ -126,6 +127,10 @@ def main() -> int:
             return run(args)
         case "backfill":
             from anima.commands.backfill import run
+
+            return run(args)
+        case "dream":
+            from anima.commands.dream import run
 
             return run(args)
         case "version":

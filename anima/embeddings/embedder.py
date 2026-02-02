@@ -52,11 +52,10 @@ def get_embedder(quiet: bool = False):
 
     try:
         from fastembed import TextEmbedding
+
         _embedder = TextEmbedding(model_name=MODEL_NAME)
     except ImportError as e:
-        raise ImportError(
-            "FastEmbed not installed. Run: uv add fastembed"
-        ) from e
+        raise ImportError("FastEmbed not installed. Run: uv add fastembed") from e
 
     _load_time = time.time() - start
 

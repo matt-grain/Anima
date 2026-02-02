@@ -189,9 +189,7 @@ def run(args: list[str]) -> int:
             priority_str = f"[P:{c.priority_score}]"
             time_str = format_time_ago(c.last_seen)
 
-            print(
-                f"{region_icon} [{c.id}] {priority_str} {c.question[:45]}...{recurrence}"
-            )
+            print(f"{region_icon} [{c.id}] {priority_str} {c.question[:45]}...{recurrence}")
             print(f"   Last seen: {time_str}")
             if c.context:
                 print(f"   Context: {c.context[:40]}...")

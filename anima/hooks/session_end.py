@@ -105,9 +105,7 @@ def run(args: Optional[list[str]] = None) -> int:
 
     # Report what happened (to stdout for terminal visibility)
     if compacted or deleted:
-        print(
-            f"{len(compacted)} memories compacted, {deleted} deleted at end of session"
-        )
+        print(f"{len(compacted)} memories compacted, {deleted} deleted at end of session")
     else:
         print("0 memories compacted at end of session")
 

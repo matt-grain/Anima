@@ -110,20 +110,12 @@ def migrate_v1_to_v2(conn: sqlite3.Connection) -> None:
     conn.execute("ALTER TABLE memories_new RENAME TO memories")
 
     # Recreate indexes
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_memories_agent_region ON memories(agent_id, region)"
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_memories_project ON memories(project_id)"
-    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_agent_region ON memories(agent_id, region)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_project ON memories(project_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_kind ON memories(kind)")
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_memories_created ON memories(created_at DESC)"
-    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_created ON memories(created_at DESC)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_impact ON memories(impact)")
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_memories_superseded ON memories(superseded_by)"
-    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_superseded ON memories(superseded_by)")
 
 
 def migrate_v3_to_v4(conn: sqlite3.Connection) -> None:
@@ -143,9 +135,7 @@ def migrate_v3_to_v4(conn: sqlite3.Connection) -> None:
 
     # Add tier column with default CONTEXTUAL
     try:
-        conn.execute(
-            "ALTER TABLE memories ADD COLUMN tier TEXT DEFAULT 'CONTEXTUAL'"
-        )
+        conn.execute("ALTER TABLE memories ADD COLUMN tier TEXT DEFAULT 'CONTEXTUAL'")
     except sqlite3.OperationalError:
         pass  # Column already exists
 
@@ -164,15 +154,9 @@ def migrate_v3_to_v4(conn: sqlite3.Connection) -> None:
     """)
 
     # Create indexes for efficient lookups
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_memory_links_source ON memory_links(source_id)"
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_memory_links_target ON memory_links(target_id)"
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_memory_links_type ON memory_links(link_type)"
-    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memory_links_source ON memory_links(source_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memory_links_target ON memory_links(target_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memory_links_type ON memory_links(link_type)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_tier ON memories(tier)")
 
 
@@ -204,18 +188,10 @@ def migrate_v2_to_v3(conn: sqlite3.Connection) -> None:
     """)
 
     # Create indexes for curiosity queue
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_curiosity_agent ON curiosity_queue(agent_id)"
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_curiosity_status ON curiosity_queue(status)"
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_curiosity_last_seen ON curiosity_queue(last_seen DESC)"
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_curiosity_region ON curiosity_queue(agent_id, region)"
-    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_curiosity_agent ON curiosity_queue(agent_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_curiosity_status ON curiosity_queue(status)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_curiosity_last_seen ON curiosity_queue(last_seen DESC)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_curiosity_region ON curiosity_queue(agent_id, region)")
 
     # Create settings table for tracking last_research, etc.
     conn.execute("""
@@ -259,21 +235,15 @@ def migrate_v4_to_v5(conn: sqlite3.Connection) -> None:
         pass  # Column already exists
 
     # Create indexes for efficient queries
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_memories_session ON memories(session_id)"
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_memories_git_commit ON memories(git_commit)"
-    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_session ON memories(session_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_git_commit ON memories(git_commit)")
 
 
 def has_memories_table(db_path: Path) -> bool:
     """Check if the memories table exists in the database."""
     try:
         conn = sqlite3.connect(db_path, timeout=5.0)
-        cursor = conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='memories'"
-        )
+        cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='memories'")
         exists = cursor.fetchone() is not None
         conn.close()
         return exists
@@ -281,9 +251,7 @@ def has_memories_table(db_path: Path) -> bool:
         return False
 
 
-def run_migrations(
-    db_path: Path, target_version: Optional[int] = None
-) -> tuple[int, int, Optional[Path]]:
+def run_migrations(db_path: Path, target_version: Optional[int] = None) -> tuple[int, int, Optional[Path]]:
     """
     Run all pending migrations.
 

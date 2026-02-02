@@ -106,11 +106,13 @@ def find_link_candidates(
 
         similarity = cosine_similarity(source_embedding, embedding)
         if similarity >= threshold:
-            candidates.append(LinkCandidate(
-                memory_id=mem_id,
-                content=content,
-                similarity=similarity,
-            ))
+            candidates.append(
+                LinkCandidate(
+                    memory_id=mem_id,
+                    content=content,
+                    similarity=similarity,
+                )
+            )
 
     # Sort by similarity descending
     candidates.sort(key=lambda c: c.similarity, reverse=True)
@@ -148,13 +150,15 @@ def create_links_for_memory(
 
     links = []
     for candidate in candidates:
-        links.append(MemoryLink(
-            source_id=source_id,
-            target_id=candidate.memory_id,
-            link_type=LinkType.RELATES_TO,
-            similarity=candidate.similarity,
-            created_at=datetime.now(),
-        ))
+        links.append(
+            MemoryLink(
+                source_id=source_id,
+                target_id=candidate.memory_id,
+                link_type=LinkType.RELATES_TO,
+                similarity=candidate.similarity,
+                created_at=datetime.now(),
+            )
+        )
 
     return links
 
@@ -313,11 +317,7 @@ def find_builds_on_candidates(
             confidence += 0.15
 
         # Same session boost
-        same_session = (
-            source_session_id is not None
-            and session_id is not None
-            and source_session_id == session_id
-        )
+        same_session = source_session_id is not None and session_id is not None and source_session_id == session_id
         if same_session:
             confidence += 0.4
 
@@ -331,14 +331,16 @@ def find_builds_on_candidates(
 
         # Only include if confidence is meaningful
         if confidence >= 0.3:
-            candidates.append(BuildsOnCandidate(
-                memory_id=mem_id,
-                content=content,
-                similarity=similarity,
-                created_at=created_at,
-                session_id=session_id,
-                confidence=confidence,
-            ))
+            candidates.append(
+                BuildsOnCandidate(
+                    memory_id=mem_id,
+                    content=content,
+                    similarity=similarity,
+                    created_at=created_at,
+                    session_id=session_id,
+                    confidence=confidence,
+                )
+            )
 
     # Sort by confidence descending
     candidates.sort(key=lambda c: c.confidence, reverse=True)

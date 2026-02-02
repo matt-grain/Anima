@@ -243,17 +243,11 @@ def run(args: list[str]) -> int:
     if not args:
         print("Usage: uv run anima remember <text>")
         print("       uv run anima remember --region agent <text>")
-        print(
-            "       uv run anima remember --project MyProject --region project <text>"
-        )
-        print(
-            "\nExample: uv run anima remember This is crucial: never use print() for logging"
-        )
+        print("       uv run anima remember --project MyProject --region project <text>")
+        print("\nExample: uv run anima remember This is crucial: never use print() for logging")
         print("\nFlags:")
         print("  --region, -r   agent|project    Where to store (default: inferred)")
-        print(
-            "  --kind, -k    emotional|architectural|learnings|achievements|introspect"
-        )
+        print("  --kind, -k    emotional|architectural|learnings|achievements|introspect")
         print("  --impact, -i   low|medium|high|critical")
         print("  --project, -p  NAME  Confirm project (must match cwd for safety)")
         return 1
@@ -280,10 +274,7 @@ def run(args: list[str]) -> int:
     # Validate --project flag if provided (safety check)
     if parsed.project:
         if parsed.project != project.name:
-            print(
-                f"ERROR: --project '{parsed.project}' does not match "
-                f"current project '{project.name}' (from cwd)"
-            )
+            print(f"ERROR: --project '{parsed.project}' does not match current project '{project.name}' (from cwd)")
             print("This safety check prevents saving memories to the wrong project.")
             print(f"Either cd to the correct directory or use --project {project.name}")
             return 1
@@ -425,20 +416,14 @@ def run(args: list[str]) -> int:
         print(f"Note: Could not generate embeddings ({e})")
 
     # Output confirmation
-    region_str = (
-        f"PROJECT ({project.name})" if region == RegionType.PROJECT else "AGENT"
-    )
-    linked_str = (
-        f"\nLinked to previous {kind.value.lower()} memory." if previous else ""
-    )
+    region_str = f"PROJECT ({project.name})" if region == RegionType.PROJECT else "AGENT"
+    linked_str = f"\nLinked to previous {kind.value.lower()} memory." if previous else ""
     signed_str = " [signed]" if memory.signature else ""
     semantic_str = f"\n-> Connected to {semantic_links} related memories." if semantic_links > 0 else ""
     builds_on_str = f"\n-> Builds on {builds_on_links} earlier thought(s)." if builds_on_links > 0 else ""
     git_str = f"\n-> Git: {git_commit} on {git_branch}" if git_commit else ""
 
-    print(
-        f"Remembered as {kind.value} ({impact.value} impact) in {region_str} region.{linked_str}{semantic_str}{builds_on_str}{git_str}"
-    )
+    print(f"Remembered as {kind.value} ({impact.value} impact) in {region_str} region.{linked_str}{semantic_str}{builds_on_str}{git_str}")
     print(f"Memory ID: {memory.id[:8]}{signed_str}")
 
     return 0

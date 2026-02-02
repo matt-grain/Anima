@@ -71,7 +71,5 @@ def add_subagent_marker(content: str) -> str:
     elif content.startswith("---\r\n"):
         end_idx = content.find("\r\n---", 5)
         if end_idx != -1:
-            return (
-                content[:end_idx] + "\r\nanima:\r\n  subagent: true" + content[end_idx:]
-            )
+            return content[:end_idx] + "\r\nanima:\r\n  subagent: true" + content[end_idx:]
     return content

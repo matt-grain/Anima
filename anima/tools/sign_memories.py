@@ -59,11 +59,7 @@ def run(args: list[str]) -> int:
                 store.save_memory(memory)
                 signed_count += 1
 
-            print(
-                f"  {'Would sign' if dry_run else 'Signed'}: {memory.id[:8]}... "
-                f"[{memory.kind.value}:{memory.impact.value}] "
-                f"{memory.content[:40]}..."
-            )
+            print(f"  {'Would sign' if dry_run else 'Signed'}: {memory.id[:8]}... [{memory.kind.value}:{memory.impact.value}] {memory.content[:40]}...")
 
     print()
     if dry_run:

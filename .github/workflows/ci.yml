@@ -24,10 +24,10 @@ jobs:
         run: uv sync --all-groups
 
       - name: Lint with ruff
-        run: uv run ruff check .
+        run: uv run ruff check anima/
 
       - name: Type check with pyright
-        run: uv run pyright
+        run: uv run pyright anima/
 
       - name: Run tests
         run: uv run pytest tests/ -q

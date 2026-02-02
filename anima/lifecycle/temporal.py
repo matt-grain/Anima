@@ -62,13 +62,15 @@ class TemporalCoordinate:
 
     def has_filters(self) -> bool:
         """Check if any filters are set."""
-        return any([
-            self.session_id,
-            self.start_time,
-            self.end_time,
-            self.git_commit,
-            self.git_branch,
-        ])
+        return any(
+            [
+                self.session_id,
+                self.start_time,
+                self.end_time,
+                self.git_commit,
+                self.git_branch,
+            ]
+        )
 
 
 # Pattern matchers for temporal cues
@@ -78,7 +80,6 @@ TEMPORAL_PATTERNS = {
     r"(?:in\s+)?(?:the\s+)?(?:last|previous)\s+session": "LAST_SESSION",
     r"(?:during|in)\s+(?:this|our)\s+(?:current\s+)?session": "CURRENT_SESSION",
     r"earlier\s+(?:today|this session)": "CURRENT_SESSION",
-
     # Git event patterns
     r"(?:during|while|when|at)\s+(?:the\s+)?(?:last|previous|recent)\s+commit": "LAST_COMMIT",
     r"(?:on|for)\s+(?:this|the)\s+commit": "CURRENT_COMMIT",
@@ -86,7 +87,6 @@ TEMPORAL_PATTERNS = {
     r"(?:on|in)\s+(?:the\s+)?(?:branch|feature)\s+['\"]?(\S+)['\"]?": "GIT_BRANCH",
     r"(?:on|in)\s+main(?:\s+branch)?": "GIT_MAIN",
     r"(?:on|in)\s+master(?:\s+branch)?": "GIT_MASTER",
-
     # Relative time patterns
     r"yesterday": "YESTERDAY",
     r"last\s+week": "LAST_WEEK",
@@ -222,9 +222,7 @@ def _resolve_cue(
     if cue_name == "THIS_WEEK":
         # Start of week (Monday)
         days_since_monday = now.weekday()
-        start = (now - timedelta(days=days_since_monday)).replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
+        start = (now - timedelta(days=days_since_monday)).replace(hour=0, minute=0, second=0, microsecond=0)
         return TemporalCoordinate(
             cue_type=TemporalCueType.RELATIVE_TIME,
             original_text=match.group(0),

@@ -57,9 +57,7 @@ class Memory:
     token_count: Optional[int] = None  # Cached token count for injection budget
 
     # Platform tracking (spaceship journals)
-    platform: Optional[str] = (
-        None  # Which platform created this memory (claude, antigravity, opencode)
-    )
+    platform: Optional[str] = None  # Which platform created this memory (claude, antigravity, opencode)
 
     # Session tracking (Phase 3: Temporal Infrastructure)
     session_id: Optional[str] = None  # Groups memories by conversation session

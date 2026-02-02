@@ -61,9 +61,7 @@ SKIP_PATTERNS = [
 ]
 
 
-def get_recent_commits(
-    since_hours: int = 24, repo_path: Optional[Path] = None
-) -> list[dict]:
+def get_recent_commits(since_hours: int = 24, repo_path: Optional[Path] = None) -> list[dict]:
     """
     Get commits from the last N hours.
 
@@ -210,9 +208,7 @@ def run(args: list[str]) -> int:
 
         # Check if we already have this achievement (by commit hash in content)
         # This prevents duplicates on re-runs
-        existing = store.search_memories(
-            query=commit["hash"][:8], agent_id=agent.id, project_id=project.id, limit=1
-        )
+        existing = store.search_memories(query=commit["hash"][:8], agent_id=agent.id, project_id=project.id, limit=1)
 
         if existing:
             safe_print(f"  {get_icon('⏭️', '[>>]')}  Already recorded: {message[:50]}...")
@@ -243,13 +239,9 @@ def run(args: list[str]) -> int:
     # Summary (to stdout for terminal visibility)
     print()
     if dry_run:
-        print(
-            f"Dry run: {achievements_found} achievements would be saved, {skipped} skipped"
-        )
+        print(f"Dry run: {achievements_found} achievements would be saved, {skipped} skipped")
     else:
-        print(
-            f"{achievements_found} achievements saved, {skipped} skipped after detect-achievements"
-        )
+        print(f"{achievements_found} achievements saved, {skipped} skipped after detect-achievements")
 
     return 0
 

@@ -104,9 +104,7 @@ def run(args: list[str]) -> int:
         print("Usage: uv run anima curious <question>")
         print("       uv run anima curious --region agent <question>")
         print("       uv run anima curious --context 'while debugging' <question>")
-        print(
-            "\nExample: uv run anima curious Why does Docker need PRAGMA synchronous?"
-        )
+        print("\nExample: uv run anima curious Why does Docker need PRAGMA synchronous?")
         print("\nFlags:")
         print("  --region, -r   agent|project    Where to store (default: inferred)")
         print("  --context, -c  TEXT  What triggered this curiosity")
@@ -151,13 +149,9 @@ def run(args: list[str]) -> int:
     # Check if this was a recurrence bump
     if curiosity.recurrence_count > 1:
         print(f"This question came up again! (#{curiosity.recurrence_count})")
-        print(
-            f"Priority boosted. First asked: {curiosity.first_seen.strftime('%Y-%m-%d')}"
-        )
+        print(f"Priority boosted. First asked: {curiosity.first_seen.strftime('%Y-%m-%d')}")
     else:
-        region_str = (
-            f"PROJECT ({project.name})" if region == RegionType.PROJECT else "AGENT"
-        )
+        region_str = f"PROJECT ({project.name})" if region == RegionType.PROJECT else "AGENT"
         print(f"Added to research queue ({region_str})")
 
     print(f"Curiosity ID: {curiosity.id}")
@@ -165,9 +159,7 @@ def run(args: list[str]) -> int:
 
     # Show queue size
     open_count = curiosity_store.count_open(agent.id, project.id)
-    print(
-        f"\nResearch queue: {open_count} open {'question' if open_count == 1 else 'questions'}"
-    )
+    print(f"\nResearch queue: {open_count} open {'question' if open_count == 1 else 'questions'}")
 
     return 0
 
