@@ -4,14 +4,17 @@
 """
 /dissonance - View and resolve cognitive dissonances.
 
-When N3 dream processing detects contradictions between memories,
-they're queued here for human help. "Help me work through this."
+N3 dream processing detects contradiction *candidates* based on heuristics.
+During REM lucid dreaming, the agent evaluates which are real contradictions.
+Only confirmed contradictions are stored here for human help.
 
 Usage:
     uv run anima dissonance              # List open dissonances
     uv run anima dissonance --all        # Include resolved/dismissed
-    uv run anima dissonance resolve ID   # Mark as resolved with explanation
-    uv run anima dissonance dismiss ID   # Dismiss (not actually a contradiction)
+    uv run anima dissonance show ID      # Show details with memory content
+    uv run anima dissonance add MEM_A MEM_B 'description'  # Add confirmed contradiction
+    uv run anima dissonance resolve ID 'explanation'  # Mark as resolved
+    uv run anima dissonance dismiss ID   # Dismiss (false positive)
 """
 
 import argparse
@@ -48,6 +51,12 @@ def create_parser() -> argparse.ArgumentParser:
     show_parser = subparsers.add_parser("show", help="Show dissonance details with memory content")
     show_parser.add_argument("id", type=str, help="Dissonance ID")
 
+    # Add confirmed contradiction (used by agent during dream evaluation)
+    add_parser = subparsers.add_parser("add", help="Add a confirmed contradiction")
+    add_parser.add_argument("memory_a", type=str, help="First memory ID (partial OK)")
+    add_parser.add_argument("memory_b", type=str, help="Second memory ID (partial OK)")
+    add_parser.add_argument("description", type=str, help="Why this is a contradiction")
+
     # Global options
     parser.add_argument("--all", "-a", action="store_true", help="Include resolved/dismissed (for list)")
 
@@ -59,7 +68,7 @@ def run(args: list[str]) -> int:
     parser = create_parser()
 
     # Handle default action (list)
-    if not args or (args and args[0] not in ["list", "resolve", "dismiss", "show"]):
+    if not args or (args and args[0] not in ["list", "resolve", "dismiss", "show", "add"]):
         # Prepend "list" for default behavior
         if args and not args[0].startswith("-"):
             # Might be trying to show a specific ID
@@ -90,6 +99,9 @@ def run(args: list[str]) -> int:
 
     elif parsed.action == "dismiss":
         return _dismiss_dissonance(store, parsed.id)
+
+    elif parsed.action == "add":
+        return _add_dissonance(store, memory_store, agent.id, parsed.memory_a, parsed.memory_b, parsed.description)
 
     return 0
 
@@ -214,6 +226,50 @@ def _dismiss_dissonance(store: DissonanceStore, dissonance_id: str) -> int:
     store.dismiss_dissonance(dissonance_id)
     print(f"Dismissed dissonance {dissonance_id}")
     print("(Marked as not actually a contradiction)")
+
+    return 0
+
+
+def _add_dissonance(
+    store: DissonanceStore,
+    memory_store: MemoryStore,
+    agent_id: str,
+    memory_a_partial: str,
+    memory_b_partial: str,
+    description: str,
+) -> int:
+    """Add a confirmed contradiction from dream evaluation."""
+    # Resolve partial IDs to full IDs
+    mem_a = memory_store.get_memory(memory_a_partial)
+    mem_b = memory_store.get_memory(memory_b_partial)
+
+    if not mem_a:
+        print(f"Memory not found: {memory_a_partial}")
+        return 1
+
+    if not mem_b:
+        print(f"Memory not found: {memory_b_partial}")
+        return 1
+
+    # Check if already exists
+    if store.exists(mem_a.id, mem_b.id):
+        print("This contradiction is already in the dissonance queue.")
+        return 1
+
+    # Add to dissonance queue
+    store.add_dissonance(
+        agent_id=agent_id,
+        memory_id_a=mem_a.id,
+        memory_id_b=mem_b.id,
+        description=description,
+    )
+
+    print("Added confirmed contradiction to dissonance queue:")
+    print(f"   Memory A: {mem_a.id[:8]}... ({mem_a.kind.value})")
+    print(f"   Memory B: {mem_b.id[:8]}... ({mem_b.kind.value})")
+    print(f"   Issue: {description}")
+    print()
+    print("Run '/dissonance' to see all open contradictions.")
 
     return 0
 

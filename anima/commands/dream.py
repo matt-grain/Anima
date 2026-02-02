@@ -237,6 +237,7 @@ def run(args: list[str]) -> int:
         session = state_store.start_session(agent.id, project_id)
 
     results: list[tuple[str, N2Result | N3Result | REMResult]] = []
+    n3_contradictions: list = []  # Pass from N3 to REM
 
     try:
         for stage in stages:
@@ -280,6 +281,9 @@ def run(args: list[str]) -> int:
                 )
                 results.append(("N3", result))
 
+                # Capture contradictions for REM evaluation
+                n3_contradictions = result.contradictions
+
                 # Checkpoint: N3 complete
                 if session:
                     state_store.update_state(session.id, DreamState.N3_COMPLETE, n3_result=result)
@@ -299,6 +303,7 @@ def run(args: list[str]) -> int:
                     config=config,
                     quiet=parsed.quiet,
                     since_last_dream=since_last_dream,
+                    contradiction_candidates=n3_contradictions if n3_contradictions else None,
                 )
                 results.append(("REM", result))
 
@@ -350,6 +355,7 @@ def _resume_dream(
         print()
 
     results: list[tuple[str, N2Result | N3Result | REMResult]] = []
+    n3_contradictions: list = []  # Pass from N3 to REM
 
     # Restore any completed results
     if session.n2_result_json:
@@ -358,7 +364,9 @@ def _resume_dream(
             print("   (N2 results restored)")
 
     if session.n3_result_json:
-        results.append(("N3", deserialize_n3_result(session.n3_result_json)))
+        n3_result = deserialize_n3_result(session.n3_result_json)
+        results.append(("N3", n3_result))
+        n3_contradictions = n3_result.contradictions  # Restore for REM
         if not parsed.quiet:
             print("   (N3 results restored)")
 
@@ -412,6 +420,9 @@ def _resume_dream(
                 )
                 results.append(("N3", result))
 
+                # Capture contradictions for REM evaluation
+                n3_contradictions = result.contradictions
+
                 state_store.update_state(session.id, DreamState.N3_COMPLETE, n3_result=result)
 
                 if parsed.verbose:
@@ -426,6 +437,7 @@ def _resume_dream(
                     project_id=project_id,
                     config=config,
                     quiet=parsed.quiet,
+                    contradiction_candidates=n3_contradictions if n3_contradictions else None,
                 )
                 results.append(("REM", result))
 

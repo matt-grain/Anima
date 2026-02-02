@@ -29,6 +29,7 @@ from anima.dream.types import (
     MemoryPair,
     IncompleteThought,
     DreamConfig,
+    Contradiction,
 )
 from anima.embeddings import cosine_similarity
 from anima.storage.sqlite import MemoryStore
@@ -252,6 +253,33 @@ def create_dream_template(
                 ]
             )
 
+    # Contradiction candidates section (from N3, need evaluation)
+    if materials.contradiction_candidates:
+        lines.extend(
+            [
+                "### Contradiction Candidates",
+                "",
+                "*N3 detected these as potential contradictions based on similarity + negation patterns.*",
+                "*Evaluate each one: Is it a real contradiction, or just related memories from different angles?*",
+                "",
+            ]
+        )
+        for i, c in enumerate(materials.contradiction_candidates, 1):
+            lines.extend(
+                [
+                    f"**Candidate {i}** ({c.description})",
+                    "",
+                    f"> **A:** {c.content_a}",
+                    "",
+                    f"> **B:** {c.content_b}",
+                    "",
+                    f"Memory IDs: `{c.memory_id_a[:8]}` vs `{c.memory_id_b[:8]}`",
+                    "",
+                    "**Verdict:** [REAL CONTRADICTION / FALSE POSITIVE - explain why]",
+                    "",
+                ]
+            )
+
     # Reflection sections (to be filled conversationally)
     lines.extend(
         [
@@ -304,6 +332,7 @@ def run_rem_dreaming(
     config: Optional[DreamConfig] = None,
     quiet: bool = False,
     since_last_dream: Optional[datetime] = None,
+    contradiction_candidates: Optional[list[Contradiction]] = None,
 ) -> REMResult:
     """
     Run REM lucid dreaming stage.
@@ -318,6 +347,7 @@ def run_rem_dreaming(
         config: Dream configuration
         quiet: Suppress output
         since_last_dream: If provided, only process materials since this timestamp
+        contradiction_candidates: Potential contradictions from N3 to evaluate
 
     Returns:
         REMResult with materials info and template path
@@ -340,6 +370,10 @@ def run_rem_dreaming(
         config=config,
         since_last_dream=since_last_dream,
     )
+
+    # Add contradiction candidates from N3 for evaluation during lucid dream
+    if contradiction_candidates:
+        materials.contradiction_candidates = contradiction_candidates
 
     if not quiet:
         # Show dream composition breakdown

@@ -226,10 +226,15 @@ class DreamMaterials:
     # Statistics for context
     total_memories: int
     total_diary_entries: int
+
+    # Fields with defaults must come after non-default fields
     recent_memories_count: int = 0  # New since last dream
     random_old_memories_count: int = 0  # Random older memories mixed in
     recent_diaries_count: int = 0  # New since last dream
     random_old_diaries_count: int = 0  # Random older diaries mixed in
+
+    # Contradiction candidates from N3 (to be evaluated during lucid dream)
+    contradiction_candidates: list[Contradiction] = field(default_factory=list)
 
     # Path to template file (if created)
     template_path: str | None = None

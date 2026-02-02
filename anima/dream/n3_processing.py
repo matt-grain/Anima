@@ -19,7 +19,6 @@ from anima.core import Memory, ImpactLevel
 from anima.dream.types import N3Result, GistResult, Contradiction, DreamConfig
 from anima.embeddings import cosine_similarity
 from anima.storage.sqlite import MemoryStore
-from anima.storage.dissonance import DissonanceStore
 
 
 def run_n3_processing(
@@ -48,7 +47,6 @@ def run_n3_processing(
     """
     config = config or DreamConfig()
     start_time = time.time()
-    dissonance_store = DissonanceStore()
 
     if not quiet:
         print("N3: Deep processing...")
@@ -88,9 +86,8 @@ def run_n3_processing(
     if not quiet:
         print(f"   Created {len(gist_results)} gist summaries")
 
-    # Phase 2: Contradiction detection
+    # Phase 2: Contradiction detection (candidates only - evaluated during REM)
     contradictions = []
-    dissonance_additions = 0
 
     # Get memories with embeddings for semantic comparison
     memories_with_embeddings = store.get_memories_with_temporal_context(
@@ -108,7 +105,7 @@ def run_n3_processing(
         for mem_b_id, content_b, emb_b, _, _ in recent_with_embeddings[i + 1 :]:
             similarity = cosine_similarity(emb_a, emb_b)
 
-            # High similarity but potential negation = contradiction
+            # High similarity but potential negation = candidate contradiction
             if similarity >= config.n3_contradiction_threshold:
                 contradiction = _detect_contradiction(
                     mem_a_id,
@@ -121,20 +118,8 @@ def run_n3_processing(
                 if contradiction:
                     contradictions.append(contradiction)
 
-                    # Add to dissonance queue if not already there
-                    if not dissonance_store.exists(mem_a_id, mem_b_id):
-                        dissonance_store.add_dissonance(
-                            agent_id=agent_id,
-                            memory_id_a=mem_a_id,
-                            memory_id_b=mem_b_id,
-                            description=contradiction.description,
-                        )
-                        dissonance_additions += 1
-
     if not quiet:
-        print(f"   Detected {len(contradictions)} contradictions")
-        if dissonance_additions:
-            print(f"   Added {dissonance_additions} items to dissonance queue")
+        print(f"   Detected {len(contradictions)} contradiction candidates (to evaluate in REM)")
 
     duration = time.time() - start_time
 
@@ -143,7 +128,7 @@ def run_n3_processing(
         gist_results=gist_results,
         contradictions_found=len(contradictions),
         contradictions=contradictions,
-        dissonance_queue_additions=dissonance_additions,
+        dissonance_queue_additions=0,  # Candidates evaluated in REM, not stored automatically
         duration_seconds=duration,
         memories_processed=len(memories),
     )
