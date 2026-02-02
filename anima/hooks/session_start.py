@@ -91,7 +91,7 @@ def get_curiosity_prompt(agent_id: str, project_id: str) -> str | None:
     return "\n".join(lines)
 
 
-def get_dream_prompt(agent_id: str, store: MemoryStore) -> str | None:
+def get_dream_prompt(agent_id: str, project_id: Optional[str], store: MemoryStore) -> str | None:
     """
     Check for recent dreams and return a prompt to surface insights.
 
@@ -107,7 +107,11 @@ def get_dream_prompt(agent_id: str, store: MemoryStore) -> str | None:
     try:
         # Check for last completed dream
         dream_store = DreamStateStore()
-        last_dream = dream_store.get_last_completed_session(agent_id, None)
+        # Check both project-specific dreams and agent-wide dreams
+        last_dream = dream_store.get_last_completed_session(agent_id, project_id)
+        if not last_dream:
+            # Also check for agent-wide dreams (no project)
+            last_dream = dream_store.get_last_completed_session(agent_id, None)
 
         if last_dream:
             dream_time = datetime.fromisoformat(last_dream.updated_at)
@@ -320,7 +324,7 @@ def run(args: Optional[list[str]] = None) -> int:
             context += "\n" + "\n".join(status_notes)
 
         # Add dream recall prompt if recent dreams
-        dream_prompt = get_dream_prompt(agent.id, store)
+        dream_prompt = get_dream_prompt(agent.id, project.id if project else None, store)
         if dream_prompt:
             context += "\n" + dream_prompt
 
