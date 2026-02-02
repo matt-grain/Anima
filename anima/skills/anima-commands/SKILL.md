@@ -59,6 +59,8 @@ Search memories by content. Supports both keyword search and semantic (embedding
 **Flags:**
 - `--full` / `-f`: Show complete memory content (default shows truncated)
 - `--semantic` / `-s`: Use semantic search (embedding similarity) instead of keyword matching
+- `--kind` / `-k`: Filter by memory kind (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS, INTROSPECT, DREAM)
+- `--limit` / `-l`: Maximum results to return (default: 10)
 - `--id`: Look up a specific memory by ID
 
 **Examples:**
@@ -71,6 +73,15 @@ uv run anima recall "how does memory decay work" --semantic
 
 # Full content view
 uv run anima recall "user preferences" --full
+
+# List DREAM memories (what lingered from dreams)
+uv run anima recall --kind DREAM
+
+# List DREAM memories with full content
+uv run anima recall --kind DREAM --full
+
+# Filter search results by kind
+uv run anima recall "identity" --kind INTROSPECT
 
 # Direct ID lookup
 uv run anima recall --id abc123
