@@ -93,6 +93,7 @@ class Memory:
             MemoryKind.LEARNINGS: "LEARN",
             MemoryKind.ACHIEVEMENTS: "ACHV",
             MemoryKind.INTROSPECT: "INTRO",
+            MemoryKind.DREAM: "DREAM",
         }
         impact_short = {
             ImpactLevel.LOW: "LOW",

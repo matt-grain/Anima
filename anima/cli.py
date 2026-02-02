@@ -35,6 +35,8 @@ def main() -> int:
         print("  refresh-memories       Re-inject memories into context (alias for load-context)")
         print("  backfill               Generate embeddings and tiers for existing memories")
         print("  dream                  Between-session memory processing")
+        print("  dream-wake             Save dream insights to long-term memory")
+        print("  dissonance             View/resolve cognitive dissonances")
         print("  version                Show installed version")
         print("  check-update           Check for new version on GitHub")
         print("  update                 Update to latest version from GitHub")
@@ -131,6 +133,14 @@ def main() -> int:
             return run(args)
         case "dream":
             from anima.commands.dream import run
+
+            return run(args)
+        case "dream-wake":
+            from anima.commands.dream_wake import run
+
+            return run(args)
+        case "dissonance":
+            from anima.commands.dissonance import run
 
             return run(args)
         case "version":

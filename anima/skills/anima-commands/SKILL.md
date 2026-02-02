@@ -232,6 +232,119 @@ uv run anima diary --learn 2026-01-29
 
 **Location:** `~/.anima/diary/` (travels across projects)
 
+## Dream Mode
+
+Dream mode provides between-session memory processing inspired by human sleep stages.
+
+### dream [flags]
+
+Run dream processing stages (N2, N3, REM) for memory consolidation.
+
+**Syntax:** `uv run anima dream [FLAGS]`
+
+**Stages:**
+- **N2**: Memory consolidation (link discovery, impact adjustment)
+- **N3**: Deep processing (gist extraction, contradiction detection)
+- **REM**: Lucid dreaming (distant associations, questions, self-model)
+
+**Flags:**
+- `--stage STAGE`: Run specific stage (n2, n3, rem, all). Default: all
+- `--lookback-days N`: Process memories from last N days (default: 7)
+- `--diary-lookback-days N`: Process diaries from last N days (default: 7)
+- `--dry-run`: Show what would happen without processing
+- `--verbose` / `-v`: Show detailed output
+- `--resume`: Resume an interrupted dream session
+- `--restart`: Abandon incomplete dream and start fresh
+
+**Examples:**
+```bash
+# Full dream cycle (N2 + N3 + REM)
+uv run anima dream
+
+# Just lucid dreaming stage
+uv run anima dream --stage rem
+
+# Preview what would be processed
+uv run anima dream --dry-run
+
+# Resume interrupted dream
+uv run anima dream --resume
+```
+
+**Dream Composition:**
+- Dreams process recent material (since last dream) + random older memories
+- Like human dreams: recent events combined with old memory traces
+- Creates dream journal in `~/.anima/dream_journal/`
+
+### dream-wake [flags]
+
+Save insights from a filled dream journal to long-term memory.
+
+**Syntax:** `uv run anima dream-wake [FLAGS]`
+
+**Flags:**
+- `--journal PATH` / `-j`: Path to specific dream journal (default: most recent)
+- `--dry-run`: Show what would be saved without saving
+- `--quiet` / `-q`: Minimal output
+
+**Examples:**
+```bash
+# Process latest dream journal
+uv run anima dream-wake
+
+# Process specific journal
+uv run anima dream-wake --journal ~/.anima/dream_journal/2026-02-02_dream_1603.md
+
+# Preview what would be saved
+uv run anima dream-wake --dry-run
+```
+
+**What It Saves:**
+- **What Lingers**: CRITICAL impact DREAM memory
+- **Distant Connections**: HIGH impact DREAM memory
+- **Self-Observations**: HIGH impact DREAM memory
+- **Questions**: Added to curiosity queue
+
+### dissonance [action] [flags]
+
+View and resolve cognitive dissonances (contradictions detected during dreams).
+
+**Syntax:** `uv run anima dissonance [ACTION] [FLAGS]`
+
+**Actions:**
+- `list`: List open dissonances (default)
+- `show ID`: Show full details with memory content
+- `resolve ID 'explanation'`: Mark as resolved with explanation
+- `dismiss ID`: Dismiss as not a real contradiction
+
+**Flags:**
+- `--all` / `-a`: Include resolved/dismissed dissonances
+
+**Examples:**
+```bash
+# List open dissonances
+uv run anima dissonance
+
+# See full details of a dissonance
+uv run anima dissonance show abc123
+
+# Resolve with explanation
+uv run anima dissonance resolve abc123 "These memories are about different time periods"
+
+# Dismiss as not contradictory
+uv run anima dissonance dismiss abc123
+
+# See all history
+uv run anima dissonance --all
+```
+
+**Workflow:**
+1. N3 dream stage detects contradictions between memories
+2. Contradictions are queued in dissonance queue
+3. At session start, you're notified of open dissonances
+4. Run `/dissonance show ID` to see the conflicting memories
+5. Help resolve by explaining or dismissing
+
 ### curiosity-queue [flags]
 
 View and manage the research queue.
@@ -444,6 +557,7 @@ uv run anima update
 | learnings | Lessons learned, tips, gotchas, debugging insights |
 | achievements | Completed features, milestones, releases |
 | introspect | Cross-platform self-observations, spaceship journals |
+| dream | Insights from dream processing - what lingers after sleep |
 
 ## Impact Levels
 

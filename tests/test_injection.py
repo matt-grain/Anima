@@ -63,14 +63,14 @@ class TestProjectAwareLoading:
         curr_session = "20260130-100000-def67890"
         mock_prev_session.return_value = prev_session
 
-        # Create memory from previous session
-        prev_memory = self._create_memory(
+        # Create memory from previous session (side effect: populates store)
+        _prev_memory = self._create_memory(
             "This is from the previous session",
             session_id=prev_session,
         )
 
-        # Create memory from current session
-        curr_memory = self._create_memory(
+        # Create memory from current session (side effect: populates store)
+        _curr_memory = self._create_memory(
             "This is from the current session",
             session_id=curr_session,
         )
@@ -90,7 +90,7 @@ class TestProjectAwareLoading:
         mock_prev_session.return_value = session_id
 
         # Create a memory that would match both tier loading and session loading
-        memory = self._create_memory(
+        _memory = self._create_memory(
             "Unique memory content",
             session_id=session_id,
         )
@@ -107,7 +107,7 @@ class TestProjectAwareLoading:
         """Test graceful handling when no previous session exists."""
         mock_prev_session.return_value = None
 
-        memory = self._create_memory("Test memory")
+        _memory = self._create_memory("Test memory")
 
         injector = MemoryInjector(store=self.store)
         dsl = injector.inject(self.agent, self.project)
@@ -125,15 +125,15 @@ class TestProjectAwareLoading:
         other_project = Project(id="other-project", name="Other", path=Path("/other"))
         self.store.save_project(other_project)
 
-        # Create memory for other project in same session
-        other_memory = self._create_memory(
+        # Create memory for other project in same session (side effect: populates store)
+        _other_memory = self._create_memory(
             "Memory from other project",
             session_id=prev_session,
             project_id=other_project.id,
         )
 
-        # Create memory for our project in same session
-        our_memory = self._create_memory(
+        # Create memory for our project in same session (side effect: populates store)
+        _our_memory = self._create_memory(
             "Memory from our project",
             session_id=prev_session,
         )

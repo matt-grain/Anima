@@ -395,6 +395,32 @@ class MemoryStore(MemoryStoreProtocol):
                 return None
             return self._row_to_memory(row)
 
+    def get_memories_by_kind(
+        self,
+        agent_id: str,
+        kind: MemoryKind,
+        limit: int = 10,
+        project_id: Optional[str] = None,
+    ) -> list[Memory]:
+        """Get recent non-superseded memories of a specific kind."""
+        query = """
+            SELECT * FROM memories
+            WHERE agent_id = ? AND kind = ?
+            AND superseded_by IS NULL
+        """
+        params: list = [agent_id, kind.value]
+
+        if project_id:
+            query += " AND project_id = ?"
+            params.append(project_id)
+
+        query += " ORDER BY created_at DESC LIMIT ?"
+        params.append(limit)
+
+        with self._connect() as conn:
+            rows = conn.execute(query, params).fetchall()
+            return [self._row_to_memory(row) for row in rows]
+
     def supersede_memory(self, old_memory_id: str, new_memory_id: str) -> None:
         """Mark a memory as superseded by another."""
         with self._connect() as conn:

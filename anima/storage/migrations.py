@@ -67,7 +67,7 @@ def migrate_v1_to_v2(conn: sqlite3.Connection) -> None:
             agent_id TEXT NOT NULL,
             region TEXT NOT NULL CHECK (region IN ('AGENT', 'PROJECT')),
             project_id TEXT,
-            kind TEXT NOT NULL CHECK (kind IN ('EMOTIONAL', 'ARCHITECTURAL', 'LEARNINGS', 'ACHIEVEMENTS', 'INTROSPECT')),
+            kind TEXT NOT NULL CHECK (kind IN ('EMOTIONAL', 'ARCHITECTURAL', 'LEARNINGS', 'ACHIEVEMENTS', 'INTROSPECT', 'DREAM')),
             content TEXT NOT NULL,
             original_content TEXT NOT NULL,
             impact TEXT NOT NULL CHECK (impact IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),

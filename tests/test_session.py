@@ -13,8 +13,6 @@ from anima.lifecycle.session import (
     generate_session_id,
     start_session,
     get_current_session_id,
-    get_session_start_time,
-    get_previous_session_id,
 )
 from anima.storage import MemoryStore
 

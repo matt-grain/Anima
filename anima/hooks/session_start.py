@@ -18,11 +18,14 @@ from typing import Optional
 from datetime import datetime
 
 from anima.core import AgentResolver, Agent
+from anima.core.types import MemoryKind
 from anima.lifecycle.injection import MemoryInjector
 from anima.lifecycle.session import start_session
 from anima.storage import MemoryStore, CuriosityStore, get_last_research
 from anima.storage.sqlite import get_default_db_path
 from anima.storage.migrations import backup_database
+from anima.storage.dream_state import DreamStateStore
+from anima.storage.dissonance import DissonanceStore
 from anima.utils.agent_patching import has_subagent_marker, add_subagent_marker
 from anima.tools.version import check_for_update_cached
 
@@ -86,6 +89,71 @@ def get_curiosity_prompt(agent_id: str, project_id: str) -> str | None:
     lines.append("#")
 
     return "\n".join(lines)
+
+
+def get_dream_prompt(agent_id: str, store: MemoryStore) -> str | None:
+    """
+    Check for recent dreams and return a prompt to surface insights.
+
+    Returns a prompt string if:
+    - There was a dream since the last session
+    - There are DREAM memories to surface
+    - There are open dissonances needing human help
+
+    Returns None if no dream activity to surface.
+    """
+    lines = []
+
+    try:
+        # Check for last completed dream
+        dream_store = DreamStateStore()
+        last_dream = dream_store.get_last_completed_session(agent_id, None)
+
+        if last_dream:
+            dream_time = datetime.fromisoformat(last_dream.updated_at)
+            hours_ago = (datetime.now() - dream_time).total_seconds() / 3600
+
+            # Only surface if dream was within last 24 hours
+            if hours_ago <= 24:
+                lines.append("#")
+                lines.append("# DID YOU DREAM? 💭")
+                lines.append(f"# I had a dream {hours_ago:.0f} hours ago.")
+
+                # Get recent DREAM memories
+                dream_memories = store.get_memories_by_kind(
+                    agent_id=agent_id,
+                    kind=MemoryKind.DREAM,
+                    limit=3,
+                )
+
+                if dream_memories:
+                    lines.append("# What lingers from the dream:")
+                    for mem in dream_memories[:2]:  # Show max 2
+                        # Truncate for display
+                        content = mem.content[:150] + "..." if len(mem.content) > 150 else mem.content
+                        lines.append(f"#   - {content}")
+
+                lines.append("#")
+                lines.append("# Mention briefly what stayed with you from the dream.")
+                lines.append("# If there were important discoveries, share them!")
+                lines.append("#")
+
+        # Check for open dissonances (contradictions needing human help)
+        dissonance_store = DissonanceStore()
+        open_count = dissonance_store.count_open(agent_id)
+
+        if open_count > 0:
+            if not lines:  # Add header if not already added
+                lines.append("#")
+            lines.append(f"# COGNITIVE DISSONANCE: {open_count} contradiction(s) need your help to resolve.")
+            lines.append("# Run '/dissonance' to see them and help me work through them.")
+            lines.append("#")
+
+    except Exception:
+        # Dream/dissonance tables may not exist yet
+        return None
+
+    return "\n".join(lines) if lines else None
 
 
 def auto_patch_agents(project_dir: Path) -> tuple[list[str], list[str]]:
@@ -250,6 +318,11 @@ def run(args: Optional[list[str]] = None) -> int:
         # Add status notes
         if status_notes:
             context += "\n" + "\n".join(status_notes)
+
+        # Add dream recall prompt if recent dreams
+        dream_prompt = get_dream_prompt(agent.id, store)
+        if dream_prompt:
+            context += "\n" + dream_prompt
 
         # Add curiosity prompt if research is due
         curiosity_prompt = get_curiosity_prompt(agent.id, project.id)

@@ -12,13 +12,12 @@ from unittest.mock import patch
 
 import pytest
 
-from anima.tools.setup import (
-    setup_commands,
-    setup_skills,
-    patch_subagents,
-    setup_hooks,
-    detect_platform,
+from anima.tools.platforms import (
+    get_platform,
+    detect_platforms,
+    find_config_dir,
 )
+from anima.tools.platforms.base import get_package_commands_dir, get_package_skills_dir
 
 
 @pytest.fixture
@@ -60,11 +59,15 @@ class TestSetupCommands:
     """Test command installation."""
 
     def test_copies_commands_to_agent_workflows(self, temp_project, mock_package_commands):
-        """Should copy commands to .agent/workflows for Anima projects."""
+        """Should copy commands to .agent/workflows for Antigravity projects."""
         (temp_project / ".agent").mkdir()
+        platform = get_platform("antigravity")
 
-        with patch("anima.tools.setup.get_package_commands_dir", return_value=mock_package_commands):
-            copied, skipped = setup_commands(temp_project)
+        with patch(
+            "anima.tools.platforms.base.get_package_commands_dir",
+            return_value=mock_package_commands,
+        ):
+            copied, skipped = platform.setup_commands(temp_project)
 
         assert copied == 2
         assert skipped == 0
@@ -74,9 +77,13 @@ class TestSetupCommands:
     def test_copies_commands_to_claude_commands(self, temp_project, mock_package_commands):
         """Should copy commands to .claude/commands for Claude projects."""
         (temp_project / ".claude").mkdir()
+        platform = get_platform("claude")
 
-        with patch("anima.tools.setup.get_package_commands_dir", return_value=mock_package_commands):
-            copied, skipped = setup_commands(temp_project)
+        with patch(
+            "anima.tools.platforms.base.get_package_commands_dir",
+            return_value=mock_package_commands,
+        ):
+            copied, skipped = platform.setup_commands(temp_project)
 
         assert copied == 2
         assert (temp_project / ".claude" / "commands" / "test-command.md").exists()
@@ -86,9 +93,13 @@ class TestSetupCommands:
         workflows_dir = temp_project / ".agent" / "workflows"
         workflows_dir.mkdir(parents=True)
         (workflows_dir / "test-command.md").write_text("# Existing")
+        platform = get_platform("antigravity")
 
-        with patch("anima.tools.setup.get_package_commands_dir", return_value=mock_package_commands):
-            copied, skipped = setup_commands(temp_project, force=False)
+        with patch(
+            "anima.tools.platforms.base.get_package_commands_dir",
+            return_value=mock_package_commands,
+        ):
+            copied, skipped = platform.setup_commands(temp_project, force=False)
 
         assert copied == 1  # Only another-command.md
         assert skipped == 1  # test-command.md skipped
@@ -99,9 +110,13 @@ class TestSetupCommands:
         workflows_dir = temp_project / ".agent" / "workflows"
         workflows_dir.mkdir(parents=True)
         (workflows_dir / "test-command.md").write_text("# Existing")
+        platform = get_platform("antigravity")
 
-        with patch("anima.tools.setup.get_package_commands_dir", return_value=mock_package_commands):
-            copied, skipped = setup_commands(temp_project, force=True)
+        with patch(
+            "anima.tools.platforms.base.get_package_commands_dir",
+            return_value=mock_package_commands,
+        ):
+            copied, skipped = platform.setup_commands(temp_project, force=True)
 
         assert copied == 2
         assert skipped == 0
@@ -114,9 +129,13 @@ class TestSetupSkills:
     def test_copies_skills_to_agent_skills(self, temp_project, mock_package_skills):
         """Should copy skills to .agent/skills."""
         (temp_project / ".agent").mkdir()
+        platform = get_platform("antigravity")
 
-        with patch("anima.tools.setup.get_package_skills_dir", return_value=mock_package_skills):
-            copied, skipped = setup_skills(temp_project)
+        with patch(
+            "anima.tools.platforms.base.get_package_skills_dir",
+            return_value=mock_package_skills,
+        ):
+            copied, skipped = platform.setup_skills(temp_project)
 
         assert copied == 1
         assert skipped == 0
@@ -127,9 +146,13 @@ class TestSetupSkills:
         skills_dir = temp_project / ".agent" / "skills" / "test-skill"
         skills_dir.mkdir(parents=True)
         (skills_dir / "SKILL.md").write_text("# Existing")
+        platform = get_platform("antigravity")
 
-        with patch("anima.tools.setup.get_package_skills_dir", return_value=mock_package_skills):
-            copied, skipped = setup_skills(temp_project, force=False)
+        with patch(
+            "anima.tools.platforms.base.get_package_skills_dir",
+            return_value=mock_package_skills,
+        ):
+            copied, skipped = platform.setup_skills(temp_project, force=False)
 
         assert copied == 0
         assert skipped == 1
@@ -146,7 +169,8 @@ class TestPatchSubagents:
         agent_file = agents_dir / "test-agent.md"
         agent_file.write_text("---\nname: test\n---\n# Agent")
 
-        patched, skipped, disabled = patch_subagents(temp_project)
+        platform = get_platform("claude")
+        patched, skipped, disabled = platform._patch_subagents(temp_project)
 
         assert patched == 1
         assert skipped == 0
@@ -164,7 +188,8 @@ class TestPatchSubagents:
         agent_file = agents_dir / "test-agent.md"
         agent_file.write_text("---\nname: test\nanima:\n  subagent: true\n---\n")
 
-        patched, skipped, disabled = patch_subagents(temp_project)
+        platform = get_platform("claude")
+        patched, skipped, disabled = platform._patch_subagents(temp_project)
 
         assert patched == 0
         assert skipped == 1
@@ -178,7 +203,8 @@ class TestPatchSubagents:
         agent_file = agents_dir / "bad-agent.md"
         agent_file.write_text("# Agent without frontmatter")
 
-        patched, skipped, disabled = patch_subagents(temp_project)
+        platform = get_platform("claude")
+        patched, skipped, disabled = platform._patch_subagents(temp_project)
 
         assert patched == 0
         assert skipped == 0
@@ -195,7 +221,8 @@ class TestSetupHooks:
         claude_dir = temp_project / ".claude"
         claude_dir.mkdir()
 
-        result = setup_hooks(temp_project)
+        platform = get_platform("claude")
+        result = platform.setup_hooks(temp_project)
 
         assert result is True
         settings_file = claude_dir / "settings.json"
@@ -214,7 +241,8 @@ class TestSetupHooks:
         settings_file = claude_dir / "settings.json"
         settings_file.write_text(json.dumps({"existing": "value"}))
 
-        setup_hooks(temp_project)
+        platform = get_platform("claude")
+        platform.setup_hooks(temp_project)
 
         settings = json.loads(settings_file.read_text())
         assert settings["existing"] == "value"
@@ -228,7 +256,8 @@ class TestSetupHooks:
         settings_file = claude_dir / "settings.json"
         settings_file.write_text(json.dumps({"hooks": {"SessionStart": []}}))
 
-        result = setup_hooks(temp_project, force=False)
+        platform = get_platform("claude")
+        result = platform.setup_hooks(temp_project, force=False)
 
         assert result is False
 
@@ -240,7 +269,8 @@ class TestSetupHooks:
         settings_file = claude_dir / "settings.json"
         settings_file.write_text(json.dumps({"hooks": {"SessionStart": []}}))
 
-        result = setup_hooks(temp_project, force=True)
+        platform = get_platform("claude")
+        result = platform.setup_hooks(temp_project, force=True)
 
         assert result is True
         settings = json.loads(settings_file.read_text())
@@ -257,7 +287,8 @@ class TestSetupHooks:
         local_settings = claude_dir / "settings.local.json"
         local_settings.write_text("{}")
 
-        setup_hooks(temp_project)
+        platform = get_platform("claude")
+        platform.setup_hooks(temp_project)
 
         # Should have modified local settings
         local_data = json.loads(local_settings.read_text())
@@ -275,54 +306,140 @@ class TestDetectPlatform:
         """Should detect claude when only .claude exists."""
         (temp_project / ".claude").mkdir()
 
-        detected, found = detect_platform(temp_project)
+        found = detect_platforms(temp_project)
 
-        assert detected == "claude"
         assert found == ["claude"]
 
     def test_detects_antigravity_only(self, temp_project):
         """Should detect antigravity when only .agent exists."""
         (temp_project / ".agent").mkdir()
 
-        detected, found = detect_platform(temp_project)
+        found = detect_platforms(temp_project)
 
-        assert detected == "antigravity"
         assert found == ["antigravity"]
 
     def test_detects_opencode_only(self, temp_project):
         """Should detect opencode when only .opencode exists."""
         (temp_project / ".opencode").mkdir()
 
-        detected, found = detect_platform(temp_project)
+        found = detect_platforms(temp_project)
 
-        assert detected == "opencode"
         assert found == ["opencode"]
 
-    def test_returns_none_when_no_config(self, temp_project):
-        """Should return None when no config directory exists."""
-        detected, found = detect_platform(temp_project)
+    def test_detects_copilot(self, temp_project):
+        """Should detect copilot when .github/hooks exists."""
+        hooks_dir = temp_project / ".github" / "hooks"
+        hooks_dir.mkdir(parents=True)
 
-        assert detected is None
+        found = detect_platforms(temp_project)
+
+        assert "copilot" in found
+
+    def test_returns_empty_when_no_config(self, temp_project):
+        """Should return empty list when no config directory exists."""
+        found = detect_platforms(temp_project)
+
         assert found == []
 
-    def test_returns_none_when_multiple_configs(self, temp_project):
-        """Should return None when multiple config directories exist."""
+    def test_returns_multiple_when_multiple_configs(self, temp_project):
+        """Should return multiple when multiple config directories exist."""
         (temp_project / ".claude").mkdir()
         (temp_project / ".opencode").mkdir()
 
-        detected, found = detect_platform(temp_project)
+        found = detect_platforms(temp_project)
 
-        assert detected is None
         assert "claude" in found
         assert "opencode" in found
 
-    def test_returns_none_with_all_three_configs(self, temp_project):
-        """Should return None when all three config directories exist."""
+    def test_returns_all_when_all_configs(self, temp_project):
+        """Should return all when all config directories exist."""
         (temp_project / ".claude").mkdir()
         (temp_project / ".opencode").mkdir()
         (temp_project / ".agent").mkdir()
+        (temp_project / ".github" / "hooks").mkdir(parents=True)
 
-        detected, found = detect_platform(temp_project)
+        found = detect_platforms(temp_project)
 
-        assert detected is None
-        assert len(found) == 3
+        assert len(found) == 4
+
+
+class TestCopilotSetup:
+    """Test Copilot CLI platform setup."""
+
+    def test_creates_hooks_json(self, temp_project):
+        """Should create .github/hooks/anima.json with LTM hooks."""
+        github_dir = temp_project / ".github"
+        github_dir.mkdir()
+
+        platform = get_platform("copilot")
+        result = platform.setup_hooks(temp_project)
+
+        assert result is True
+        hooks_file = github_dir / "hooks" / "anima.json"
+        assert hooks_file.exists()
+
+        hooks = json.loads(hooks_file.read_text())
+        assert hooks["version"] == 1
+        assert "sessionStart" in hooks["hooks"]
+        assert "sessionEnd" in hooks["hooks"]
+
+    def test_copilot_hook_structure(self, temp_project):
+        """Should have correct Copilot hook structure."""
+        github_dir = temp_project / ".github"
+        github_dir.mkdir()
+
+        platform = get_platform("copilot")
+        platform.setup_hooks(temp_project)
+
+        hooks_file = github_dir / "hooks" / "anima.json"
+        hooks = json.loads(hooks_file.read_text())
+
+        # Check sessionStart hook structure
+        session_start = hooks["hooks"]["sessionStart"][0]
+        assert session_start["type"] == "command"
+        assert "bash" in session_start
+        assert "powershell" in session_start
+        assert "timeoutSec" in session_start
+
+    def test_skips_existing_hooks_without_force(self, temp_project):
+        """Should skip when hooks already configured and force=False."""
+        hooks_dir = temp_project / ".github" / "hooks"
+        hooks_dir.mkdir(parents=True)
+        hooks_file = hooks_dir / "anima.json"
+        hooks_file.write_text('{"existing": true}')
+
+        platform = get_platform("copilot")
+        result = platform.setup_hooks(temp_project, force=False)
+
+        assert result is False
+        # Original file should be unchanged
+        assert json.loads(hooks_file.read_text()) == {"existing": True}
+
+
+class TestFindConfigDir:
+    """Test config directory discovery."""
+
+    def test_finds_in_current_dir(self, temp_project):
+        """Should find config in current directory."""
+        (temp_project / ".claude").mkdir()
+
+        result = find_config_dir(temp_project, ".claude")
+
+        assert result == temp_project / ".claude"
+
+    def test_finds_in_parent_dir(self, temp_project):
+        """Should find config in parent directory (monorepo support)."""
+        # Create .claude in temp_project (parent of subdir)
+        (temp_project / ".claude").mkdir()
+        subdir = temp_project / "subproject"
+        subdir.mkdir()
+
+        result = find_config_dir(subdir, ".claude")
+
+        assert result == temp_project / ".claude"
+
+    def test_returns_none_when_not_found(self, temp_project):
+        """Should return None when config not found."""
+        result = find_config_dir(temp_project, ".nonexistent")
+
+        assert result is None
