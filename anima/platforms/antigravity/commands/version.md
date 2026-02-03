@@ -7,7 +7,7 @@ description: Show installed Anima version
 
 Show the currently installed version of Anima.
 
-## Example
+## Examples
 
 ```
 /version
@@ -22,5 +22,5 @@ Anima v0.9.0
 $ARGUMENTS
 
 ```bash
-uv run anima version $ARGUMENTS
+uv run python -m anima.commands.version $ARGUMENTS
 ```

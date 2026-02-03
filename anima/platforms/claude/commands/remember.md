@@ -6,15 +6,19 @@ description: Save a memory to long-term storage
 
 Save a memory to long-term storage. Metadata (kind, impact, region) is inferred from content or can be specified explicitly.
 
+## Arguments
+
+- `text`: The memory content to save
+
 ## Options
 
 - `--kind`, `-k`: Memory type (emotional, architectural, learnings, achievements, introspect)
 - `--impact`, `-i`: Importance level (low, medium, high, critical)
-- `--region`, `-r`: Scope (agent = cross-project, project = this project only)
+- `--region`, `-r`: Scope: agent = cross-project, project = this project only (agent, project)
 - `--project`, `-p`: Confirm project name (safety check)
-- `--platform`: Track which spaceship created this (always use `claude` for this platform)
+- `--platform`: Track which spaceship created this
 - `--git`: Capture current git context (commit, branch) for temporal correlation
-- `--help` or `-h`: Show help
+- `--help`, `-h`: Show help
 
 ## Examples
 

@@ -1,0 +1,27 @@
+name: memory-import
+description: Import memories from JSON
+detailed_description: |
+  Import memories from a previously exported JSON file.
+
+arguments:
+  - name: file
+    description: JSON file to import
+
+options:
+  - name: dry-run
+    description: Show what would be imported without saving
+  - name: merge
+    description: Skip existing memories instead of failing on duplicates
+  - name: remap-agent
+    description: Assign all memories to current agent (useful when importing from another agent)
+  - name: help
+    short: h
+    description: Show help
+
+examples:
+  - '/memory-import backup.json                    # Import all memories'
+  - '/memory-import backup.json --dry-run          # Preview import'
+  - '/memory-import backup.json --merge            # Skip duplicates'
+  - '/memory-import other-agent.json --remap-agent # Import as current agent'
+
+execution: uv run anima memory-import

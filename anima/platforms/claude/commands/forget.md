@@ -6,6 +6,10 @@ description: Remove a memory by ID
 
 Remove a memory by its ID. Supports partial ID matching.
 
+## Arguments
+
+- `id`: Memory ID to remove (partial match supported)
+
 ## Examples
 
 ```

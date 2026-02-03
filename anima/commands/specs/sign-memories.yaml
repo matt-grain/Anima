@@ -1,0 +1,32 @@
+name: sign-memories
+description: Sign all unsigned memories with your signing key
+detailed_description: |
+  Signs all existing unsigned memories using the agent's signing key from config.
+
+options:
+  - name: dry-run
+    short: n
+    description: Show what would be signed without making changes
+
+examples:
+  - '/sign-memories --dry-run     # Preview what will be signed'
+  - '/sign-memories               # Sign all unsigned memories'
+
+execution: uv run anima sign-memories
+
+extra_sections:
+  When to Use: |
+    Use this command when you:
+    - Add a signing key to an existing LTM installation
+    - Import unsigned memories from another source
+    - Want to authenticate your memory history
+  Prerequisites: |
+    You must have a signing key configured in `~/.anima/config.json`:
+
+    ```json
+    {
+      "agent": {
+        "signing_key": "your-secret-key-here"
+      }
+    }
+    ```

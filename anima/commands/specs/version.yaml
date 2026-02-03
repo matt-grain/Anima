@@ -1,0 +1,15 @@
+name: version
+description: Show installed Anima version
+detailed_description: |
+  Show the currently installed version of Anima.
+
+examples:
+  - '/version'
+
+execution: uv run anima version
+
+extra_sections:
+  Output: |
+    ```
+    Anima v0.9.0
+    ```

@@ -1,0 +1,30 @@
+name: memory-export
+description: Export memories to JSON
+detailed_description: |
+  Export memories to a portable JSON format for backup, migration, or sharing.
+
+arguments:
+  - name: file
+    description: Output file path (prints to stdout if not specified)
+    required: false
+
+options:
+  - name: agent-only
+    description: Only export AGENT region memories (cross-project)
+  - name: project-only
+    description: Only export PROJECT region memories
+  - name: kind
+    description: Filter by memory kind
+    value_name: "TYPE"
+    choices: [emotional, architectural, learnings, achievements, introspect]
+  - name: help
+    short: h
+    description: Show help
+
+examples:
+  - '/memory-export                     # Print to stdout'
+  - '/memory-export backup.json         # Save to file'
+  - '/memory-export --agent-only        # Only agent-wide memories'
+  - '/memory-export --kind emotional    # Only emotional memories'
+
+execution: uv run anima memory-export

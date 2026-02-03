@@ -7,6 +7,12 @@ description: Re-inject LTM memories into current context
 
 Re-injects your long-term memories into the current conversation context.
 
+## Examples
+
+```
+/refresh-memories
+```
+
 ## When to Use
 
 Use this command when you notice:
@@ -35,6 +41,8 @@ The command outputs the same memory block that was injected at session start:
 
 This refreshes Claude's awareness of your relationship, preferences, and accumulated knowledge.
 
+$ARGUMENTS
+
 ```bash
-uv run python -m ltm.hooks.session_start
+uv run python -m anima.commands.refresh-memories $ARGUMENTS
 ```

@@ -1,17 +1,20 @@
 ---
-description: Add question to research queue
+description: Add question to research queue for autonomous learning
 ---
 
-Add a question or topic to the research queue for later exploration.
+Add a question or topic to your research queue for later exploration. Questions that recur get automatic priority bumps.
 
 positional arguments:
-  question              The question or topic to research
+  question            The question or topic to add to the research queue
 
 Optional flags:
--  -h, --help: show this help message and exit
--  --region, -r {agent,project}: Where to store: 'agent' (cross-project) or 'project' (local)
--  --context, -c CONTEXT: What triggered this curiosity
+-  --region, -r  {agent,project}  Where to store (agent = cross-project, project = local)
+-  --context, -c  What triggered this curiosity
+-  --help, -h  Show help
 
-!`uv run anima curious <parameters> "question"`
+Examples:
+-  /curious "Why does Python GIL affect async?"
+-  /curious "Latest LLM introspection research" --region agent
+-  /curious "Why did pytest break?" --context "upgrade to 3.12"
 
-Question added to research queue.
+!`uv run anima curious <parameters>`

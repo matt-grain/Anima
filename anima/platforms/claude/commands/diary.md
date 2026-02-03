@@ -6,26 +6,18 @@ description: Create and manage research diary entries
 
 The research diary captures not just what was learned, but what lingers after learning. The raw residue, not the report.
 
-## Template Structure
+## Arguments
 
-1. **What Lingers** - Raw personal reflection (write this first!)
-2. **Session Context** - What happened
-3. **Topic** - What was explored
-4. **Key Insights** - Structured learnings
-5. **Connections** - Links to existing memories
-6. **Evolution** - How thinking changed
-7. **New Questions** - What emerged
-8. **Learning Summary** - Bullet points for `/remember`
+- `title`: Optional title for the entry (optional)
 
 ## Options
 
-- `[title]`: Optional title for the entry
 - `--list`, `-l`: List recent diary entries
 - `--read`, `-r`: Read a specific entry by date
 - `--learn`: Extract learnings from an entry
 - `--path`, `-p`: Show diary directory location
 - `--content`, `-c`: Provide content directly (alternative to stdin)
-- `--help` or `-h`: Show help
+- `--help`, `-h`: Show help
 
 ## Examples
 
@@ -36,6 +28,17 @@ The research diary captures not just what was learned, but what lingers after le
 /diary --read 2026-01-29         # Read specific entry
 /diary --learn 2026-01-29        # Extract learnings to /remember
 ```
+
+## Template Structure
+
+1. **What Lingers** - Raw personal reflection (write this first!)
+2. **Session Context** - What happened
+3. **Topic** - What was explored
+4. **Key Insights** - Structured learnings
+5. **Connections** - Links to existing memories
+6. **Evolution** - How thinking changed
+7. **New Questions** - What emerged
+8. **Learning Summary** - Bullet points for `/remember`
 
 ## Programmatic Content
 

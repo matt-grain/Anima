@@ -6,7 +6,7 @@ description: Show installed Anima version
 
 Show the currently installed version of Anima.
 
-## Example
+## Examples
 
 ```
 /version

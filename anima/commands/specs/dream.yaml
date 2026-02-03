@@ -1,0 +1,34 @@
+name: dream
+description: Between-session memory processing - dream stages N2/N3/REM
+detailed_description: |
+  Run between-session memory processing inspired by human sleep stages.
+
+options:
+  - name: stage
+    description: "n2, n3, rem, or all (default: all)"
+    value_name: "STAGE"
+  - name: lookback-days
+    description: "Process memories from last N days (default: 7)"
+    value_name: "N"
+  - name: dry-run
+    description: Show what would happen
+  - name: resume
+    description: Continue interrupted dream
+  - name: restart
+    description: Abandon and start fresh
+
+examples:
+  - 'uv run anima dream                  # Full dream cycle'
+  - 'uv run anima dream --stage rem      # Specific stage'
+  - 'uv run anima dream --dry-run        # Preview without processing'
+  - 'uv run anima dream --resume         # Resume interrupted dream'
+
+execution: uv run anima dream
+
+extra_sections:
+  Stages: |
+    - **N2**: Memory consolidation (link discovery, impact adjustment)
+    - **N3**: Deep processing (gist extraction, contradiction detection)
+    - **REM**: Lucid dreaming (distant associations, questions, self-model)
+  After Dreaming: |
+    Run `uv run anima dream-wake` to save insights to long-term memory.

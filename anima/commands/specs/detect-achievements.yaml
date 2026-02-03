@@ -1,0 +1,35 @@
+name: detect-achievements
+description: Auto-detect achievements from git commits
+detailed_description: |
+  Scan recent git commits and automatically create ACHIEVEMENT memories for significant work.
+
+options:
+  - name: since
+    description: "Look back N hours (default: 24)"
+    value_name: "N"
+  - name: dry-run
+    description: Show what would be saved without saving
+  - name: platform
+    description: Track which spaceship detected this
+  - name: help
+    short: h
+    description: Show help
+
+examples:
+  - '/detect-achievements                           # Scan last 24 hours'
+  - '/detect-achievements --since 48                # Scan last 48 hours'
+  - '/detect-achievements --dry-run                 # Preview without saving'
+  - '/detect-achievements --platform claude         # Tag achievements with platform'
+
+execution: uv run anima detect-achievements
+
+extra_sections:
+  How It Works: |
+    Scans commit messages for patterns indicating achievements:
+    - Feature completion ("add", "implement", "complete")
+    - Version releases (v1.0.0, milestone, release)
+    - Major fixes ("fix critical", "resolve")
+    - Refactoring and migrations
+    - Test milestones (100% coverage, tests passing)
+
+    Skips non-achievements: WIP, fixup, merge, revert, chore commits.

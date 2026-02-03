@@ -7,7 +7,7 @@ description: Check if a new Anima version is available
 
 Check if a newer version of Anima is available on GitHub.
 
-## Example
+## Examples
 
 ```
 /check-update
@@ -25,8 +25,16 @@ Checking matt-grain/Anima for updates...
   Run 'anima update' to upgrade
 ```
 
+If already up to date:
+```
+Current version: v0.9.0
+Checking matt-grain/Anima for updates...
+
+  You're up to date! (latest: v0.9.0)
+```
+
 $ARGUMENTS
 
 ```bash
-uv run anima check-update $ARGUMENTS
+uv run python -m anima.commands.check-update $ARGUMENTS
 ```

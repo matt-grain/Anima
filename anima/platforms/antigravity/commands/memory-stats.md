@@ -7,22 +7,22 @@ description: Show memory statistics
 
 Display statistics about stored memories for the current agent.
 
-## What It Shows
-
-- Total memory count
-- Breakdown by region (AGENT vs PROJECT)
-- Breakdown by kind (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS)
-- Breakdown by impact level (CRITICAL, HIGH, MEDIUM, LOW)
-- Health indicators (active, superseded, low confidence)
-
-## Example
+## Examples
 
 ```
 /memory-stats
 ```
 
+## What It Shows
+
+- Total memory count
+- Breakdown by region (AGENT vs PROJECT)
+- Breakdown by kind (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS, INTROSPECT)
+- Breakdown by impact level (CRITICAL, HIGH, MEDIUM, LOW)
+- Health indicators (active, superseded, low confidence)
+
 $ARGUMENTS
 
 ```bash
-uv run python -m anima.commands.stats $ARGUMENTS
+uv run python -m anima.commands.memory-stats $ARGUMENTS
 ```

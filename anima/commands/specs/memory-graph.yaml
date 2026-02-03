@@ -1,0 +1,23 @@
+name: memory-graph
+description: Visualize memory relationships
+detailed_description: |
+  Show memory chains and supersession relationships in ASCII format.
+
+options:
+  - name: all
+    short: a
+    description: Include standalone memories (not in chains)
+  - name: kind
+    short: k
+    description: Filter by memory kind
+    value_name: "TYPE"
+  - name: help
+    short: h
+    description: Show help
+
+examples:
+  - '/memory-graph                    # Show chains only'
+  - '/memory-graph --all              # Include standalone memories'
+  - '/memory-graph --kind learnings   # Show only LEARNINGS chains'
+
+execution: uv run anima memory-graph

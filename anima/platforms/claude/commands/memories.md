@@ -11,7 +11,7 @@ List all memories for the current agent and project.
 - `--kind`, `-k`: Filter by type (emotional, architectural, learnings, achievements, introspect)
 - `--region`, `-r`: Filter by region (agent, project)
 - `--all`, `-a`: Include superseded memories
-- `--help` or `-h`: Show help
+- `--help`, `-h`: Show help
 
 ## Examples
 

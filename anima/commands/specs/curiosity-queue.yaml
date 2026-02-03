@@ -1,0 +1,39 @@
+name: curiosity-queue
+description: View and manage research queue
+detailed_description: |
+  View and manage your research queue. Shows all open curiosities sorted by priority score.
+
+options:
+  - name: dismiss
+    description: Remove a question (no longer interested)
+    value_name: "<id>"
+  - name: boost
+    description: Increase priority of a question
+    value_name: "<id>"
+  - name: boost-amount
+    description: "How much to boost (default: 10)"
+    value_name: "N"
+  - name: all
+    short: a
+    description: Show all (including researched/dismissed)
+  - name: agent-only
+    description: Show only AGENT region curiosities
+  - name: project-only
+    description: Show only PROJECT region curiosities
+  - name: help
+    short: h
+    description: Show help
+
+examples:
+  - '/curiosity-queue                       # List open questions'
+  - '/curiosity-queue --dismiss abc123      # Remove from queue'
+  - '/curiosity-queue --boost abc123        # Increase priority'
+  - '/curiosity-queue --all                 # See all history'
+
+execution: uv run anima curiosity-queue
+
+extra_sections:
+  Priority Scoring: |
+    - Recurrence count (same question asked multiple times) × 10
+    - Manual boosts
+    - Recency bonus (recent questions rank higher)

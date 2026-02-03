@@ -1,0 +1,28 @@
+name: memories
+description: List all memories for current agent/project
+detailed_description: |
+  List all memories for the current agent and project.
+
+options:
+  - name: kind
+    short: k
+    description: Filter by type
+    choices: [emotional, architectural, learnings, achievements, introspect]
+  - name: region
+    short: r
+    description: Filter by region
+    choices: [agent, project]
+  - name: all
+    short: a
+    description: Include superseded memories
+  - name: help
+    short: h
+    description: Show help
+
+examples:
+  - '/memories                          # List all memories'
+  - '/memories --kind achievements      # Only achievements'
+  - '/memories --region agent           # Only agent-wide memories'
+  - '/memories --all                    # Include superseded'
+
+execution: uv run anima memories

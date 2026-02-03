@@ -1,11 +1,21 @@
 // turbo
 ---
-description: Mark a memory for removal
+description: Remove a memory by ID
 ---
 
 # Forget
 
-Mark a memory for removal by its ID. Memories are append-only, so this creates a correction rather than deleting.
+Remove a memory by its ID. Supports partial ID matching.
+
+## Arguments
+
+- `id`: Memory ID to remove (partial match supported)
+
+## Examples
+
+```
+/forget abc123      # Remove memory with ID starting with abc123
+```
 
 $ARGUMENTS
 

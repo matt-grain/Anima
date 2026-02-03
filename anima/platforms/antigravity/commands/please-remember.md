@@ -5,22 +5,28 @@ description: Save something to long-term memory
 
 # Please Remember
 
-Save the following to long-term memory. By default, metadata is inferred from content keywords.
+Save a memory to long-term storage. Metadata (kind, impact, region) is inferred from content or can be specified explicitly.
+
+## Arguments
+
+- `text`: The memory content to save
 
 ## Optional Flags
 
-- `--region agent` or `-r agent`: Store as agent-wide memory (travels across all projects)
-- `--region project` or `-r project`: Store as project-specific memory (default when in a project)
-- `--kind emotional|architectural|learnings|achievements` or `-k`: Override memory type
-- `--impact low|medium|high|critical` or `-i`: Override importance level
-- `--platform antigravity`: Track which spaceship created this (always use `antigravity` for this platform)
+- `--kind` or `-k`: Memory type (emotional|architectural|learnings|achievements|introspect)
+- `--impact` or `-i`: Importance level (low|medium|high|critical)
+- `--region` or `-r`: Scope: agent = cross-project, project = this project only (agent|project)
+- `--project` or `-p`: Confirm project name (safety check)
+- `--platform`: Track which spaceship created this
+- `--git`: Capture current git context (commit, branch) for temporal correlation
+- `--help` or `-h`: Show help
 
 ## Examples
 
 ```
-/please-remember This is crucial: never use print() for logging --platform antigravity
-/please-remember --region agent Matt prefers concise responses --platform antigravity
-/please-remember -r agent -k emotional -i critical Our founding collaboration --platform antigravity
+/remember "User prefers tabs over spaces" --platform antigravity
+/remember "Implemented caching layer" --kind achievements --impact high --platform antigravity
+/remember "Matt likes concise responses" --region agent --platform antigravity
 ```
 
 $ARGUMENTS

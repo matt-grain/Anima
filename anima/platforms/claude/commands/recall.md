@@ -6,14 +6,18 @@ description: Search long-term memories
 
 Search for memories matching the given query, or look up a specific memory by ID.
 
+## Arguments
+
+- `query`: Search term to match against memories (optional)
+
 ## Options
 
-- `--full` or `-f`: Show full memory content instead of truncated
-- `--kind` or `-k`: Filter by memory kind (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS, INTROSPECT, DREAM)
-- `--limit` or `-l`: Maximum results to return (default: 10)
-- `--semantic` or `-s`: Use semantic (embedding) search
-- `--id <id>` or `-i <id>`: Look up a specific memory by ID (partial IDs work)
-- `--help` or `-h`: Show help
+- `--full`, `-f`: Show full memory content instead of truncated
+- `--kind`, `-k`: Filter by memory kind (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS, INTROSPECT, DREAM)
+- `--limit`, `-l`: Maximum results to return (default: 10)
+- `--semantic`, `-s`: Use semantic (embedding) search
+- `--id`, `-i` <id>: Look up a specific memory by ID (partial IDs work)
+- `--help`, `-h`: Show help
 
 ## Examples
 

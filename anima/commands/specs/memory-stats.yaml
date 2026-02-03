@@ -1,0 +1,17 @@
+name: memory-stats
+description: Show memory statistics
+detailed_description: |
+  Display statistics about stored memories for the current agent.
+
+examples:
+  - '/memory-stats'
+
+execution: uv run anima memory-stats
+
+extra_sections:
+  What It Shows: |
+    - Total memory count
+    - Breakdown by region (AGENT vs PROJECT)
+    - Breakdown by kind (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS, INTROSPECT)
+    - Breakdown by impact level (CRITICAL, HIGH, MEDIUM, LOW)
+    - Health indicators (active, superseded, low confidence)

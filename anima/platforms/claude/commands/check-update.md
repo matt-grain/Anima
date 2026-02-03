@@ -6,7 +6,7 @@ description: Check if a new Anima version is available
 
 Check if a newer version of Anima is available on GitHub.
 
-## Example
+## Examples
 
 ```
 /check-update

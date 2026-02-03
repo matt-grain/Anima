@@ -1,0 +1,27 @@
+name: curious
+description: Add question to research queue for autonomous learning
+detailed_description: |
+  Add a question or topic to your research queue for later exploration. Questions that recur get automatic priority bumps.
+
+arguments:
+  - name: question
+    description: The question or topic to add to the research queue
+
+options:
+  - name: region
+    short: r
+    description: Where to store (agent = cross-project, project = local)
+    choices: [agent, project]
+  - name: context
+    short: c
+    description: What triggered this curiosity
+  - name: help
+    short: h
+    description: Show help
+
+examples:
+  - '/curious "Why does Python GIL affect async?"'
+  - '/curious "Latest LLM introspection research" --region agent'
+  - '/curious "Why did pytest break?" --context "upgrade to 3.12"'
+
+execution: uv run anima curious

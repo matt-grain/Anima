@@ -1,0 +1,32 @@
+---
+description: {{ description }}
+---
+
+{{ detailed_description.rstrip() }}
+{%- if arguments %}
+
+positional arguments:
+{%- for arg in arguments %}
+  {{ arg.name.ljust(20) }}{{ arg.description }}
+{%- endfor %}
+{%- endif %}
+{%- if options %}
+
+{% if arguments %}Optional flags:{% else %}Parameters:{% endif %}
+{%- for opt in options %}
+-  --{{ opt.name }}{% if opt.short %}, -{{ opt.short }}{% endif %}{% if opt.choices %}  {{"{"}}{{ opt.choices | join(',') }}{{"}"}}{% endif %}{% if opt.value_name %} {{ opt.value_name }}{% endif %}  {{ opt.description }}
+{%- endfor %}
+{%- endif %}
+{%- if examples %}
+
+Examples:
+{%- for ex in examples %}
+-  {{ ex }}
+{%- endfor %}
+{%- endif %}
+
+!`{{ execution }} <parameters>`
+{%- if output_message %}
+
+{{ output_message }}
+{%- endif %}

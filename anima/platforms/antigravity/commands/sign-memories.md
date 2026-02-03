@@ -7,6 +7,17 @@ description: Sign all unsigned memories with your signing key
 
 Signs all existing unsigned memories using the agent's signing key from config.
 
+## Optional Flags
+
+- `--dry-run` or `-n`: Show what would be signed without making changes
+
+## Examples
+
+```
+/sign-memories --dry-run     # Preview what will be signed
+/sign-memories               # Sign all unsigned memories
+```
+
 ## When to Use
 
 Use this command when you:
@@ -26,19 +37,8 @@ You must have a signing key configured in `~/.anima/config.json`:
 }
 ```
 
-## Options
-
-- `--dry-run` or `-n`: Show what would be signed without making changes
-
-## Examples
-
-```
-/sign-memories --dry-run     # Preview what will be signed
-/sign-memories               # Sign all unsigned memories
-```
-
 $ARGUMENTS
 
 ```bash
-uv run python -m anima.tools.sign_memories $ARGUMENTS
+uv run python -m anima.commands.sign-memories $ARGUMENTS
 ```

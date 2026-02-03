@@ -7,10 +7,10 @@ description: Visualize memory relationships
 
 Show memory chains and supersession relationships in ASCII format.
 
-## Options
+## Optional Flags
 
 - `--all` or `-a`: Include standalone memories (not in chains)
-- `--kind TYPE` or `-k TYPE`: Filter by memory kind
+- `--kind` or `-k` TYPE: Filter by memory kind
 - `--help` or `-h`: Show help
 
 ## Examples
@@ -24,5 +24,5 @@ Show memory chains and supersession relationships in ASCII format.
 $ARGUMENTS
 
 ```bash
-uv run python -m anima.commands.graph $ARGUMENTS
+uv run python -m anima.commands.memory-graph $ARGUMENTS
 ```

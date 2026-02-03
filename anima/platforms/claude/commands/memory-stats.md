@@ -6,6 +6,12 @@ description: Show memory statistics
 
 Display statistics about stored memories for the current agent.
 
+## Examples
+
+```
+/memory-stats
+```
+
 ## What It Shows
 
 - Total memory count
@@ -13,12 +19,6 @@ Display statistics about stored memories for the current agent.
 - Breakdown by kind (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS, INTROSPECT)
 - Breakdown by impact level (CRITICAL, HIGH, MEDIUM, LOW)
 - Health indicators (active, superseded, low confidence)
-
-## Example
-
-```
-/memory-stats
-```
 
 $ARGUMENTS
 

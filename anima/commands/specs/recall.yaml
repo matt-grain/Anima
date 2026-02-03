@@ -1,0 +1,45 @@
+name: recall
+description: Search long-term memories
+detailed_description: |
+  Search for memories matching the given query, or look up a specific memory by ID.
+
+arguments:
+  - name: query
+    description: Search term to match against memories
+    required: false
+
+options:
+  - name: full
+    short: f
+    description: Show full memory content instead of truncated
+  - name: kind
+    short: k
+    description: Filter by memory kind
+    choices: [EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS, INTROSPECT, DREAM]
+  - name: limit
+    short: l
+    description: "Maximum results to return (default: 10)"
+  - name: semantic
+    short: s
+    description: Use semantic (embedding) search
+  - name: id
+    short: i
+    description: Look up a specific memory by ID (partial IDs work)
+    value_name: "<id>"
+  - name: help
+    short: h
+    description: Show help
+
+examples:
+  - '/recall logging              # Search for memories mentioning "logging"'
+  - '/recall --full architecture  # Full content for architecture memories'
+  - '/recall --kind DREAM         # List dream insights'
+  - '/recall --kind DREAM --full  # Full dream content'
+  - '/recall --id f0087ff3        # Look up memory by ID (partial match)'
+
+execution: uv run anima recall
+output_message: Here are your recent memories.
+
+platforms:
+  opencode:
+    description: Recall recent memories

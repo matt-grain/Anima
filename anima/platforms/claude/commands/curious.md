@@ -6,11 +6,15 @@ description: Add question to research queue for autonomous learning
 
 Add a question or topic to your research queue for later exploration. Questions that recur get automatic priority bumps.
 
+## Arguments
+
+- `question`: The question or topic to add to the research queue
+
 ## Options
 
-- `--region`, `-r`: Where to store (agent = cross-project, project = local)
+- `--region`, `-r`: Where to store (agent = cross-project, project = local) (agent, project)
 - `--context`, `-c`: What triggered this curiosity
-- `--help` or `-h`: Show help
+- `--help`, `-h`: Show help
 
 ## Examples
 

@@ -8,9 +8,9 @@ Show memory chains and supersession relationships in ASCII format.
 
 ## Options
 
-- `--all` or `-a`: Include standalone memories (not in chains)
-- `--kind TYPE` or `-k TYPE`: Filter by memory kind
-- `--help` or `-h`: Show help
+- `--all`, `-a`: Include standalone memories (not in chains)
+- `--kind`, `-k` TYPE: Filter by memory kind
+- `--help`, `-h`: Show help
 
 ## Examples
 

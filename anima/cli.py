@@ -40,6 +40,7 @@ def main() -> int:
         print("  version                Show installed version")
         print("  check-update           Check for new version on GitHub")
         print("  update                 Update to latest version from GitHub")
+        print("  generate-commands      Generate platform-specific command docs from specs")
         return 0
 
     command = sys.argv[1]
@@ -155,6 +156,10 @@ def main() -> int:
             from anima.tools.version import run_update
 
             return run_update(args)
+        case "generate-commands":
+            from anima.tools.generate import run
+
+            return run(args)
         case _:
             print(f"Unknown command: {command}")
             return 1

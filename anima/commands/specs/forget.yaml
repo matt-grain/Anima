@@ -1,0 +1,13 @@
+name: forget
+description: Remove a memory by ID
+detailed_description: |
+  Remove a memory by its ID. Supports partial ID matching.
+
+arguments:
+  - name: id
+    description: Memory ID to remove (partial match supported)
+
+examples:
+  - '/forget abc123      # Remove memory with ID starting with abc123'
+
+execution: uv run anima forget

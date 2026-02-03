@@ -7,7 +7,11 @@ description: Import memories from JSON
 
 Import memories from a previously exported JSON file.
 
-## Options
+## Arguments
+
+- `file`: JSON file to import
+
+## Optional Flags
 
 - `--dry-run`: Show what would be imported without saving
 - `--merge`: Skip existing memories instead of failing on duplicates
@@ -26,5 +30,5 @@ Import memories from a previously exported JSON file.
 $ARGUMENTS
 
 ```bash
-uv run python -m anima.commands.import_memories $ARGUMENTS
+uv run python -m anima.commands.memory-import $ARGUMENTS
 ```

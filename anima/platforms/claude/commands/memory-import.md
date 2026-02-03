@@ -6,12 +6,16 @@ description: Import memories from JSON
 
 Import memories from a previously exported JSON file.
 
+## Arguments
+
+- `file`: JSON file to import
+
 ## Options
 
 - `--dry-run`: Show what would be imported without saving
 - `--merge`: Skip existing memories instead of failing on duplicates
 - `--remap-agent`: Assign all memories to current agent (useful when importing from another agent)
-- `--help` or `-h`: Show help
+- `--help`, `-h`: Show help
 
 ## Examples
 

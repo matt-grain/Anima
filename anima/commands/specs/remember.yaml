@@ -1,0 +1,45 @@
+name: remember
+description: Save a memory to long-term storage
+detailed_description: |
+  Save a memory to long-term storage. Metadata (kind, impact, region) is inferred from content or can be specified explicitly.
+
+arguments:
+  - name: text
+    description: The memory content to save
+
+options:
+  - name: kind
+    short: k
+    description: Memory type
+    choices: [emotional, architectural, learnings, achievements, introspect]
+  - name: impact
+    short: i
+    description: Importance level
+    choices: [low, medium, high, critical]
+  - name: region
+    short: r
+    description: "Scope: agent = cross-project, project = this project only"
+    choices: [agent, project]
+  - name: project
+    short: p
+    description: Confirm project name (safety check)
+  - name: platform
+    description: Track which spaceship created this
+  - name: git
+    description: Capture current git context (commit, branch) for temporal correlation
+  - name: help
+    short: h
+    description: Show help
+
+examples:
+  - '/remember "User prefers tabs over spaces" --platform {platform}'
+  - '/remember "Implemented caching layer" --kind achievements --impact high --platform {platform}'
+  - '/remember "Matt likes concise responses" --region agent --platform {platform}'
+
+execution: uv run anima remember
+output_message: Memory saved successfully.
+
+platforms:
+  antigravity:
+    name: please-remember
+    description: Save something to long-term memory

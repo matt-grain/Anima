@@ -1,0 +1,44 @@
+// turbo
+---
+description: {{ description }}
+---
+
+# {{ title }}
+
+{{ detailed_description.rstrip() }}
+{%- if arguments %}
+
+## Arguments
+{% for arg in arguments %}
+- `{{ arg.name }}`: {{ arg.description }}{% if not arg.required %} (optional){% endif %}
+{%- endfor %}
+{%- endif %}
+{%- if options %}
+
+## Optional Flags
+{% for opt in options %}
+- `--{{ opt.name }}`{% if opt.short %} or `-{{ opt.short }}`{% endif %}{% if opt.value_name %} {{ opt.value_name }}{% endif %}: {{ opt.description }}{% if opt.choices %} ({{ opt.choices | join('|') }}){% endif %}
+{%- endfor %}
+{%- endif %}
+{%- if examples %}
+
+## Examples
+
+```
+{%- for ex in examples %}
+{{ ex }}
+{%- endfor %}
+```
+{%- endif %}
+{%- for section_name, section_content in extra_sections.items() %}
+
+## {{ section_name }}
+
+{{ section_content.rstrip() }}
+{%- endfor %}
+
+$ARGUMENTS
+
+```bash
+{{ execution }} $ARGUMENTS
+```
