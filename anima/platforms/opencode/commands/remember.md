@@ -14,6 +14,7 @@ Optional flags:
   --impact, -i {low,medium,high,critical}: Importance level
   --project, -p PROJECT: Confirm project name (must match cwd project for safety)
   --platform: Track which spaceship created this (always use `opencode` for this platform)
+  --git: Capture current git context (commit, branch) for temporal correlation
 
 !`uv run anima remember <parameters> --platform opencode "text"`
 

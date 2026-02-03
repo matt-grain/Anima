@@ -13,6 +13,7 @@ Save a memory to long-term storage. Metadata (kind, impact, region) is inferred 
 - `--region`, `-r`: Scope (agent = cross-project, project = this project only)
 - `--project`, `-p`: Confirm project name (safety check)
 - `--platform`: Track which spaceship created this (always use `claude` for this platform)
+- `--git`: Capture current git context (commit, branch) for temporal correlation
 - `--help` or `-h`: Show help
 
 ## Examples

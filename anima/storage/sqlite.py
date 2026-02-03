@@ -707,9 +707,16 @@ class MemoryStore(MemoryStoreProtocol):
         agent_id: str,
         project_id: Optional[str] = None,
         include_superseded: bool = False,
+        region: Optional[RegionType] = None,
     ) -> list[tuple[str, str, list[float]]]:
         """
         Get all memories with their embeddings for semantic search.
+
+        Args:
+            agent_id: Agent ID to filter by
+            project_id: Project ID to filter by (includes AGENT region if not filtered)
+            include_superseded: Whether to include superseded memories
+            region: Optional region filter (AGENT or PROJECT)
 
         Returns:
             List of (memory_id, content, embedding) tuples
@@ -720,7 +727,15 @@ class MemoryStore(MemoryStoreProtocol):
         """
         params: list = [agent_id]
 
-        if project_id:
+        # If region specified, filter by that region only
+        if region:
+            query += " AND region = ?"
+            params.append(region.value)
+            if region == RegionType.PROJECT and project_id:
+                query += " AND project_id = ?"
+                params.append(project_id)
+        elif project_id:
+            # Default behavior: include project + AGENT memories
             query += " AND (project_id = ? OR region = 'AGENT')"
             params.append(project_id)
 
@@ -816,8 +831,17 @@ class MemoryStore(MemoryStoreProtocol):
         agent_id: str,
         tiers: list[str],
         project_id: Optional[str] = None,
+        region: Optional[RegionType] = None,
     ) -> list[Memory]:
-        """Get memories by tier(s)."""
+        """
+        Get memories by tier(s).
+
+        Args:
+            agent_id: Agent ID to filter by
+            tiers: List of tier values to include
+            project_id: Project ID to filter by
+            region: Optional region filter (AGENT or PROJECT)
+        """
         if not tiers:
             return []
 
@@ -829,7 +853,15 @@ class MemoryStore(MemoryStoreProtocol):
         """
         params: list = [agent_id, *tiers]
 
-        if project_id:
+        # If region specified, filter by that region only
+        if region:
+            query += " AND region = ?"
+            params.append(region.value)
+            if region == RegionType.PROJECT and project_id:
+                query += " AND project_id = ?"
+                params.append(project_id)
+        elif project_id:
+            # Default behavior: include project + AGENT memories
             query += " AND (project_id = ? OR region = 'AGENT')"
             params.append(project_id)
 

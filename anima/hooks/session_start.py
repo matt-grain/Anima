@@ -280,9 +280,9 @@ def run(args: Optional[list[str]] = None) -> int:
 
         # Inject from both, prioritizing subagent specific if any
         # (Usually subagents have 0 memories of their own, so they just get Anima's)
-        memories_dsl = injector.inject([agent, primary_agent], project)
+        memories_dsl = injector.inject([agent, primary_agent], project, project_dir=project_dir)
     else:
-        memories_dsl = injector.inject(agent, project)
+        memories_dsl = injector.inject(agent, project, project_dir=project_dir)
 
     # Build status notes
     status_notes = []

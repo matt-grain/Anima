@@ -5,17 +5,53 @@
 /recall command - Search memories in LTM.
 
 This command searches memories by keyword and returns matches.
-For semantic search, the agent interprets the query and translates to lookups.
+Supports social cue detection ("remember when we discussed X") and
+temporal cue parsing ("last session", "yesterday") for natural queries.
 """
 
 import sys
 from pathlib import Path
+from typing import Any, Optional
 
-from anima.core import AgentResolver, MemoryKind
+from anima.core import AgentResolver, MemoryKind, Memory
 from anima.embeddings import embed_text
 from anima.embeddings.similarity import find_similar
+from anima.lifecycle.social_cues import detect_social_cue, extract_recall_query
+from anima.lifecycle.temporal import parse_temporal_cue, TemporalCoordinate
 from anima.storage import MemoryStore
 from anima.utils.terminal import safe_print, get_icon
+
+
+def apply_temporal_filter(
+    memories: list[Memory],
+    coord: TemporalCoordinate,
+) -> list[Memory]:
+    """
+    Filter memories by temporal coordinates.
+
+    Applies filters for session, time range, and git context.
+    """
+    result = memories
+
+    # Filter by session
+    if coord.session_id:
+        result = [m for m in result if m.session_id == coord.session_id]
+
+    # Filter by time range
+    if coord.start_time:
+        result = [m for m in result if m.created_at >= coord.start_time]
+    if coord.end_time:
+        result = [m for m in result if m.created_at <= coord.end_time]
+
+    # Filter by git commit (prefix match)
+    if coord.git_commit:
+        result = [m for m in result if m.git_commit and m.git_commit.startswith(coord.git_commit)]
+
+    # Filter by git branch
+    if coord.git_branch:
+        result = [m for m in result if m.git_branch == coord.git_branch]
+
+    return result
 
 
 def lookup_by_id(memory_id: str) -> int:
@@ -76,7 +112,14 @@ def lookup_by_id(memory_id: str) -> int:
     return 0
 
 
-def semantic_search(query: str, agent_id: str, project_id: str | None, show_full: bool, limit: int = 10) -> int:
+def semantic_search(
+    query: str,
+    agent_id: str,
+    project_id: str | None,
+    show_full: bool,
+    limit: int = 10,
+    temporal_coord: Optional[TemporalCoordinate] = None,
+) -> int:
     """
     Perform semantic search using embeddings.
 
@@ -86,6 +129,7 @@ def semantic_search(query: str, agent_id: str, project_id: str | None, show_full
         project_id: Project ID for scoping (or None for agent-wide)
         show_full: Whether to show full content
         limit: Maximum results to return
+        temporal_coord: Optional temporal filters to apply
 
     Returns:
         Exit code (0 for success)
@@ -115,40 +159,60 @@ def semantic_search(query: str, agent_id: str, project_id: str | None, show_full
             candidates.append((mem_id, emb))
             content_lookup[mem_id] = content
 
-    results = find_similar(query_embedding, candidates, top_k=limit, threshold=0.3)
+    # Fetch extra results if we'll be filtering
+    search_limit = limit * 2 if temporal_coord and temporal_coord.has_filters() else limit
+    results = find_similar(query_embedding, candidates, top_k=search_limit, threshold=0.3)
 
     if not results:
         print(f'No semantically similar memories found for "{query}"')
         return 0
 
-    print(f'Found {len(results)} semantically similar memories for "{query}":\n')
-
     # Get all memories once for full details
     all_memories = store.get_memories_for_agent(agent_id=agent_id, project_id=project_id)
     memory_lookup = {m.id: m for m in all_memories}
 
-    for i, result in enumerate(results, 1):
-        mem_id = result.item  # The memory ID
-        content = content_lookup.get(mem_id, "")
+    # Build list of (result, memory) pairs for filtering
+    result_memories: list[tuple[Any, Memory]] = []
+    for result in results:
+        mem_id = result.item
         memory = memory_lookup.get(mem_id)
-
         if memory:
-            confidence_marker = "?" if memory.is_low_confidence() else ""
-            date_str = memory.created_at.strftime("%Y-%m-%d")
-            similarity_pct = int(result.score * 100)
+            result_memories.append((result, memory))
 
-            if show_full:
-                print(f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] ({date_str}) [🎯 {similarity_pct}%]")
-                print(f"   ID: {memory.id}")
-                print(f"   Region: {memory.region.value}")
-                print("   Content:")
-                for line in memory.content.split("\n"):
-                    print(f"   {line}")
-                print()
-            else:
-                print(f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] {content[:70]}{'...' if len(content) > 70 else ''} ({date_str}) [🎯 {similarity_pct}%]")
-                print(f"   ID: {mem_id[:8]}")
-                print()
+    # Apply temporal filter if provided
+    if temporal_coord and temporal_coord.has_filters():
+        filtered_memories = apply_temporal_filter([m for _, m in result_memories], temporal_coord)
+        filtered_ids = {m.id for m in filtered_memories}
+        result_memories = [(r, m) for r, m in result_memories if m.id in filtered_ids]
+
+    # Apply limit after filtering
+    result_memories = result_memories[:limit]
+
+    if not result_memories:
+        print(f'No semantically similar memories found for "{query}" with temporal filters')
+        return 0
+
+    print(f'Found {len(result_memories)} semantically similar memories for "{query}":\n')
+
+    for i, (result, memory) in enumerate(result_memories, 1):
+        mem_id = result.item
+        content = content_lookup.get(mem_id, "")
+        confidence_marker = "?" if memory.is_low_confidence() else ""
+        date_str = memory.created_at.strftime("%Y-%m-%d")
+        similarity_pct = int(result.score * 100)
+
+        if show_full:
+            print(f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] ({date_str}) [🎯 {similarity_pct}%]")
+            print(f"   ID: {memory.id}")
+            print(f"   Region: {memory.region.value}")
+            print("   Content:")
+            for line in memory.content.split("\n"):
+                print(f"   {line}")
+            print()
+        else:
+            print(f"{i}. [{memory.kind.value}:{memory.impact.value}{confidence_marker}] {content[:70]}{'...' if len(content) > 70 else ''} ({date_str}) [🎯 {similarity_pct}%]")
+            print(f"   ID: {mem_id[:8]}")
+            print()
 
     return 0
 
@@ -297,16 +361,53 @@ def run(args: list[str]) -> int:
 
     query = " ".join(query_words)
 
-    # Use semantic search if requested
+    # Detect social cues ("remember when we discussed X", "you mentioned Y")
+    social_cue = detect_social_cue(query)
+    if social_cue:
+        # Extract the topic from social cue for search
+        cue_topic = extract_recall_query(social_cue)
+        if cue_topic:
+            safe_print(f"{get_icon('💬', '[SOC]')} Detected social cue: \"{social_cue.cue_type.name}\" → topic: \"{cue_topic}\"")
+            query = cue_topic  # Use extracted topic as the actual search query
+            # Social cues imply wanting contextual search - auto-enable semantic
+            if not use_semantic:
+                safe_print(f"{get_icon('🔄', '[AUTO]')} Auto-enabling semantic search for natural language query")
+                use_semantic = True
+
+    # Parse temporal cues ("last session", "yesterday", "during the last commit")
+    temporal_coord = parse_temporal_cue(query)
+    if temporal_coord and temporal_coord.has_filters():
+        filter_desc = []
+        if temporal_coord.session_id:
+            filter_desc.append(f"session={temporal_coord.session_id[:8]}...")
+        if temporal_coord.start_time:
+            filter_desc.append(f"from={temporal_coord.start_time.strftime('%Y-%m-%d')}")
+        if temporal_coord.end_time:
+            filter_desc.append(f"to={temporal_coord.end_time.strftime('%Y-%m-%d')}")
+        if temporal_coord.git_commit:
+            filter_desc.append(f"commit={temporal_coord.git_commit[:8]}...")
+        if temporal_coord.git_branch:
+            filter_desc.append(f"branch={temporal_coord.git_branch}")
+        safe_print(f"{get_icon('⏰', '[TIME]')} Temporal filter: {', '.join(filter_desc)}")
+
+    # Use semantic search if requested or auto-enabled
     if use_semantic:
-        return semantic_search(query, agent.id, project.id, show_full, limit)
+        result = semantic_search(query, agent.id, project.id, show_full, limit, temporal_coord)
+        return result
 
     # Search memories using keyword search
-    memories = store.search_memories(agent_id=agent.id, query=query, project_id=project.id, limit=limit)
+    memories = store.search_memories(agent_id=agent.id, query=query, project_id=project.id, limit=limit * 2)  # Fetch extra for post-filtering
+
+    # Apply temporal filter if detected
+    if temporal_coord and temporal_coord.has_filters():
+        memories = apply_temporal_filter(memories, temporal_coord)
 
     # Apply kind filter if provided
     if kind_filter:
         memories = [m for m in memories if m.kind == kind_filter]
+
+    # Apply limit after all filtering
+    memories = memories[:limit]
 
     if not memories:
         print(f'No memories found matching "{query}"')

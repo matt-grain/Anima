@@ -25,6 +25,7 @@ from anima.core import (
 )
 from anima.storage import MemoryStore
 from anima.lifecycle.session import get_previous_session_id
+from anima.lifecycle.project_context import ProjectFingerprint
 
 
 class InjectionStats(TypedDict):
@@ -135,22 +136,29 @@ class MemoryInjector:
         self.store = store or MemoryStore()
         self.budget = get_memory_budget(context_size)
 
-    def inject(self, agent: Union[Agent, list[Agent]], project: Optional[Project] = None, use_tiered_loading: bool = True) -> str:
+    def inject(
+        self,
+        agent: Union[Agent, list[Agent]],
+        project: Optional[Project] = None,
+        use_tiered_loading: bool = True,
+        project_dir: Optional[Any] = None,
+    ) -> str:
         """
         Get formatted memories for injection into context.
 
-        With tiered loading enabled (default), loads memories by tier:
-        1. CORE: Always loaded (CRITICAL emotional memories)
-        2. ACTIVE: Recently accessed memories
-        3. CONTEXTUAL: Project-specific memories
-        4. DEEP: Not auto-loaded (available via semantic search)
+        With tiered loading enabled (default), loads memories with
+        AGENT/PROJECT distinction (Phase 3A):
+        - AGENT memories: Tier-based (CORE → ACTIVE → CONTEXTUAL)
+        - PROJECT memories: Semantic matching against project fingerprint
 
-        Without tiered loading, falls back to priority-based loading.
+        This ensures project rules persist regardless of age, while
+        AGENT memories respect temporal recency.
 
         Args:
             agent: The current agent
             project: The current project (optional)
             use_tiered_loading: Whether to use tiered loading (default: True)
+            project_dir: Project directory for semantic fingerprinting
 
         Returns:
             Formatted memory block as a string, or empty string if no memories
@@ -163,7 +171,7 @@ class MemoryInjector:
         primary_agent = agents[0]
 
         if use_tiered_loading:
-            memories = self._load_tiered_memories(agents, project)
+            memories = self._load_tiered_memories(agents, project, project_dir)
         else:
             memories = self._load_all_memories(agents, project)
 
@@ -213,22 +221,30 @@ class MemoryInjector:
 
         return block.to_dsl()
 
-    def _load_tiered_memories(self, agents: list[Agent], project: Optional[Project]) -> list[Memory]:
+    def _load_tiered_memories(
+        self,
+        agents: list[Agent],
+        project: Optional[Project],
+        project_dir: Optional[Any] = None,
+    ) -> list[Memory]:
         """
-        Load memories by tier: CORE -> ACTIVE -> CONTEXTUAL.
+        Load memories with AGENT/PROJECT distinction (Phase 3A).
 
-        DEEP tier is not auto-loaded (available via semantic search).
+        Key insight from Matt: AGENT memories benefit from temporal recency
+        (I evolve over time), but PROJECT memories need semantic relevance
+        (project rules persist regardless of age).
 
-        Project-Aware Loading (Phase 3A):
-        - When in a project context, also loads memories from the previous session
-          within that project, enabling continuity ("as we discussed last session")
-        - Memories are deduplicated to avoid loading the same memory twice
+        Loading strategy:
+        - AGENT memories: Tier-based loading (CORE → ACTIVE → CONTEXTUAL)
+        - PROJECT memories: Semantic matching against project fingerprint
+
+        This ensures a project constraint like "always call Task-Review"
+        surfaces 2 months later just as readily as 2 days later.
         """
         memories: list[Memory] = []
         seen_ids: set[str] = set()
 
-        # Load tiers in order: CORE, ACTIVE, CONTEXTUAL
-        # DEEP is not loaded automatically (on-demand via semantic search)
+        # 1. Load AGENT-scoped memories by tier (temporal/recency matters)
         tiers_to_load = [MemoryTier.CORE, MemoryTier.ACTIVE, MemoryTier.CONTEXTUAL]
 
         for tier in tiers_to_load:
@@ -236,17 +252,80 @@ class MemoryInjector:
                 tier_memories = self.store.get_memories_by_tier(
                     agent_id=a.id,
                     tiers=[tier],
-                    project_id=project.id if project else None,
+                    region=RegionType.AGENT,  # Only AGENT scope
                 )
                 for mem in tier_memories:
                     if mem.id not in seen_ids:
                         memories.append(mem)
                         seen_ids.add(mem.id)
 
-        # Phase 3A: Project-aware session continuity
+        # 2. Load PROJECT-scoped memories semantically (relevance matters, not time)
+        if project and project_dir:
+            project_memories = self._load_semantic_project_memories(agents, project, project_dir, seen_ids)
+            memories.extend(project_memories)
+        elif project:
+            # Fallback: load PROJECT memories by tier if no project_dir
+            for tier in tiers_to_load:
+                for a in agents:
+                    tier_memories = self.store.get_memories_by_tier(
+                        agent_id=a.id,
+                        tiers=[tier],
+                        project_id=project.id,
+                        region=RegionType.PROJECT,
+                    )
+                    for mem in tier_memories:
+                        if mem.id not in seen_ids:
+                            memories.append(mem)
+                            seen_ids.add(mem.id)
+
+        # 3. Previous session continuity (for "as we discussed" references)
         if project:
             prev_session_memories = self._load_previous_session_memories(agents, project, seen_ids)
             memories.extend(prev_session_memories)
+
+        return memories
+
+    def _load_semantic_project_memories(
+        self,
+        agents: list[Agent],
+        project: Project,
+        project_dir: Any,
+        seen_ids: set[str],
+    ) -> list[Memory]:
+        """
+        Load PROJECT memories using semantic fingerprint matching.
+
+        Builds a fingerprint from README + recent commits, then finds
+        PROJECT memories that are semantically relevant regardless of age.
+        """
+        from pathlib import Path
+
+        memories: list[Memory] = []
+
+        try:
+            # Build project fingerprint
+            if isinstance(project_dir, str):
+                project_dir = Path(project_dir)
+
+            fingerprint = ProjectFingerprint.from_directory(project_dir, quiet=True)
+
+            # Find relevant PROJECT memories for each agent
+            for agent in agents:
+                relevant = fingerprint.find_relevant_memories(
+                    store=self.store,
+                    agent_id=agent.id,
+                    project_id=project.id,
+                    limit=30,  # Fetch more, will be filtered by budget later
+                    quiet=True,
+                )
+                for mem in relevant:
+                    if mem.id not in seen_ids:
+                        memories.append(mem)
+                        seen_ids.add(mem.id)
+
+        except Exception:
+            # If fingerprinting fails, fall back to tier-based loading
+            pass
 
         return memories
 

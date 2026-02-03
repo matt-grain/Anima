@@ -1,6 +1,6 @@
 [project]
 name = "anima"
-version = "0.10.5"
+version = "0.11.0"
 description = "Long Term Memory for Anima Agents - human-like persistent memory across sessions"
 readme = "README.md"
 requires-python = ">=3.13"

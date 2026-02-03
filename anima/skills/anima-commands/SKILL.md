@@ -23,6 +23,7 @@ Save a memory to long-term storage.
 - `--region` / `-r`: Scope (agent = cross-project, project = this project only)
 - `--project` / `-p`: Confirm project name (safety check - must match cwd)
 - `--platform`: Which spaceship created this memory (claude, antigravity, opencode) - **recommended for tracking**
+- `--git`: Capture current git context (commit hash, branch) for temporal correlation
 
 **Examples:**
 ```bash
@@ -40,6 +41,9 @@ uv run anima remember "Project-specific learning" --region project --project MyP
 
 # Text with special characters - always use double quotes
 uv run anima remember "Fixed bug: user's input wasn't validated" --kind learnings
+
+# With git context (links memory to current commit/branch)
+uv run anima remember "Implemented caching in API layer" --kind achievements --git
 ```
 
 **Tips:**
