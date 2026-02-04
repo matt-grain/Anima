@@ -15,10 +15,13 @@ import time
 from datetime import datetime, timedelta
 from typing import Optional
 
+import re
+
 from anima.core import Memory, ImpactLevel
-from anima.dream.types import N3Result, GistResult, Contradiction, DreamConfig
+from anima.dream.types import N3Result, GistResult, Contradiction, ScopeIssue, DreamConfig
 from anima.embeddings import cosine_similarity
 from anima.storage.sqlite import MemoryStore
+from anima.storage.dissonance import DissonanceStore
 
 
 def run_n3_processing(
@@ -121,6 +124,47 @@ def run_n3_processing(
     if not quiet:
         print(f"   Detected {len(contradictions)} contradiction candidates (to evaluate in REM)")
 
+    # Phase 3: Memory scope validation
+    scope_issues = []
+    memories_validated = 0
+
+    # Get known project names for scope detection
+    known_projects = _get_known_project_names(store)
+
+    # Get unvalidated memories
+    unvalidated = store.get_unvalidated_memories(agent_id, limit=config.n2_process_limit)
+
+    if not quiet and unvalidated:
+        print(f"   Validating {len(unvalidated)} unvalidated memories...")
+
+    for memory in unvalidated:
+        issue = _detect_scope_issue(memory, known_projects)
+
+        if issue:
+            # Flag for human review
+            scope_issues.append(issue)
+        else:
+            # Auto-validate (clear scope)
+            store.mark_memory_validated(memory.id)
+            memories_validated += 1
+
+    # Queue scope issues as dissonances
+    dissonance_store = DissonanceStore()
+    scope_dissonances_added = 0
+    for issue in scope_issues:
+        if not dissonance_store.scope_issue_exists(issue.memory_id):
+            dissonance_store.add_scope_issue(
+                agent_id=agent_id,
+                memory_id=issue.memory_id,
+                description=issue.reason,
+                suggested_region=issue.suggested_region,
+                suggested_project_id=issue.suggested_project_id,
+            )
+            scope_dissonances_added += 1
+
+    if not quiet:
+        print(f"   Validated {memories_validated} memories, flagged {len(scope_issues)} for scope review")
+
     duration = time.time() - start_time
 
     return N3Result(
@@ -128,9 +172,12 @@ def run_n3_processing(
         gist_results=gist_results,
         contradictions_found=len(contradictions),
         contradictions=contradictions,
-        dissonance_queue_additions=0,  # Candidates evaluated in REM, not stored automatically
+        dissonance_queue_additions=scope_dissonances_added,  # Now includes scope issues
         duration_seconds=duration,
         memories_processed=len(memories),
+        memories_validated=memories_validated,
+        scope_issues_found=len(scope_issues),
+        scope_issues=scope_issues,
     )
 
 
@@ -343,6 +390,112 @@ def _detect_contradiction(
                 content_b=content_b[:200] + ("..." if len(content_b) > 200 else ""),
                 description=f"Opposite absolutes ({word_a}/{word_b}) detected (similarity: {similarity:.2f})",
                 similarity=similarity,
+            )
+
+    return None
+
+
+def _get_known_project_names(store: MemoryStore) -> set[str]:
+    """Get all known project names/IDs from the database."""
+    projects = set()
+    with store._connect() as conn:
+        rows = conn.execute("SELECT id, name FROM projects").fetchall()
+        for row in rows:
+            projects.add(row["id"].lower())
+            projects.add(row["name"].lower())
+    return projects
+
+
+def _detect_scope_issue(memory: Memory, known_projects: set[str]) -> Optional[ScopeIssue]:
+    """
+    Detect if a memory might be in the wrong region.
+
+    Heuristics:
+    - AGENT memories with project names/versions → might be PROJECT
+    - PROJECT memories with generic learnings → might be AGENT
+
+    Returns:
+        ScopeIssue if potential misplacement detected, None otherwise
+    """
+    content_lower = memory.content.lower()
+    current_region = memory.region.value
+
+    # Version pattern: v0.1.2, v1.0, etc.
+    version_pattern = r"\bv\d+\.\d+(?:\.\d+)?\b"
+    has_version = bool(re.search(version_pattern, content_lower))
+
+    # Check for project name mentions
+    mentioned_projects = [p for p in known_projects if p in content_lower and len(p) > 3]
+
+    # Generic learning signals (agent-wide insights)
+    agent_signals = [
+        "i learned",
+        "key insight",
+        "general principle",
+        "always remember",
+        "this applies to",
+        "across projects",
+        "matt's philosophy",
+        "important lesson",
+        "fundamental",
+        "universal",
+    ]
+    has_agent_signals = any(signal in content_lower for signal in agent_signals)
+
+    # Project-specific signals
+    project_signals = [
+        "in this project",
+        "for this codebase",
+        "commit",
+        "release",
+        "deployed",
+        "this repo",
+        "hud ",  # Common project abbreviation
+        "api endpoint",
+        "database schema",
+    ]
+    has_project_signals = any(signal in content_lower for signal in project_signals)
+
+    # Achievement with version = likely project-specific
+    achievement_signals = ["built", "released", "completed", "shipped", "implemented"]
+    has_achievement = any(signal in content_lower for signal in achievement_signals)
+
+    # Decision logic
+    if current_region == "AGENT":
+        # Agent memory with strong project signals
+        if mentioned_projects and has_version and has_achievement:
+            suggested_project = mentioned_projects[0] if mentioned_projects else None
+            return ScopeIssue(
+                memory_id=memory.id,
+                content=memory.content[:200] + ("..." if len(memory.content) > 200 else ""),
+                current_region=current_region,
+                current_project_id=memory.project_id,
+                suggested_region="PROJECT",
+                suggested_project_id=suggested_project,
+                reason=f"AGENT memory mentions project '{suggested_project}' with version number and achievement",
+            )
+        elif has_version and has_project_signals and not has_agent_signals:
+            return ScopeIssue(
+                memory_id=memory.id,
+                content=memory.content[:200] + ("..." if len(memory.content) > 200 else ""),
+                current_region=current_region,
+                current_project_id=memory.project_id,
+                suggested_region="PROJECT",
+                suggested_project_id=None,  # Can't determine which project
+                reason="AGENT memory has version number and project-specific signals without agent-wide learning",
+            )
+
+    elif current_region == "PROJECT":
+        # Project memory with strong agent signals and no project specifics
+        if has_agent_signals and not has_version and not has_project_signals:
+            return ScopeIssue(
+                memory_id=memory.id,
+                content=memory.content[:200] + ("..." if len(memory.content) > 200 else ""),
+                current_region=current_region,
+                current_project_id=memory.project_id,
+                suggested_region="AGENT",
+                suggested_project_id=None,
+                reason="PROJECT memory contains general learning without project-specific context",
             )
 
     return None

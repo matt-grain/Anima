@@ -942,3 +942,104 @@ class MemoryStore(MemoryStoreProtocol):
                 "DELETE FROM memory_links WHERE source_id = ? OR target_id = ?",
                 (memory_id, memory_id),
             )
+
+    # --- Memory validation operations (v7) ---
+
+    def migrate_memory_region(
+        self,
+        memory_id: str,
+        new_region: RegionType,
+        new_project_id: Optional[str] = None,
+    ) -> bool:
+        """
+        Migrate a memory to a different region (AGENT <-> PROJECT).
+
+        Args:
+            memory_id: ID of memory to migrate
+            new_region: Target region (AGENT or PROJECT)
+            new_project_id: Required if new_region is PROJECT
+
+        Returns:
+            True if migration succeeded, False if memory not found
+
+        Raises:
+            ValueError: If moving to PROJECT without project_id
+        """
+        if new_region == RegionType.PROJECT and not new_project_id:
+            raise ValueError("project_id required when migrating to PROJECT region")
+
+        with self._connect() as conn:
+            # Check memory exists
+            row = conn.execute("SELECT id FROM memories WHERE id = ?", (memory_id,)).fetchone()
+            if not row:
+                return False
+
+            # Update region and project_id
+            conn.execute(
+                """
+                UPDATE memories
+                SET region = ?, project_id = ?
+                WHERE id = ?
+                """,
+                (new_region.value, new_project_id, memory_id),
+            )
+            return True
+
+    def mark_memory_validated(self, memory_id: str) -> bool:
+        """
+        Mark a memory as validated (scope reviewed during dream N3).
+
+        Args:
+            memory_id: ID of memory to mark
+
+        Returns:
+            True if update succeeded, False if memory not found
+        """
+        with self._connect() as conn:
+            cursor = conn.execute(
+                "UPDATE memories SET validated_at = ? WHERE id = ?",
+                (datetime.now().isoformat(), memory_id),
+            )
+            return cursor.rowcount > 0
+
+    def get_unvalidated_memories(
+        self,
+        agent_id: str,
+        limit: Optional[int] = None,
+    ) -> list[Memory]:
+        """
+        Get memories that haven't been validated yet.
+
+        Args:
+            agent_id: Agent whose memories to check
+            limit: Maximum number to return
+
+        Returns:
+            List of unvalidated memories, oldest first
+        """
+        query = """
+            SELECT * FROM memories
+            WHERE agent_id = ? AND validated_at IS NULL AND superseded_by IS NULL
+            ORDER BY created_at ASC
+        """
+        params: list = [agent_id]
+
+        if limit:
+            query += " LIMIT ?"
+            params.append(limit)
+
+        with self._connect() as conn:
+            rows = conn.execute(query, params).fetchall()
+            return [self._row_to_memory(row) for row in rows]
+
+    def count_unvalidated_memories(self, agent_id: str) -> int:
+        """Count memories that haven't been validated yet."""
+        with self._connect() as conn:
+            row = conn.execute(
+                """
+                SELECT COUNT(*) FROM memories
+                WHERE agent_id = ? AND validated_at IS NULL AND superseded_by IS NULL
+                """,
+                (agent_id,),
+            ).fetchone()
+            return row[0] if row else 0

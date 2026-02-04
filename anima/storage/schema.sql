@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS memories (
     session_id TEXT,  -- v5: Groups memories by conversation session for temporal queries
     git_commit TEXT,  -- v5: Commit hash when memory was created
     git_branch TEXT,  -- v5: Branch name when memory was created
+    validated_at TIMESTAMP,  -- v7: When memory scope was validated during dream N3
 
     FOREIGN KEY (agent_id) REFERENCES agents(id),
     FOREIGN KEY (project_id) REFERENCES projects(id),
@@ -71,6 +72,7 @@ CREATE INDEX IF NOT EXISTS idx_memories_impact ON memories(impact);
 CREATE INDEX IF NOT EXISTS idx_memories_superseded ON memories(superseded_by);
 CREATE INDEX IF NOT EXISTS idx_memories_tier ON memories(tier);
 CREATE INDEX IF NOT EXISTS idx_memories_session ON memories(session_id);
+CREATE INDEX IF NOT EXISTS idx_memories_validated ON memories(validated_at);
 
 -- Indexes for memory links
 CREATE INDEX IF NOT EXISTS idx_links_source ON memory_links(source_id);

@@ -99,17 +99,22 @@ def check_for_update_cached() -> dict | None:
     """
     current = get_installed_version()
 
-    # Try cache first
+    # Try cache first, but only if it makes sense
     cached = get_cached_update_check()
     if cached:
         latest = cached.get("latest_version", "")
-        return {
-            "current": current,
-            "latest": latest,
-            "update_available": parse_version(latest) > parse_version(current),
-            "html_url": cached.get("html_url", ""),
-            "from_cache": True,
-        }
+        # If cached "latest" is older than current, cache is stale
+        # (e.g., we just released and installed a new version)
+        # Bypass cache to get the real latest
+        if parse_version(latest) >= parse_version(current):
+            return {
+                "current": current,
+                "latest": latest,
+                "update_available": parse_version(latest) > parse_version(current),
+                "html_url": cached.get("html_url", ""),
+                "from_cache": True,
+            }
+        # else: fall through to fetch fresh from GitHub
 
     # Fetch from GitHub
     release = get_latest_release()

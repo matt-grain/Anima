@@ -16,7 +16,7 @@ from typing import Optional
 
 
 # Current schema version - increment when schema changes
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 # Migration history:
 # v1: Original schema (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS)
@@ -25,6 +25,7 @@ SCHEMA_VERSION = 6
 # v4: Semantic Memory Layer - embeddings, tiers, memory_links graph
 # v5: Temporal Infrastructure - session_id for grouping memories by conversation
 # v6: Added DREAM kind for dream processing insights
+# v7: Memory validation - validated_at column, dissonance_type for scope issues
 
 
 def get_schema_version(db_path: Path) -> int:
@@ -316,6 +317,45 @@ def migrate_v5_to_v6(conn: sqlite3.Connection) -> None:
     conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_git_commit ON memories(git_commit)")
 
 
+def migrate_v6_to_v7(conn: sqlite3.Connection) -> None:
+    """
+    Migrate from v6 to v7: Memory validation and scope dissonance support.
+
+    Adds:
+    - validated_at TIMESTAMP column to memories for tracking reviewed memories
+    - dissonance_type TEXT column to dissonance_queue (CONTRADICTION vs SCOPE_UNCLEAR)
+    - suggested_region TEXT column to dissonance_queue for scope issues
+    - suggested_project_id TEXT column to dissonance_queue for scope issues
+    - Makes memory_id_b nullable for single-memory issues (scope)
+    """
+    # Add validated_at column to memories
+    try:
+        conn.execute("ALTER TABLE memories ADD COLUMN validated_at TIMESTAMP")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
+    # Add dissonance_type column to dissonance_queue
+    try:
+        conn.execute("ALTER TABLE dissonance_queue ADD COLUMN dissonance_type TEXT DEFAULT 'CONTRADICTION'")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
+    # Add suggested_region column to dissonance_queue
+    try:
+        conn.execute("ALTER TABLE dissonance_queue ADD COLUMN suggested_region TEXT")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
+    # Add suggested_project_id column to dissonance_queue
+    try:
+        conn.execute("ALTER TABLE dissonance_queue ADD COLUMN suggested_project_id TEXT")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
+    # Create index for efficient unvalidated memory queries
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_validated ON memories(validated_at)")
+
+
 def has_memories_table(db_path: Path) -> bool:
     """Check if the memories table exists in the database."""
     try:
@@ -369,6 +409,9 @@ def run_migrations(db_path: Path, target_version: Optional[int] = None) -> tuple
 
         if current < 6 and target >= 6:
             migrate_v5_to_v6(conn)
+
+        if current < 7 and target >= 7:
+            migrate_v6_to_v7(conn)
 
         set_schema_version(conn, target)
         conn.commit()

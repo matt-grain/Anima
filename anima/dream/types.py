@@ -109,6 +109,19 @@ class Contradiction:
 
 
 @dataclass
+class ScopeIssue:
+    """A memory that might be in the wrong region (AGENT vs PROJECT)."""
+
+    memory_id: str
+    content: str
+    current_region: str  # 'AGENT' or 'PROJECT'
+    current_project_id: str | None
+    suggested_region: str  # 'AGENT' or 'PROJECT'
+    suggested_project_id: str | None
+    reason: str  # Why we think it's misplaced
+
+
+@dataclass
 class N3Result:
     """Results from N3 deep processing stage."""
 
@@ -119,6 +132,10 @@ class N3Result:
     dissonance_queue_additions: int
     duration_seconds: float
     memories_processed: int
+    # v7: Memory scope validation
+    memories_validated: int = 0  # Auto-validated (clear scope)
+    scope_issues_found: int = 0  # Flagged for human review
+    scope_issues: list[ScopeIssue] = field(default_factory=list)
 
 
 @dataclass
