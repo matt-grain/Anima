@@ -5,6 +5,7 @@
 Pytest fixtures for LTM tests.
 """
 
+import os
 import tempfile
 from pathlib import Path
 from typing import Generator
@@ -14,6 +15,39 @@ import pytest
 from anima.core import Agent, Memory, MemoryKind, Project, RegionType, ImpactLevel
 from anima.core.config import reload_config, LTMConfig
 from anima.storage import MemoryStore
+
+
+def _embedder_available() -> bool:
+    """Check if the FastEmbed model is available (cached locally)."""
+    try:
+        from anima.embeddings.embedder import get_embedder
+        # This will fail in CI where model isn't cached
+        get_embedder(quiet=True)
+        return True
+    except Exception:
+        return False
+
+
+# Check once at module load
+_EMBEDDER_AVAILABLE = None
+
+
+def embedder_available() -> bool:
+    """Cached check for embedder availability."""
+    global _EMBEDDER_AVAILABLE
+    if _EMBEDDER_AVAILABLE is None:
+        # Skip the check entirely in CI to avoid download attempts
+        if os.environ.get("CI") or os.environ.get("GITHUB_ACTIONS"):
+            _EMBEDDER_AVAILABLE = False
+        else:
+            _EMBEDDER_AVAILABLE = _embedder_available()
+    return _EMBEDDER_AVAILABLE
+
+
+requires_embedder = pytest.mark.skipif(
+    not embedder_available(),
+    reason="FastEmbed model not available (skipped in CI)"
+)
 
 
 @pytest.fixture(autouse=True)

@@ -5,6 +5,7 @@
 
 import pytest
 
+from tests.conftest import requires_embedder
 from anima.embeddings.similarity import (
     cosine_similarity,
     find_similar,
@@ -218,6 +219,7 @@ class TestEmbedderModule:
             # Restore
             embedder_module._embedder = original_embedder
 
+    @requires_embedder
     def test_embed_text_returns_list(self):
         """embed_text should return a list of floats."""
         from anima.embeddings import embed_text
@@ -227,6 +229,7 @@ class TestEmbedderModule:
         assert len(result) == 384
         assert all(isinstance(x, float) for x in result)
 
+    @requires_embedder
     def test_embed_batch_returns_list_of_lists(self):
         """embed_batch should return list of embedding lists."""
         from anima.embeddings import embed_batch
@@ -249,6 +252,7 @@ class TestEmbedderModule:
 class TestEmbeddingsIntegration:
     """Integration tests for the full embeddings workflow."""
 
+    @requires_embedder
     def test_similar_texts_have_high_similarity(self):
         """Semantically similar texts should have high cosine similarity."""
         from anima.embeddings import embed_text, cosine_similarity
@@ -265,6 +269,7 @@ class TestEmbeddingsIntegration:
         assert sim_similar > 0.7  # Should be reasonably high
         assert sim_different < 0.5  # Should be reasonably low
 
+    @requires_embedder
     def test_find_similar_returns_relevant_results(self):
         """find_similar should return semantically relevant results."""
         from anima.embeddings import embed_text, embed_batch, find_similar
