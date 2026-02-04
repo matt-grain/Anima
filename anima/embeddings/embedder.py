@@ -8,9 +8,18 @@ Uses ONNX Runtime for CPU-optimized inference.
 Model is loaded lazily on first use with a friendly "waking up" message.
 """
 
+import os
 import sys
 import time
 from typing import Any, Optional
+
+# Disable tqdm progress bars - they cause hangs in non-TTY environments
+# (e.g., Claude Code hooks without --debug mode)
+os.environ["TQDM_DISABLE"] = "1"  # Force disable, don't use setdefault
+
+# Disable ONNX Runtime logging (fastembed uses ONNX)
+os.environ.setdefault("ORT_DISABLE_PROGRESS_BAR", "1")
+os.environ.setdefault("ONNXRUNTIME_LOG_SEVERITY_LEVEL", "3")  # ERROR only
 
 from anima.utils.terminal import safe_print, get_icon
 

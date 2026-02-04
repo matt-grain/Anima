@@ -22,6 +22,7 @@ from anima.storage.curiosity import get_setting, set_setting
 # Settings keys
 CURRENT_SESSION_KEY = "current_session_id"
 SESSION_START_KEY = "session_start_time"
+DEFERRED_MEMORIES_KEY = "deferred_memory_ids"
 
 
 def generate_session_id() -> str:
@@ -115,3 +116,45 @@ def get_previous_session_id(
             return session_id
 
     return None
+
+
+def set_deferred_memories(memory_ids: list[str]) -> None:
+    """
+    Store deferred memory IDs for lazy loading.
+
+    Called during session start when some memories don't fit in the
+    initial 25KB budget. These can be loaded later via /load-context.
+
+    Args:
+        memory_ids: List of memory IDs that were deferred
+    """
+    import json
+
+    set_setting(DEFERRED_MEMORIES_KEY, json.dumps(memory_ids))
+
+
+def get_deferred_memories() -> list[str]:
+    """
+    Get the list of deferred memory IDs for lazy loading.
+
+    Returns:
+        List of memory IDs that were deferred, or empty list
+    """
+    import json
+
+    value = get_setting(DEFERRED_MEMORIES_KEY)
+    if value:
+        try:
+            return json.loads(value)
+        except json.JSONDecodeError:
+            return []
+    return []
+
+
+def clear_deferred_memories() -> None:
+    """
+    Clear deferred memories after they've been loaded.
+
+    Called by /load-context after streaming deferred memories.
+    """
+    set_setting(DEFERRED_MEMORIES_KEY, "")

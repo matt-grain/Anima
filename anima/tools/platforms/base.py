@@ -143,14 +143,11 @@ class BasePlatformSetup(ABC):
 
         for src_file in src_dir.glob("*.md"):
             dest_file = dest_dir / src_file.name
-
-            if dest_file.exists() and not force:
-                safe_print(f"  {get_icon('', '[>>]')}  {src_file.name} (exists, use --force)")
-                skipped += 1
-                continue
+            is_update = dest_file.exists()
 
             shutil.copy2(src_file, dest_file)
-            safe_print(f"  {get_icon('', '[OK]')} {src_file.name}")
+            status = "updated" if is_update else "installed"
+            safe_print(f"  {get_icon('', '[OK]')} {src_file.name} ({status})")
             copied += 1
 
         return (copied, skipped)
@@ -182,17 +179,14 @@ class BasePlatformSetup(ABC):
                 continue
 
             dest_skill_dir = dest_dir / skill_dir.name
+            is_update = dest_skill_dir.exists()
 
-            if dest_skill_dir.exists() and not force:
-                safe_print(f"  {get_icon('', '[>>]')}  {skill_dir.name}/ (exists, use --force)")
-                skipped += 1
-                continue
-
-            # Copy entire skill directory
-            if dest_skill_dir.exists():
+            # Copy entire skill directory (replace if exists)
+            if is_update:
                 shutil.rmtree(dest_skill_dir)
             shutil.copytree(skill_dir, dest_skill_dir)
-            safe_print(f"  {get_icon('', '[OK]')} {skill_dir.name}/")
+            status = "updated" if is_update else "installed"
+            safe_print(f"  {get_icon('', '[OK]')} {skill_dir.name}/ ({status})")
             copied += 1
 
         return (copied, skipped)

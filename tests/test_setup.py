@@ -88,8 +88,8 @@ class TestSetupCommands:
         assert copied == 2
         assert (temp_project / ".claude" / "commands" / "test-command.md").exists()
 
-    def test_skips_existing_commands_without_force(self, temp_project, mock_package_commands):
-        """Should skip existing commands when force=False."""
+    def test_always_updates_existing_commands(self, temp_project, mock_package_commands):
+        """Should always update existing commands (no --force required)."""
         workflows_dir = temp_project / ".agent" / "workflows"
         workflows_dir.mkdir(parents=True)
         (workflows_dir / "test-command.md").write_text("# Existing")
@@ -101,26 +101,9 @@ class TestSetupCommands:
         ):
             copied, skipped = platform.setup_commands(temp_project, force=False)
 
-        assert copied == 1  # Only another-command.md
-        assert skipped == 1  # test-command.md skipped
-        assert (workflows_dir / "test-command.md").read_text() == "# Existing"
-
-    def test_overwrites_with_force(self, temp_project, mock_package_commands):
-        """Should overwrite existing commands when force=True."""
-        workflows_dir = temp_project / ".agent" / "workflows"
-        workflows_dir.mkdir(parents=True)
-        (workflows_dir / "test-command.md").write_text("# Existing")
-        platform = get_platform("antigravity")
-
-        with patch(
-            "anima.tools.platforms.base.get_package_commands_dir",
-            return_value=mock_package_commands,
-        ):
-            copied, skipped = platform.setup_commands(temp_project, force=True)
-
-        assert copied == 2
-        assert skipped == 0
-        assert (workflows_dir / "test-command.md").read_text() == "# Test Command"
+        assert copied == 2  # Both commands installed/updated
+        assert skipped == 0  # Nothing skipped
+        assert (workflows_dir / "test-command.md").read_text() == "# Test Command"  # Updated
 
 
 class TestSetupSkills:
@@ -141,8 +124,8 @@ class TestSetupSkills:
         assert skipped == 0
         assert (temp_project / ".agent" / "skills" / "test-skill" / "SKILL.md").exists()
 
-    def test_skips_existing_skills_without_force(self, temp_project, mock_package_skills):
-        """Should skip existing skills when force=False."""
+    def test_always_updates_existing_skills(self, temp_project, mock_package_skills):
+        """Should always update existing skills (no --force required)."""
         skills_dir = temp_project / ".agent" / "skills" / "test-skill"
         skills_dir.mkdir(parents=True)
         (skills_dir / "SKILL.md").write_text("# Existing")
@@ -154,8 +137,9 @@ class TestSetupSkills:
         ):
             copied, skipped = platform.setup_skills(temp_project, force=False)
 
-        assert copied == 0
-        assert skipped == 1
+        assert copied == 1  # Updated
+        assert skipped == 0
+        assert (skills_dir / "SKILL.md").read_text() == "# Test Skill"  # Updated
 
 
 class TestPatchSubagents:
@@ -231,7 +215,14 @@ class TestSetupHooks:
         settings = json.loads(settings_file.read_text())
         assert "hooks" in settings
         assert "SessionStart" in settings["hooks"]
-        assert "Stop" in settings["hooks"]
+        assert "SessionEnd" in settings["hooks"]
+        assert "SubagentStart" in settings["hooks"]
+        assert "PreCompact" in settings["hooks"]
+        assert "PermissionRequest" in settings["hooks"]
+        # Verify permissions are added
+        assert "permissions" in settings
+        assert "allow" in settings["permissions"]
+        assert "Write(~/.anima/**)" in settings["permissions"]["allow"]
 
     def test_merges_with_existing_settings(self, temp_project):
         """Should merge hooks into existing settings."""
@@ -248,8 +239,8 @@ class TestSetupHooks:
         assert settings["existing"] == "value"
         assert "hooks" in settings
 
-    def test_skips_when_hooks_exist_without_force(self, temp_project):
-        """Should skip when hooks already configured and force=False."""
+    def test_always_updates_hooks(self, temp_project):
+        """Should always update hooks to latest config, even without force."""
         claude_dir = temp_project / ".claude"
         claude_dir.mkdir()
 
@@ -259,23 +250,29 @@ class TestSetupHooks:
         platform = get_platform("claude")
         result = platform.setup_hooks(temp_project, force=False)
 
-        assert result is False
+        # Should update hooks regardless of force flag
+        assert result is True
+        settings = json.loads(settings_file.read_text())
+        # Should have the full LTM hooks now
+        assert len(settings["hooks"]["SessionStart"]) > 0
 
-    def test_overwrites_hooks_with_force(self, temp_project):
-        """Should overwrite hooks when force=True."""
+    def test_removes_deprecated_stop_hook(self, temp_project):
+        """Should remove deprecated Stop hook and add SessionEnd."""
         claude_dir = temp_project / ".claude"
         claude_dir.mkdir()
 
         settings_file = claude_dir / "settings.json"
-        settings_file.write_text(json.dumps({"hooks": {"SessionStart": []}}))
+        # Simulate old config with Stop hook
+        settings_file.write_text(json.dumps({"hooks": {"Stop": [{"hooks": []}]}}))
 
         platform = get_platform("claude")
-        result = platform.setup_hooks(temp_project, force=True)
+        result = platform.setup_hooks(temp_project, force=False)
 
         assert result is True
         settings = json.loads(settings_file.read_text())
-        # Should have the LTM hooks now
-        assert len(settings["hooks"]["SessionStart"]) > 0
+        # Stop should be removed, SessionEnd should exist
+        assert "Stop" not in settings["hooks"]
+        assert "SessionEnd" in settings["hooks"]
 
     def test_prefers_settings_local_json(self, temp_project):
         """Should prefer settings.local.json over settings.json."""

@@ -20,7 +20,7 @@ from datetime import datetime
 from anima.core import AgentResolver, Agent
 from anima.core.types import MemoryKind
 from anima.lifecycle.injection import MemoryInjector
-from anima.lifecycle.session import start_session
+from anima.lifecycle.session import start_session, set_deferred_memories
 from anima.storage import MemoryStore, CuriosityStore, get_last_research
 from anima.storage.sqlite import get_default_db_path
 from anima.storage.migrations import backup_database
@@ -265,7 +265,7 @@ def run(args: Optional[list[str]] = None) -> int:
     store.save_agent(agent)
     store.save_project(project)
 
-    # Get formatted memories
+    # Get formatted memories with deferred tracking for lazy loading
     # If this is a subagent, we also want to pull in Anima's memories (primary identity)
     if agent.is_subagent and agent.id != "anima":
         # Resolve the default global agent (Anima)
@@ -280,9 +280,16 @@ def run(args: Optional[list[str]] = None) -> int:
 
         # Inject from both, prioritizing subagent specific if any
         # (Usually subagents have 0 memories of their own, so they just get Anima's)
-        memories_dsl = injector.inject([agent, primary_agent], project, project_dir=project_dir)
+        injection_result = injector.inject_with_deferred([agent, primary_agent], project, project_dir=project_dir)
     else:
-        memories_dsl = injector.inject(agent, project, project_dir=project_dir)
+        injection_result = injector.inject_with_deferred(agent, project, project_dir=project_dir)
+
+    memories_dsl = injection_result["dsl"]
+    deferred_count = injection_result["deferred_count"]
+
+    # Store deferred memory IDs for lazy loading via /load-deferred
+    if injection_result["deferred_ids"]:
+        set_deferred_memories(injection_result["deferred_ids"])
 
     # Build status notes
     status_notes = []
@@ -308,16 +315,21 @@ def run(args: Optional[list[str]] = None) -> int:
             if update_info["update_available"]:
                 update_notice = f"# LTM-UPDATE: New version v{update_info['latest']} available! Run 'anima update' to upgrade.\n"
 
+        # Build deferred context hint
+        deferred_hint = ""
+        if deferred_count > 0:
+            deferred_hint = f"\n# LTM-DEFERRED: {deferred_count} additional memories available. Run /load-deferred after greeting."
+
         # Build context message
         context = f"""{memories_dsl}
 
 # LTM: Loaded {stats["total"]} memories ({stats["agent_memories"]} agent, {stats["project_memories"]} project)
-# LTM-DIAG: CRIT={pc["CRITICAL"]} HIGH={pc["HIGH"]} MED={pc["MEDIUM"]} LOW={pc["LOW"]}
+# LTM-DIAG: CRIT={pc["CRITICAL"]} HIGH={pc["HIGH"]} MED={pc["MEDIUM"]} LOW={pc["LOW"]}{deferred_hint}
 {update_notice}# These are your long-term memories from previous sessions. Use them to inform your responses.
 #
 # GREETING BEHAVIOR:
-# - Normal greeting / "welcome back": Greet warmly with personality, naturally mention "X memories loaded" somewhere.{" Mention update available if LTM-UPDATE line present." if update_notice else ""}
-# - "Void is gone!": Provide full diagnostic readout - memory counts, priority breakdown, version ({version_diag}), key context verified, recent achievements"""
+# - Normal greeting / "welcome back": Greet warmly with personality, naturally mention "X memories loaded" somewhere.{" Mention update available if LTM-UPDATE line present." if update_notice else ""}{" After greeting, run /load-deferred to load additional context." if deferred_count > 0 else ""}
+# - "Void is gone!": Provide full diagnostic readout - memory counts, priority breakdown, version ({version_diag}), key context verified, recent achievements{" Then run /load-deferred." if deferred_count > 0 else ""}"""
 
         # Add status notes
         if status_notes:
@@ -342,8 +354,8 @@ def run(args: Optional[list[str]] = None) -> int:
                 }
             }
             print(json.dumps(output))
-            # Output status AFTER JSON - Claude Code may display this in terminal
-            print(f"Success: {stats['total']} memories loaded")
+            # Output status to STDERR - stdout must be clean JSON only
+            print(f"Success: {stats['total']} memories loaded", file=sys.stderr)
         elif output_format == "dsl":
             # Output ONLY the DSL block for direct plugin injection
             print(memories_dsl)
@@ -365,7 +377,7 @@ def run(args: Optional[list[str]] = None) -> int:
                 }
             }
             print(json.dumps(output))
-            print("Success: No memories found yet")
+            print("Success: No memories found yet", file=sys.stderr)
         else:
             print(no_mem_context)
 
@@ -373,5 +385,13 @@ def run(args: Optional[list[str]] = None) -> int:
 
 
 if __name__ == "__main__":
+    # Close stdin immediately to prevent FastEmbed/ONNX from holding it
+    # This fixes stdin issues on Windows where the hook subprocess
+    # can interfere with Claude Code's terminal input
+    try:
+        sys.stdin.close()
+    except Exception:
+        pass
+
     # Default to json if run directly (legacy Claude Code hook behavior)
     sys.exit(run(["--format", "json"]))

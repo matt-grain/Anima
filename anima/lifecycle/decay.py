@@ -121,12 +121,15 @@ class MemoryDecay:
             content = content.replace(filler, "")
 
         # Truncate if still too long (crude fallback)
-        if len(content) > 200:
+        # Skip if already compacted (contains [...]) to avoid accumulating markers
+        if len(content) > 200 and "[...]" not in content:
             # Try to cut at a sentence boundary
             sentences = content.split(". ")
             if len(sentences) > 1:
-                # Keep first and last sentence
-                content = f"{sentences[0]}. [...] {sentences[-1]}"
+                # Keep first and last sentence, ensure total is under limit
+                first = sentences[0][:100] if len(sentences[0]) > 100 else sentences[0]
+                last = sentences[-1][:100] if len(sentences[-1]) > 100 else sentences[-1]
+                content = f"{first}. [...] {last}"
             else:
                 content = content[:200] + "..."
 

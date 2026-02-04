@@ -24,6 +24,7 @@ def main() -> int:
         print("  keygen <agent>         Add signing key to Anima agent")
         print("  import-seeds <dir>     Import seed memories")
         print("  load-context           Load memories for current session")
+        print("  load-deferred          Load deferred memories (lazy loading after greeting)")
         print("  end-session            Process memory decay and stats")
         print("  detect-achievements    [hours] Detect and promote achievements")
         print("  setup                  Set up LTM in current project")
@@ -92,6 +93,10 @@ def main() -> int:
 
             # Handle arguments like --format json or --agent name
             return run(args)
+        case "load-deferred":
+            from anima.commands.load_deferred import run
+
+            return run()
         case "end-session":
             from anima.hooks.session_end import run
 

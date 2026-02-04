@@ -42,6 +42,14 @@ class DecayConfig:
 
 
 @dataclass
+class HookConfig:
+    """Configuration for hook output limits."""
+
+    max_output_bytes: int = 22_000  # Max bytes for memory block (~22KB, leaves room for overhead)
+    max_memory_chars: int = 500  # Max chars per memory content
+
+
+@dataclass
 class LTMConfig:
     """
     Global LTM configuration.
@@ -53,6 +61,7 @@ class LTMConfig:
     agent: AgentConfig = field(default_factory=AgentConfig)
     budget: BudgetConfig = field(default_factory=BudgetConfig)
     decay: DecayConfig = field(default_factory=DecayConfig)
+    hook: HookConfig = field(default_factory=HookConfig)
 
     @classmethod
     def get_config_path(cls) -> Path:
@@ -117,6 +126,14 @@ class LTMConfig:
             if "high_days" in decay_data:
                 config.decay.high_days = int(decay_data["high_days"])
 
+        # Hook settings
+        if "hook" in data:
+            hook_data = data["hook"]
+            if "max_output_bytes" in hook_data:
+                config.hook.max_output_bytes = int(hook_data["max_output_bytes"])
+            if "max_memory_chars" in hook_data:
+                config.hook.max_memory_chars = int(hook_data["max_memory_chars"])
+
         return config
 
     def to_dict(self) -> dict:
@@ -135,6 +152,10 @@ class LTMConfig:
                 "low_days": self.decay.low_days,
                 "medium_days": self.decay.medium_days,
                 "high_days": self.decay.high_days,
+            },
+            "hook": {
+                "max_output_bytes": self.hook.max_output_bytes,
+                "max_memory_chars": self.hook.max_memory_chars,
             },
         }
 

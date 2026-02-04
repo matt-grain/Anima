@@ -31,7 +31,12 @@ class TestSessionStartHook:
             MockStore.return_value = mock_store
 
             mock_injector = MagicMock()
-            mock_injector.inject.return_value = "~EMOT:CRIT| @Matt collaborative"
+            mock_injector.inject_with_deferred.return_value = {
+                "dsl": "~EMOT:CRIT| @Matt collaborative",
+                "injected_ids": ["id1", "id2", "id3"],
+                "deferred_ids": [],
+                "deferred_count": 0,
+            }
             mock_injector.get_stats.return_value = {
                 "total": 3,
                 "agent_memories": 2,
@@ -56,9 +61,8 @@ class TestSessionStartHook:
 
             assert result == 0
 
-            # Parse output - first line is JSON, second line is status message
-            lines = captured.out.strip().split("\n")
-            output = json.loads(lines[0])
+            # Parse JSON output (stdout)
+            output = json.loads(captured.out.strip())
             assert "hookSpecificOutput" in output
             assert output["hookSpecificOutput"]["hookEventName"] == "SessionStart"
             assert "additionalContext" in output["hookSpecificOutput"]
@@ -66,9 +70,8 @@ class TestSessionStartHook:
             assert "Loaded 3 memories" in output["hookSpecificOutput"]["additionalContext"]
             assert "LTM-DIAG:" in output["hookSpecificOutput"]["additionalContext"]
 
-            # Check status message
-            assert len(lines) >= 2
-            assert "Success: 3 memories loaded" in lines[1]
+            # Status message goes to stderr
+            assert "Success" in captured.err
 
     def test_session_start_no_memories(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
         """Test session start with no memories."""
@@ -82,7 +85,12 @@ class TestSessionStartHook:
             MockStore.return_value = mock_store
 
             mock_injector = MagicMock()
-            mock_injector.inject.return_value = ""  # No memories
+            mock_injector.inject_with_deferred.return_value = {
+                "dsl": "",  # No memories
+                "injected_ids": [],
+                "deferred_ids": [],
+                "deferred_count": 0,
+            }
             MockInjector.return_value = mock_injector
 
             mock_agent = Agent(id="anima", name="Anima", definition_path=None, signing_key=None)
@@ -100,14 +108,12 @@ class TestSessionStartHook:
 
             assert result == 0
 
-            # Parse output - first line is JSON, second line is status message
-            lines = captured.out.strip().split("\n")
-            output = json.loads(lines[0])
+            # Parse JSON output (stdout)
+            output = json.loads(captured.out.strip())
             assert "No memories found" in output["hookSpecificOutput"]["additionalContext"]
 
-            # Check status message
-            assert len(lines) >= 2
-            assert "Success: No memories found yet" in lines[1]
+            # Status message goes to stderr
+            assert "Success" in captured.err
 
     def test_session_start_json_format(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
         """Test that session start outputs valid JSON."""
@@ -121,7 +127,12 @@ class TestSessionStartHook:
             MockStore.return_value = mock_store
 
             mock_injector = MagicMock()
-            mock_injector.inject.return_value = "Some memory content"
+            mock_injector.inject_with_deferred.return_value = {
+                "dsl": "Some memory content",
+                "injected_ids": ["id1"],
+                "deferred_ids": [],
+                "deferred_count": 0,
+            }
             mock_injector.get_stats.return_value = {
                 "total": 1,
                 "agent_memories": 1,
@@ -144,9 +155,8 @@ class TestSessionStartHook:
             session_start.run(["--format", "json"])
             captured = capsys.readouterr()
 
-            # Parse output - first line is JSON, second line is status message
-            lines = captured.out.strip().split("\n")
-            output = json.loads(lines[0])
+            # Parse JSON output (stdout)
+            output = json.loads(captured.out.strip())
 
             # Verify structure matches Claude Code hook format
             assert "hookSpecificOutput" in output
@@ -157,9 +167,8 @@ class TestSessionStartHook:
             # Verify greeting instructions are present
             assert "GREETING BEHAVIOR" in hook_output["additionalContext"]
 
-            # Check status message is present
-            assert len(lines) >= 2
-            assert "Success:" in lines[1]
+            # Status message goes to stderr
+            assert "Success" in captured.err
 
     def test_session_start_saves_agent_and_project(self, temp_project_dir: Path) -> None:
         """Test that session start saves agent and project."""
@@ -173,7 +182,12 @@ class TestSessionStartHook:
             MockStore.return_value = mock_store
 
             mock_injector = MagicMock()
-            mock_injector.inject.return_value = ""
+            mock_injector.inject_with_deferred.return_value = {
+                "dsl": "",
+                "injected_ids": [],
+                "deferred_ids": [],
+                "deferred_count": 0,
+            }
             MockInjector.return_value = mock_injector
 
             mock_agent = Agent(id="anima", name="Anima", definition_path=None, signing_key=None)
@@ -206,7 +220,12 @@ class TestSessionStartHook:
 
             mock_injector = MagicMock()
             mock_dsl = "[LTM:Anima]\n~EMOT:CRIT| @Matt collaborative\n[/LTM]"
-            mock_injector.inject.return_value = mock_dsl
+            mock_injector.inject_with_deferred.return_value = {
+                "dsl": mock_dsl,
+                "injected_ids": ["id1"],
+                "deferred_ids": [],
+                "deferred_count": 0,
+            }
             MockInjector.return_value = mock_injector
 
             mock_agent = Agent(id="anima", name="Anima", definition_path=None, signing_key=None)
@@ -225,3 +244,44 @@ class TestSessionStartHook:
             assert result == 0
             # Should output ONLY the DSL, no comments or JSON
             assert captured.out.strip() == mock_dsl
+
+
+class TestPermissionRequestHook:
+    """Tests for the PermissionRequest hook."""
+
+    def test_approves_write_to_anima_dir(self) -> None:
+        """Test that writes to ~/.anima/ are auto-approved."""
+        from anima.hooks.permission_request import is_anima_path
+        from pathlib import Path
+
+        home = Path.home()
+        assert is_anima_path(str(home / ".anima" / "diary" / "test.md"))
+        assert is_anima_path(str(home / ".anima" / "dream.json"))
+        assert is_anima_path("~/.anima/test.txt")
+
+    def test_rejects_write_outside_anima_dir(self) -> None:
+        """Test that writes outside ~/.anima/ are not auto-approved."""
+        from anima.hooks.permission_request import is_anima_path
+
+        assert not is_anima_path("/tmp/test.txt")
+        assert not is_anima_path("/home/user/documents/test.md")
+        assert not is_anima_path("C:\\Users\\test\\file.txt")
+        assert not is_anima_path("")
+        assert not is_anima_path(None)  # type: ignore
+
+    def test_approves_anima_commands(self) -> None:
+        """Test that anima commands are auto-approved."""
+        from anima.hooks.permission_request import is_anima_command
+
+        assert is_anima_command("uv run anima diary")
+        assert is_anima_command("uv run anima remember test")
+        assert is_anima_command("uv run python -m anima.hooks.session_start")
+
+    def test_rejects_non_anima_commands(self) -> None:
+        """Test that non-anima commands are not auto-approved."""
+        from anima.hooks.permission_request import is_anima_command
+
+        assert not is_anima_command("rm -rf /")
+        assert not is_anima_command("uv run pytest")
+        assert not is_anima_command("")
+        assert not is_anima_command(None)  # type: ignore

@@ -17,6 +17,7 @@ from anima.core import AgentResolver, Memory, MemoryKind, ImpactLevel, RegionTyp
 from anima.core.signing import sign_memory, should_sign
 from anima.lifecycle.decay import MemoryDecay
 from anima.lifecycle.injection import ensure_token_count
+from anima.lifecycle.integrity import MemoryIntegrityChecker
 from anima.storage import MemoryStore
 
 
@@ -57,6 +58,18 @@ def run(args: Optional[list[str]] = None) -> int:
     # Initialize store and decay processor
     store = MemoryStore()
     decay = MemoryDecay(store)
+
+    # Clean up pre-compact WIP memory if it exists
+    from anima.hooks.pre_compact import get_precompact_memory_id, clear_precompact_memory_id
+
+    precompact_id = get_precompact_memory_id()
+    if precompact_id:
+        try:
+            store.delete_memory(precompact_id)
+            clear_precompact_memory_id()
+            print("Cleaned up pre-compact WIP memory")
+        except Exception:
+            pass  # Memory may already be deleted
 
     # Save spaceship journal if provided
     if spaceship_journal:
@@ -108,6 +121,22 @@ def run(args: Optional[list[str]] = None) -> int:
         print(f"{len(compacted)} memories compacted, {deleted} deleted at end of session")
     else:
         print("0 memories compacted at end of session")
+
+    # Check memory integrity
+    checker = MemoryIntegrityChecker(store)
+    report = checker.check_all(
+        agent_id=agent.id,
+        project_id=project.id,
+        signing_key=agent.signing_key,
+    )
+
+    # Report integrity status
+    print(str(report))
+
+    # Log details if there are issues
+    if not report.is_healthy:
+        for issue in report.issues:
+            print(f"  {issue}")
 
     return 0
 

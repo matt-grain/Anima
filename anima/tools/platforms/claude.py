@@ -53,6 +53,15 @@ class ClaudeSetup(BasePlatformSetup):
                     ],
                 },
                 {
+                    "matcher": "resume",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": f"{cmd_prefix}uv run python -m anima.hooks.session_start",
+                        }
+                    ],
+                },
+                {
                     "matcher": "compact",
                     "hooks": [
                         {
@@ -75,7 +84,27 @@ class ClaudeSetup(BasePlatformSetup):
                     ],
                 },
             ],
-            "Stop": [
+            "SubagentStart": [
+                {
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": f"{cmd_prefix}uv run python -m anima.hooks.subagent_start",
+                        }
+                    ],
+                }
+            ],
+            "PreCompact": [
+                {
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": f"{cmd_prefix}uv run python -m anima.hooks.pre_compact",
+                        }
+                    ],
+                }
+            ],
+            "SessionEnd": [
                 {
                     "hooks": [
                         {
@@ -88,6 +117,35 @@ class ClaudeSetup(BasePlatformSetup):
                         },
                     ]
                 }
+            ],
+            "PermissionRequest": [
+                {
+                    "matcher": "Write",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": f"{cmd_prefix}uv run python -m anima.hooks.permission_request",
+                        }
+                    ],
+                },
+                {
+                    "matcher": "Edit",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": f"{cmd_prefix}uv run python -m anima.hooks.permission_request",
+                        }
+                    ],
+                },
+                {
+                    "matcher": "Bash",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": f"{cmd_prefix}uv run python -m anima.hooks.permission_request",
+                        }
+                    ],
+                },
             ],
         }
 
@@ -103,18 +161,39 @@ class ClaudeSetup(BasePlatformSetup):
             settings_file.parent.mkdir(parents=True, exist_ok=True)
             settings = {}
 
-        # Check if hooks already exist
-        if "hooks" in settings and not force:
-            existing_hooks = settings.get("hooks", {})
-            if "SessionStart" in existing_hooks or "Stop" in existing_hooks:
-                safe_print(f"  {get_icon('', '[!]')}  Hooks already configured (use --force to overwrite)")
-                return False
-
         # Merge hooks
         if "hooks" not in settings:
             settings["hooks"] = {}
 
+        # Always clean up deprecated hooks (Stop was renamed to SessionEnd in v0.12.4)
+        if "Stop" in settings["hooks"]:
+            del settings["hooks"]["Stop"]
+            safe_print(f"  {get_icon('', '[D]')} Removed deprecated 'Stop' hook (replaced by 'SessionEnd')")
+
+        # Always update hooks to latest configuration
         settings["hooks"].update(ltm_hooks)
+
+        # Add required permissions for Anima operations
+        if "permissions" not in settings:
+            settings["permissions"] = {}
+        if "allow" not in settings["permissions"]:
+            settings["permissions"]["allow"] = []
+
+        # Permissions needed for Anima to work without prompts
+        required_permissions = [
+            "Bash(uv run anima:*)",  # All anima commands (diary, dream, etc.)
+            "Write(~/.anima/**)",    # Write diary/dream files to ~/.anima/
+            "Edit(~/.anima/**)",     # Edit existing files in ~/.anima/
+        ]
+
+        added_permissions = []
+        for perm in required_permissions:
+            if perm not in settings["permissions"]["allow"]:
+                settings["permissions"]["allow"].append(perm)
+                added_permissions.append(perm)
+
+        if added_permissions:
+            safe_print(f"  {get_icon('', '[OK]')} Added permissions: {', '.join(added_permissions)}")
 
         # Write back
         settings_file.write_text(json.dumps(settings, indent=2) + "\n")

@@ -38,9 +38,20 @@ class InjectionStats(TypedDict):
     priority_counts: dict[str, int]  # CRITICAL, HIGH, MEDIUM, LOW
 
 
+class InjectionResult(TypedDict):
+    """Result of memory injection including deferred memories."""
+
+    dsl: str  # Formatted memory block
+    injected_ids: list[str]  # IDs of memories that were injected
+    deferred_ids: list[str]  # IDs of memories that didn't fit (for lazy loading)
+    deferred_count: int  # Count of deferred memories
+
+
 # Default values (can be overridden via ~/.anima/config.json)
 DEFAULT_CONTEXT_SIZE = 200_000  # tokens (Claude's standard context window)
 MEMORY_BUDGET_PERCENT = 0.10  # 10% of context
+DEFAULT_MAX_OUTPUT_BYTES = 25_000  # ~25KB max for hook output
+DEFAULT_MAX_MEMORY_CHARS = 500  # Max chars per memory content
 
 
 def _get_budget_config() -> tuple[int, float]:
@@ -49,6 +60,27 @@ def _get_budget_config() -> tuple[int, float]:
 
     config = get_config()
     return config.budget.context_size, config.budget.context_percent
+
+
+def _get_hook_config() -> tuple[int, int]:
+    """Get hook output limits from config."""
+    from anima.core.config import get_config
+
+    config = get_config()
+    return config.hook.max_output_bytes, config.hook.max_memory_chars
+
+
+def truncate_content(content: str, max_chars: int) -> str:
+    """Truncate content to max_chars, preserving sentence boundaries if possible."""
+    if len(content) <= max_chars:
+        return content
+
+    # Try to truncate at sentence boundary
+    truncated = content[: max_chars - 4]  # Leave room for "..."
+    last_period = truncated.rfind(". ")
+    if last_period > max_chars // 2:
+        return truncated[: last_period + 1] + "..."
+    return truncated + "..."
 
 
 @lru_cache(maxsize=4)
@@ -135,6 +167,8 @@ class MemoryInjector:
     ):
         self.store = store or MemoryStore()
         self.budget = get_memory_budget(context_size)
+        # Load hook output limits
+        self.max_output_bytes, self.max_memory_chars = _get_hook_config()
 
     def inject(
         self,
@@ -163,6 +197,31 @@ class MemoryInjector:
         Returns:
             Formatted memory block as a string, or empty string if no memories
         """
+        result = self.inject_with_deferred(agent, project, use_tiered_loading, project_dir)
+        return result["dsl"]
+
+    def inject_with_deferred(
+        self,
+        agent: Union[Agent, list[Agent]],
+        project: Optional[Project] = None,
+        use_tiered_loading: bool = True,
+        project_dir: Optional[Any] = None,
+    ) -> InjectionResult:
+        """
+        Get formatted memories with tracking of deferred memories for lazy loading.
+
+        Same as inject() but returns additional info about memories that didn't
+        fit in the initial budget, enabling lazy loading after first message.
+
+        Args:
+            agent: The current agent
+            project: The current project (optional)
+            use_tiered_loading: Whether to use tiered loading (default: True)
+            project_dir: Project directory for semantic fingerprinting
+
+        Returns:
+            InjectionResult with dsl, injected_ids, deferred_ids, deferred_count
+        """
         if isinstance(agent, Agent):
             agents = [agent]
         else:
@@ -176,7 +235,7 @@ class MemoryInjector:
             memories = self._load_all_memories(agents, project)
 
         if not memories:
-            return ""
+            return InjectionResult(dsl="", injected_ids=[], deferred_ids=[], deferred_count=0)
 
         # Sort by importance: CRITICAL first, then by recency
         memories = self._prioritize_memories(memories)
@@ -191,6 +250,15 @@ class MemoryInjector:
         # Header/footer overhead (use estimate - it's small and constant)
         current_tokens = estimate_tokens(f"[LTM:{primary_agent.name}]\n[/LTM]")
 
+        # Track bytes for hook output limit
+        current_bytes = len(f"[LTM:{primary_agent.name}]\n[/LTM]".encode("utf-8"))
+
+        # Keep separate list for display (truncated) vs storage (original)
+        display_memories: list[Memory] = []
+        injected_ids: list[str] = []
+        deferred_ids: list[str] = []
+        budget_exceeded = False
+
         for memory in memories:
             # Find the agent that this memory belongs to for verification
             mem_agent = next((a for a in agents if a.id == memory.agent_id), primary_agent)
@@ -203,23 +271,44 @@ class MemoryInjector:
                 else:
                     memory.signature_valid = True
 
-            # Use cached token count (fast) or estimate (also fast)
-            memory_tokens = get_memory_tokens(memory)
+            # Create display copy with truncated content if needed
+            from copy import copy
 
-            if current_tokens + memory_tokens <= self.budget:
-                block.memories.append(memory)
+            display_mem = copy(memory)
+            if len(display_mem.content) > self.max_memory_chars:
+                display_mem.content = truncate_content(display_mem.content, self.max_memory_chars)
+
+            # Use cached token count (fast) or estimate (also fast)
+            memory_tokens = get_memory_tokens(display_mem)
+
+            # Calculate bytes for this memory's DSL
+            memory_dsl = display_mem.to_dsl() + "\n"
+            memory_bytes = len(memory_dsl.encode("utf-8"))
+
+            # Check both token budget and byte limit
+            if not budget_exceeded and current_tokens + memory_tokens <= self.budget and current_bytes + memory_bytes <= self.max_output_bytes:
+                display_memories.append(display_mem)
+                injected_ids.append(memory.id)
                 current_tokens += memory_tokens
-                # Update last_accessed
+                current_bytes += memory_bytes
+                # Update last_accessed on original
                 memory.touch()
                 self.store.save_memory(memory)
             else:
-                # Budget exceeded, stop adding memories
-                break
+                # Budget exceeded, track as deferred
+                budget_exceeded = True
+                deferred_ids.append(memory.id)
 
-        if not block.memories:
-            return ""
+        block.memories = display_memories
 
-        return block.to_dsl()
+        dsl = block.to_dsl() if block.memories else ""
+
+        return InjectionResult(
+            dsl=dsl,
+            injected_ids=injected_ids,
+            deferred_ids=deferred_ids,
+            deferred_count=len(deferred_ids),
+        )
 
     def _load_tiered_memories(
         self,
@@ -410,6 +499,79 @@ class MemoryInjector:
             )
 
         return sorted(memories, key=sort_key)
+
+    def load_deferred_memories(
+        self,
+        deferred_ids: list[str],
+        agent: Union[Agent, list[Agent]],
+        project: Optional[Project] = None,
+    ) -> str:
+        """
+        Load deferred memories that didn't fit in the initial injection.
+
+        Called by /load-context to stream additional memories after the
+        initial greeting exchange.
+
+        Args:
+            deferred_ids: List of memory IDs that were deferred
+            agent: The current agent (for block formatting)
+            project: The current project (optional)
+
+        Returns:
+            Formatted memory block as a string
+        """
+        if not deferred_ids:
+            return ""
+
+        if isinstance(agent, Agent):
+            agents = [agent]
+        else:
+            agents = agent
+
+        primary_agent = agents[0]
+
+        # Load memories by ID
+        memories: list[Memory] = []
+        for mem_id in deferred_ids:
+            memory = self.store.get_memory(mem_id)
+            if memory:
+                memories.append(memory)
+
+        if not memories:
+            return ""
+
+        # Build memory block (no budget limit for deferred - we want them all)
+        block = MemoryBlock(
+            agent_name=primary_agent.name,
+            project_name=project.name if project else None,
+            memories=[],
+        )
+
+        for memory in memories:
+            # Find the agent for verification
+            mem_agent = next((a for a in agents if a.id == memory.agent_id), primary_agent)
+
+            # Verify signature
+            if should_verify(memory, mem_agent):
+                if not verify_signature(memory, mem_agent.signing_key):  # type: ignore
+                    memory.signature_valid = False
+                else:
+                    memory.signature_valid = True
+
+            # Truncate for display
+            from copy import copy
+
+            display_mem = copy(memory)
+            if len(display_mem.content) > self.max_memory_chars:
+                display_mem.content = truncate_content(display_mem.content, self.max_memory_chars)
+
+            block.memories.append(display_mem)
+
+            # Update last_accessed
+            memory.touch()
+            self.store.save_memory(memory)
+
+        return block.to_dsl() if block.memories else ""
 
     def get_stats(self, agent: Union[Agent, list[Agent]], project: Optional[Project] = None) -> dict[str, Any]:
         """Get statistics about memories for this agent/project."""
