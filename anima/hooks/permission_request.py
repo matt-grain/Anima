@@ -75,7 +75,17 @@ def run() -> int:
 
     tool_name = hook_input.get("tool_name", "")
     tool_input = hook_input.get("tool_input", {})
-    log_hook_start("PermissionRequest", tool_name=tool_name)
+
+    # Extract tool details for logging
+    tool_detail = ""
+    if tool_name == "Bash":
+        tool_detail = tool_input.get("command", "")[:100]  # Truncate long commands
+    elif tool_name in ("Write", "Edit"):
+        tool_detail = tool_input.get("file_path", "")
+    elif tool_name == "Read":
+        tool_detail = tool_input.get("file_path", "")
+
+    log_hook_start("PermissionRequest", tool_name=tool_name, detail=tool_detail)
 
     decision = None
     reason = None
@@ -100,16 +110,16 @@ def run() -> int:
             "decision": decision,
             "reason": reason,
         }
-        log.info(f"Auto-approved: {tool_name} - {reason}")
+        log.info(f"→ APPROVED: {reason}")
         print(json.dumps(output))
         print(f"LTM: {reason}", file=sys.stderr)
     else:
         # No decision - let Claude Code handle it normally
         output = {}
-        log.debug(f"No auto-decision for {tool_name}, deferring to user")
+        log.info("→ DEFERRED to user")
         print(json.dumps(output))
 
-    log_hook_end("PermissionRequest", tool_name=tool_name, decision=decision or "deferred")
+    log_hook_end("PermissionRequest", decision=decision or "deferred")
     return 0
 
 

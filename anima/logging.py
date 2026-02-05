@@ -4,10 +4,11 @@
 """
 Logging infrastructure for Anima.
 
-Session-based log files with automatic cleanup.
+Daily log files with automatic cleanup.
 Enable via ~/.anima/config.json: {"logging": {"debug": true}}
 
-Log files are created at ~/.anima/logs/session_<date>_<time>_<id>.log
+Log files are created at ~/.anima/logs/anima_<date>.log
+All hook calls append to the same daily file for easy monitoring.
 """
 
 import sys
@@ -20,7 +21,7 @@ from loguru import logger
 
 from anima.core.config import get_config
 
-# Session ID - generated once per process
+# Session ID - generated once per process (for correlating log entries)
 _session_id: Optional[str] = None
 _configured: bool = False
 
@@ -38,20 +39,19 @@ def get_log_dir() -> Path:
     return Path.home() / ".anima" / "logs"
 
 
-def get_session_log_path() -> Path:
-    """Get the log file path for the current session."""
+def get_daily_log_path() -> Path:
+    """Get the log file path for today."""
     log_dir = get_log_dir()
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    session_id = get_session_id()
-    return log_dir / f"session_{timestamp}_{session_id}.log"
+    today = datetime.now().strftime("%Y-%m-%d")
+    return log_dir / f"anima_{today}.log"
 
 
 def cleanup_old_logs(retention_count: int) -> int:
     """
-    Remove old log files, keeping only the most recent N.
+    Remove old log files, keeping only the most recent N days.
 
     Args:
-        retention_count: Number of log files to keep
+        retention_count: Number of daily log files to keep
 
     Returns:
         Number of files deleted
@@ -60,14 +60,22 @@ def cleanup_old_logs(retention_count: int) -> int:
     if not log_dir.exists():
         return 0
 
-    # Get all session log files sorted by modification time (newest first)
+    # Get all daily log files sorted by modification time (newest first)
     log_files = sorted(
-        log_dir.glob("session_*.log"),
+        log_dir.glob("anima_*.log"),
         key=lambda p: p.stat().st_mtime,
         reverse=True,
     )
 
-    # Delete files beyond retention count
+    # Also clean up old session-based logs from previous version
+    old_session_logs = list(log_dir.glob("session_*.log"))
+    for old_file in old_session_logs:
+        try:
+            old_file.unlink()
+        except OSError:
+            pass
+
+    # Delete daily files beyond retention count
     deleted = 0
     for old_file in log_files[retention_count:]:
         try:
@@ -76,7 +84,7 @@ def cleanup_old_logs(retention_count: int) -> int:
         except OSError:
             pass  # Ignore deletion errors
 
-    return deleted
+    return deleted + len(old_session_logs)
 
 
 def configure_logging() -> None:
@@ -84,7 +92,7 @@ def configure_logging() -> None:
     Configure loguru based on config settings.
 
     If debug is disabled, logging goes nowhere (null sink).
-    If debug is enabled, logs go to session file with cleanup.
+    If debug is enabled, logs append to daily file.
     """
     global _configured
     if _configured:
@@ -103,13 +111,16 @@ def configure_logging() -> None:
         # Cleanup old logs
         cleanup_old_logs(config.logging.log_retention_count)
 
-        # Add file handler for this session
-        log_path = get_session_log_path()
+        # Get session ID for this process
+        session_id = get_session_id()
+
+        # Add file handler - append to daily log
+        log_path = get_daily_log_path()
         logger.add(
             log_path,
-            format="{time:YYYY-MM-DD HH:mm:ss} | {level: <7} | {name}:{function}:{line} | {message}",
+            format="{time:HH:mm:ss} | {level: <7} | [" + session_id + "] {message}",
             level="DEBUG",
-            rotation=None,  # No rotation - one file per session
+            rotation=None,  # No rotation - one file per day
             retention=None,  # We handle retention manually
         )
 
@@ -121,7 +132,7 @@ def configure_logging() -> None:
             colorize=True,
         )
 
-        logger.info(f"Anima logging started - session {get_session_id()}")
+        logger.info("Anima process started")
         logger.debug(f"Log file: {log_path}")
 
     _configured = True
@@ -149,7 +160,7 @@ def log_hook_start(hook_name: str, **context) -> None:
     log = get_logger("hooks")
     log.info(f"{hook_name} hook fired")
     if context:
-        log.debug(f"{hook_name} context: {context}")
+        log.debug(f"  → {context}")
 
 
 def log_hook_end(hook_name: str, **results) -> None:
@@ -157,7 +168,7 @@ def log_hook_end(hook_name: str, **results) -> None:
     log = get_logger("hooks")
     log.info(f"{hook_name} hook completed")
     if results:
-        log.debug(f"{hook_name} results: {results}")
+        log.debug(f"  → {results}")
 
 
 def log_memories_loaded(
@@ -172,9 +183,9 @@ def log_memories_loaded(
     log.info(f"Loaded {agent_count} AGENT + {project_count} PROJECT memories, {deferred_count} deferred")
 
     if kind_breakdown:
-        log.debug(f"Kind breakdown: {kind_breakdown}")
+        log.debug(f"  Kind: {kind_breakdown}")
     if impact_breakdown:
-        log.debug(f"Impact breakdown: {impact_breakdown}")
+        log.debug(f"  Impact: {impact_breakdown}")
 
 
 def log_memories_injected(subagent_name: str, count: int, kind_breakdown: Optional[dict] = None) -> None:
@@ -183,16 +194,16 @@ def log_memories_injected(subagent_name: str, count: int, kind_breakdown: Option
     log.info(f"Injected {count} memories to subagent '{subagent_name}'")
 
     if kind_breakdown:
-        log.debug(f"Kind breakdown: {kind_breakdown}")
+        log.debug(f"  Kind: {kind_breakdown}")
 
 
 def log_achievement_detected(description: str, commit_hash: Optional[str] = None) -> None:
     """Log an achievement detection."""
     log = get_logger("achievements")
     if commit_hash:
-        log.info(f"Achievement detected [{commit_hash[:8]}]: {description[:100]}")
+        log.info(f"Achievement [{commit_hash[:8]}]: {description[:100]}")
     else:
-        log.info(f"Achievement detected: {description[:100]}")
+        log.info(f"Achievement: {description[:100]}")
 
 
 def log_error(context: str, error: Exception) -> None:
