@@ -100,6 +100,7 @@ class Memory:
             ImpactLevel.MEDIUM: "MED",
             ImpactLevel.HIGH: "HIGH",
             ImpactLevel.CRITICAL: "CRIT",
+            ImpactLevel.WIP: "WIP",
         }
 
         confidence_marker = "?" if self.is_low_confidence() else ""
