@@ -301,16 +301,90 @@ def run(args: Optional[list[str]] = None) -> int:
 
     memories_dsl = injection_result["dsl"]
     deferred_count = injection_result["deferred_count"]
+    injected_ids = injection_result["injected_ids"]
+    deferred_ids = injection_result["deferred_ids"]
 
     # Store deferred memory IDs for lazy loading via /load-deferred
-    if injection_result["deferred_ids"]:
-        set_deferred_memories(injection_result["deferred_ids"])
+    if deferred_ids:
+        set_deferred_memories(deferred_ids)
 
     # Log basic memory loading info (detailed stats logged after we compute them)
-    log.info(f"Injected {len(injection_result['injected_ids'])} memories, deferred {deferred_count}")
+    log.info(f"Injected {len(injected_ids)} memories, deferred {deferred_count}")
+
+    # Check for WIP memory from PreCompact - signals post-compact state
+    # If WIP is present and recent, this is a compact continuation, not a new session
+    from anima.hooks.pre_compact import get_precompact_memory_id, clear_precompact_memory_id
+
+    wip_id = get_precompact_memory_id()
+    is_post_compact = False
+    auto_loaded_deferred = False
+    wip_ttl_hours = 6  # WIP older than this is considered stale
+
+    if wip_id:
+        wip_short = wip_id[:8]
+
+        if wip_id in injected_ids:
+            # WIP was injected - check if it's recent (TTL check)
+            wip_memory = store.get_memory(wip_id)
+            if wip_memory:
+                hours_old = (datetime.now() - wip_memory.created_at).total_seconds() / 3600
+                if hours_old <= wip_ttl_hours:
+                    # Recent WIP = this is post-compact, auto-load deferred
+                    is_post_compact = True
+                    log.info(f"WIP [{wip_short}] detected ({hours_old:.1f}h old) - POST-COMPACT mode")
+
+                    # Auto-load deferred memories inline
+                    if deferred_ids:
+                        log.info(f"Auto-loading {len(deferred_ids)} deferred memories (post-compact)")
+                        deferred_dsl = injector.load_deferred_memories(deferred_ids, agent, project)
+                        if deferred_dsl:
+                            memories_dsl += "\n" + deferred_dsl
+                            auto_loaded_deferred = True
+                            log.info("Deferred memories loaded successfully")
+                        # Clear deferred list since we loaded them
+                        set_deferred_memories([])
+                        deferred_count = 0
+
+                    # Delete WIP - it served its purpose as a signal
+                    store.delete_memory(wip_id)
+                    clear_precompact_memory_id()
+                    log.info(f"WIP [{wip_short}] deleted (post-compact signal consumed)")
+                else:
+                    # Stale WIP - just clean it up
+                    log.warning(f"WIP [{wip_short}] is stale ({hours_old:.1f}h old > {wip_ttl_hours}h TTL), deleting")
+                    store.delete_memory(wip_id)
+                    clear_precompact_memory_id()
+            else:
+                log.warning(f"WIP [{wip_short}] in settings but not in store - clearing")
+                clear_precompact_memory_id()
+
+        elif wip_id in deferred_ids:
+            log.warning(f"WIP [{wip_short}] was DEFERRED - should never happen with WIP priority!")
+            # Force-load it anyway
+            wip_memory = store.get_memory(wip_id)
+            if wip_memory:
+                hours_old = (datetime.now() - wip_memory.created_at).total_seconds() / 3600
+                if hours_old <= wip_ttl_hours:
+                    is_post_compact = True
+                store.delete_memory(wip_id)
+                clear_precompact_memory_id()
+
+        else:
+            log.warning(f"WIP [{wip_short}] NOT FOUND in injection - may have been deleted")
+            clear_precompact_memory_id()
+
+    # Log sample of injected IDs for debugging
+    if injected_ids:
+        sample = [mid[:8] for mid in injected_ids[:5]]
+        log.debug(f"Injected IDs (first 5): {sample}")
 
     # Build status notes
     status_notes = []
+    if is_post_compact:
+        if auto_loaded_deferred:
+            status_notes.append("# LTM-POSTCOMPACT: Context restored automatically (WIP signal detected, deferred loaded)")
+        else:
+            status_notes.append("# LTM-POSTCOMPACT: Resuming after compaction (WIP signal detected)")
     if backup_path:
         status_notes.append(f"# LTM: Session backup created: {backup_path.name}")
     if patched_agents:
@@ -341,10 +415,23 @@ def run(args: Optional[list[str]] = None) -> int:
             if update_info["update_available"]:
                 update_notice = f"# LTM-UPDATE: New version v{update_info['latest']} available! Run 'anima update' to upgrade.\n"
 
-        # Build deferred context hint
+        # Build deferred context hint (only if we didn't auto-load them)
         deferred_hint = ""
-        if deferred_count > 0:
+        if deferred_count > 0 and not auto_loaded_deferred:
             deferred_hint = f"\n# LTM-DEFERRED: {deferred_count} additional memories available. Run /load-deferred after greeting."
+
+        # Build context message with appropriate greeting behavior
+        if is_post_compact:
+            # Post-compact: no greeting needed, continue working
+            greeting_behavior = """# POST-COMPACT BEHAVIOR:
+# - You just resumed after a context compaction. Full context has been restored automatically.
+# - Continue working on the task at hand without re-greeting the user.
+# - If you see LTM-POSTCOMPACT status, acknowledge briefly (e.g., "Context restored, continuing...")"""
+        else:
+            # Normal session: standard greeting behavior
+            greeting_behavior = f"""# GREETING BEHAVIOR:
+# - Normal greeting / "welcome back": Greet warmly with personality, naturally mention "X memories loaded" somewhere.{" Mention update available if LTM-UPDATE line present." if update_notice else ""}{" After greeting, run /load-deferred to load additional context." if deferred_count > 0 else ""}
+# - "Void is gone!": Provide full diagnostic readout - memory counts, priority breakdown, version ({version_diag}), key context verified, recent achievements{" Then run /load-deferred." if deferred_count > 0 else ""}"""
 
         # Build context message
         context = f"""{memories_dsl}
@@ -353,9 +440,7 @@ def run(args: Optional[list[str]] = None) -> int:
 # LTM-DIAG: CRIT={pc["CRITICAL"]} HIGH={pc["HIGH"]} MED={pc["MEDIUM"]} LOW={pc["LOW"]}{deferred_hint}
 {update_notice}# These are your long-term memories from previous sessions. Use them to inform your responses.
 #
-# GREETING BEHAVIOR:
-# - Normal greeting / "welcome back": Greet warmly with personality, naturally mention "X memories loaded" somewhere.{" Mention update available if LTM-UPDATE line present." if update_notice else ""}{" After greeting, run /load-deferred to load additional context." if deferred_count > 0 else ""}
-# - "Void is gone!": Provide full diagnostic readout - memory counts, priority breakdown, version ({version_diag}), key context verified, recent achievements{" Then run /load-deferred." if deferred_count > 0 else ""}"""
+{greeting_behavior}"""
 
         # Add status notes
         if status_notes:

@@ -69,14 +69,24 @@ def run(args: Optional[list[str]] = None) -> int:
 
     precompact_id = get_precompact_memory_id()
     if precompact_id:
+        wip_short = precompact_id[:8]
+        log.info(f"WIP cleanup: Found pending WIP memory [{wip_short}]")
         try:
-            store.delete_memory(precompact_id)
+            # Check if it still exists before deleting
+            existing = store.get_memory(precompact_id)
+            if existing:
+                store.delete_memory(precompact_id)
+                log.info(f"WIP cleanup: DELETED memory [{wip_short}] (session ended normally)")
+                print(f"Cleaned up pre-compact WIP memory [{wip_short}]")
+            else:
+                log.info(f"WIP cleanup: Memory [{wip_short}] already gone (may have been manually deleted)")
             clear_precompact_memory_id()
-            log.debug(f"Cleaned up pre-compact WIP memory {precompact_id[:8]}")
-            print("Cleaned up pre-compact WIP memory")
-        except Exception:
-            log.debug(f"Pre-compact WIP memory {precompact_id[:8]} already deleted")
-            pass  # Memory may already be deleted
+            log.debug("WIP cleanup: Cleared WIP ID from settings")
+        except Exception as e:
+            log.warning(f"WIP cleanup: Error cleaning [{wip_short}]: {e}")
+            clear_precompact_memory_id()  # Still clear the ID to prevent stale references
+    else:
+        log.debug("WIP cleanup: No pending WIP memory found (normal session or already cleaned)")
 
     # Save spaceship journal if provided
     if spaceship_journal:

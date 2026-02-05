@@ -31,6 +31,7 @@ class ImpactLevel(str, Enum):
     MEDIUM = "MEDIUM"  # Moderate decay after 1 week
     HIGH = "HIGH"  # Gentle decay after 1 month
     CRITICAL = "CRITICAL"  # Never decay, keep full detail
+    WIP = "WIP"  # Work-in-progress: highest priority, signals post-compact state, TTL-based cleanup
 
 
 class MemoryTier(str, Enum):

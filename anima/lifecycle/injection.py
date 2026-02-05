@@ -478,11 +478,14 @@ class MemoryInjector:
         Prioritize memories for injection.
 
         Priority order:
-        1. Impact level (CRITICAL > HIGH > MEDIUM > LOW)
+        1. Impact level (WIP > CRITICAL > HIGH > MEDIUM > LOW)
         2. Recency (newer first within same impact)
         3. Kind (EMOTIONAL first, as it shapes interaction style)
+
+        WIP memories are always injected first - they signal post-compact state
+        and trigger automatic deferred loading.
         """
-        impact_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+        impact_order = {"WIP": -1, "CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
         kind_order = {
             "EMOTIONAL": 0,  # Most important for interaction style
             "INTROSPECT": 1,  # Self-observations (Phase 2)
@@ -597,9 +600,10 @@ class MemoryInjector:
                 all_project_memories.extend(project_memories)
 
         # Count by priority
-        priority_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
+        priority_counts = {"WIP": 0, "CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
         for memory in all_agent_memories + all_project_memories:
-            priority_counts[memory.impact.value] += 1
+            if memory.impact.value in priority_counts:
+                priority_counts[memory.impact.value] += 1
 
         return {
             "agent_memories": len(all_agent_memories),

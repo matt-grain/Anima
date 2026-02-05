@@ -25,6 +25,7 @@ def _get_decay_thresholds() -> dict[ImpactLevel, Optional[timedelta]]:
         ImpactLevel.MEDIUM: timedelta(days=config.decay.medium_days),
         ImpactLevel.HIGH: timedelta(days=config.decay.high_days),
         ImpactLevel.CRITICAL: None,  # Never decay (not configurable)
+        ImpactLevel.WIP: None,  # Never decay - temporary, deleted after use
     }
 
 
@@ -34,6 +35,7 @@ DECAY_THRESHOLDS = {
     ImpactLevel.MEDIUM: timedelta(weeks=1),  # Moderate decay after 1 week
     ImpactLevel.HIGH: timedelta(days=30),  # Gentle decay after 1 month
     ImpactLevel.CRITICAL: None,  # Never decay
+    ImpactLevel.WIP: None,  # Never decay - temporary, deleted after use
 }
 
 # Minimum content length after compaction (characters)
@@ -62,7 +64,7 @@ class MemoryDecay:
         Returns:
             True if the memory should be compacted
         """
-        if memory.impact == ImpactLevel.CRITICAL:
+        if memory.impact in (ImpactLevel.CRITICAL, ImpactLevel.WIP):
             return False
 
         now = now or datetime.now()

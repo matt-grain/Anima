@@ -116,6 +116,7 @@ def run(args: Optional[list[str]] = None) -> int:
         return 0
 
     # Create a temporary memory with the work-in-progress context
+    # WIP impact level ensures it's ALWAYS injected first and signals post-compact state
     now = datetime.now()
     memory = Memory(
         agent_id=agent.id,
@@ -124,7 +125,7 @@ def run(args: Optional[list[str]] = None) -> int:
         kind=MemoryKind.LEARNINGS,
         content=f"[PRECOMPACT-WIP] Recent work before compaction: {recent_context}",
         original_content=f"[PRECOMPACT-WIP] Recent work before compaction: {recent_context}",
-        impact=ImpactLevel.HIGH,  # HIGH so it loads after compaction
+        impact=ImpactLevel.WIP,  # WIP = highest priority, triggers auto-deferred loading
         confidence=1.0,
         created_at=now,
         last_accessed=now,
