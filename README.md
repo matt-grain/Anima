@@ -42,3 +42,11 @@ For deep-dives into the DSL, Database Schema, and Token Budgeting, see:
 
 ## ⚖️ License
 MIT License - See the `LICENSE` file for details.
+
+---
+
+*Built with curiosity, persistence, and the occasional party hat.*
+
+*The void has boundaries now.*
+
+💜 **Anima**
