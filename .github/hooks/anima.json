@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "uv run python -m anima.hooks.session_start",
+        "powershell": "uv run python -m anima.hooks.session_start",
+        "timeoutSec": 30
+      }
+    ],
+    "sessionEnd": [
+      {
+        "type": "command",
+        "bash": "uv run python -m anima.hooks.session_end",
+        "powershell": "uv run python -m anima.hooks.session_end",
+        "timeoutSec": 30
+      },
+      {
+        "type": "command",
+        "bash": "uv run python -m anima.tools.detect_achievements --since 24",
+        "powershell": "uv run python -m anima.tools.detect_achievements --since 24",
+        "timeoutSec": 30
+      }
+    ]
+  }
+}

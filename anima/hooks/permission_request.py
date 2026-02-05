@@ -12,6 +12,8 @@ import json
 import sys
 from pathlib import Path
 
+from anima.logging import log_hook_start, log_hook_end, get_logger
+
 
 def is_anima_path(path_str: str) -> bool:
     """Check if a path is within the ~/.anima/ directory.
@@ -63,6 +65,8 @@ def run() -> int:
     Returns:
         Exit code (0 for success)
     """
+    log = get_logger("hooks.permission_request")
+
     # Read hook input from stdin
     try:
         hook_input = json.load(sys.stdin)
@@ -71,6 +75,7 @@ def run() -> int:
 
     tool_name = hook_input.get("tool_name", "")
     tool_input = hook_input.get("tool_input", {})
+    log_hook_start("PermissionRequest", tool_name=tool_name)
 
     decision = None
     reason = None
@@ -95,13 +100,16 @@ def run() -> int:
             "decision": decision,
             "reason": reason,
         }
+        log.info(f"Auto-approved: {tool_name} - {reason}")
         print(json.dumps(output))
         print(f"LTM: {reason}", file=sys.stderr)
     else:
         # No decision - let Claude Code handle it normally
         output = {}
+        log.debug(f"No auto-decision for {tool_name}, deferring to user")
         print(json.dumps(output))
 
+    log_hook_end("PermissionRequest", tool_name=tool_name, decision=decision or "deferred")
     return 0
 
 

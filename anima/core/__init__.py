@@ -15,6 +15,7 @@ from anima.core.config import (
     AgentConfig,
     BudgetConfig,
     DecayConfig,
+    LoggingConfig,
     get_config,
     reload_config,
 )
@@ -41,6 +42,7 @@ __all__ = [
     "AgentConfig",
     "BudgetConfig",
     "DecayConfig",
+    "LoggingConfig",
     "get_config",
     "reload_config",
 ]

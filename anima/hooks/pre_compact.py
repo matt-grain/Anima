@@ -20,6 +20,7 @@ from anima.core.signing import sign_memory, should_sign
 from anima.lifecycle.injection import ensure_token_count
 from anima.storage import MemoryStore
 from anima.storage.curiosity import get_setting, set_setting
+from anima.logging import log_hook_start, log_hook_end, log_warning, get_logger
 
 
 # Setting key for tracking pre-compact memory IDs
@@ -85,6 +86,8 @@ def run(args: Optional[list[str]] = None) -> int:
     Returns:
         Exit code (0 for success)
     """
+    log = get_logger("hooks.pre_compact")
+
     # Read hook input from stdin
     try:
         hook_input = json.load(sys.stdin)
@@ -93,19 +96,23 @@ def run(args: Optional[list[str]] = None) -> int:
 
     trigger = hook_input.get("trigger", "unknown")
     transcript_path = hook_input.get("transcript_path", "")
+    log_hook_start("PreCompact", trigger=trigger, transcript_path=transcript_path)
 
     # Resolve agent and project from current directory
     project_dir = Path.cwd()
     resolver = AgentResolver(project_dir)
     agent = resolver.resolve()
     project = resolver.resolve_project()
+    log.debug(f"Resolved agent: {agent.id}, project: {project.id if project else 'None'}")
 
     # Extract recent context from transcript
     recent_context = _extract_recent_context(transcript_path)
 
     if not recent_context:
         # No context to save
+        log_warning(f"PreCompact ({trigger}) - no recent context to preserve")
         print(f"LTM: PreCompact ({trigger}) - no recent context to preserve", file=sys.stderr)
+        log_hook_end("PreCompact", trigger=trigger, wip_saved=False)
         return 0
 
     # Create a temporary memory with the work-in-progress context
@@ -138,8 +145,11 @@ def run(args: Optional[list[str]] = None) -> int:
     # Store the memory ID for cleanup at session end
     set_setting(PRECOMPACT_MEMORY_KEY, memory.id)
 
+    log.info(f"Saved WIP memory {memory.id[:8]} for post-compact recovery")
+    log.debug(f"WIP content preview: {recent_context[:100]}...")
     print(f"LTM: PreCompact ({trigger}) - saved work-in-progress memory", file=sys.stderr)
 
+    log_hook_end("PreCompact", trigger=trigger, wip_saved=True, memory_id=memory.id[:8])
     return 0
 
 

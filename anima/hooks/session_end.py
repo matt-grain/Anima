@@ -19,6 +19,7 @@ from anima.lifecycle.decay import MemoryDecay
 from anima.lifecycle.injection import ensure_token_count
 from anima.lifecycle.integrity import MemoryIntegrityChecker
 from anima.storage import MemoryStore
+from anima.logging import log_hook_start, log_hook_end, get_logger
 
 
 def run(args: Optional[list[str]] = None) -> int:
@@ -36,6 +37,9 @@ def run(args: Optional[list[str]] = None) -> int:
     Returns:
         Exit code (0 for success)
     """
+    log = get_logger("hooks.session_end")
+    log_hook_start("SessionEnd", args=args)
+
     spaceship_journal = None
     platform = None
 
@@ -54,6 +58,7 @@ def run(args: Optional[list[str]] = None) -> int:
     resolver = AgentResolver(Path.cwd())
     agent = resolver.resolve()
     project = resolver.resolve_project()
+    log.info(f"Resolved agent: {agent.id}, project: {project.id if project else 'None'}")
 
     # Initialize store and decay processor
     store = MemoryStore()
@@ -67,8 +72,10 @@ def run(args: Optional[list[str]] = None) -> int:
         try:
             store.delete_memory(precompact_id)
             clear_precompact_memory_id()
+            log.debug(f"Cleaned up pre-compact WIP memory {precompact_id[:8]}")
             print("Cleaned up pre-compact WIP memory")
         except Exception:
+            log.debug(f"Pre-compact WIP memory {precompact_id[:8]} already deleted")
             pass  # Memory may already be deleted
 
     # Save spaceship journal if provided
@@ -108,6 +115,7 @@ def run(args: Optional[list[str]] = None) -> int:
         # Save the memory
         store.save_agent(agent)
         store.save_memory(memory)
+        log.info(f"Saved spaceship journal: {memory.id[:8]} ({platform or 'unknown'} platform)")
         print(f"Spaceship journal saved ({platform or 'unknown'} platform)")
 
     # Process decay
@@ -117,6 +125,9 @@ def run(args: Optional[list[str]] = None) -> int:
     deleted = decay.delete_empty_memories(agent.id)
 
     # Report what happened (to stdout for terminal visibility)
+    log.info(f"Decay processing: {len(compacted)} compacted, {deleted} deleted")
+    if compacted:
+        log.debug(f"Compacted memory IDs: {[m[:8] for m in compacted]}")
     if compacted or deleted:
         print(f"{len(compacted)} memories compacted, {deleted} deleted at end of session")
     else:
@@ -131,13 +142,21 @@ def run(args: Optional[list[str]] = None) -> int:
     )
 
     # Report integrity status
+    log.info(f"Integrity check: {'HEALTHY' if report.is_healthy else 'ISSUES FOUND'}")
     print(str(report))
 
     # Log details if there are issues
     if not report.is_healthy:
         for issue in report.issues:
+            log.warning(f"Integrity issue: {issue}")
             print(f"  {issue}")
 
+    log_hook_end(
+        "SessionEnd",
+        compacted=len(compacted),
+        deleted=deleted,
+        integrity_healthy=report.is_healthy,
+    )
     return 0
 
 

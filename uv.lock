@@ -8,11 +8,12 @@ resolution-markers = [
 
 [[package]]
 name = "anima"
-version = "0.12.7"
+version = "0.12.8"
 source = { editable = "." }
 dependencies = [
     { name = "fastembed" },
     { name = "jinja2" },
+    { name = "loguru" },
     { name = "pydantic" },
     { name = "pyyaml" },
     { name = "tiktoken" },
@@ -36,6 +37,7 @@ dev = [
 requires-dist = [
     { name = "fastembed", specifier = ">=0.4.0" },
     { name = "jinja2", specifier = ">=3.1.0" },
+    { name = "loguru", specifier = ">=0.7.0" },
     { name = "pydantic", specifier = ">=2.0.0" },
     { name = "pyyaml", specifier = ">=6.0.0" },
     { name = "tiktoken", specifier = ">=0.8.0" },

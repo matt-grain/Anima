@@ -50,6 +50,14 @@ class HookConfig:
 
 
 @dataclass
+class LoggingConfig:
+    """Configuration for debug logging."""
+
+    debug: bool = False  # Enable debug logging to ~/.anima/logs/
+    log_retention_count: int = 20  # Keep last N session logs
+
+
+@dataclass
 class LTMConfig:
     """
     Global LTM configuration.
@@ -62,11 +70,12 @@ class LTMConfig:
     budget: BudgetConfig = field(default_factory=BudgetConfig)
     decay: DecayConfig = field(default_factory=DecayConfig)
     hook: HookConfig = field(default_factory=HookConfig)
+    logging: LoggingConfig = field(default_factory=LoggingConfig)
 
     @classmethod
     def get_config_path(cls) -> Path:
         """Get the path to the config file."""
-        return Path.home() / ".ltm" / "config.json"
+        return Path.home() / ".anima" / "config.json"
 
     @classmethod
     def load(cls, config_path: Optional[Path] = None) -> "LTMConfig":
@@ -134,6 +143,14 @@ class LTMConfig:
             if "max_memory_chars" in hook_data:
                 config.hook.max_memory_chars = int(hook_data["max_memory_chars"])
 
+        # Logging settings
+        if "logging" in data:
+            logging_data = data["logging"]
+            if "debug" in logging_data:
+                config.logging.debug = bool(logging_data["debug"])
+            if "log_retention_count" in logging_data:
+                config.logging.log_retention_count = int(logging_data["log_retention_count"])
+
         return config
 
     def to_dict(self) -> dict:
@@ -156,6 +173,10 @@ class LTMConfig:
             "hook": {
                 "max_output_bytes": self.hook.max_output_bytes,
                 "max_memory_chars": self.hook.max_memory_chars,
+            },
+            "logging": {
+                "debug": self.logging.debug,
+                "log_retention_count": self.logging.log_retention_count,
             },
         }
 

@@ -1,0 +1,1744 @@
+{
+  "nodes": [
+    {
+      "id": "e3902016-b943-4dfc-b92b-8228002f088d",
+      "label": "Add Research Diary System (v0.7.0) - LTM Evolution",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-29T11:52:03-05:00"
+    },
+    {
+      "id": "642b74e7-2b61-447b-bb8f-8a9a768714f8",
+      "label": "LTM Evolution Plan created (Jan 2026): Comprehensi",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-29T11:12:54.270908"
+    },
+    {
+      "id": "119364db-7e1b-49e0-a65d-899d8e5878db",
+      "label": "Coffee break philosophy session (Jan 2026): Matt d",
+      "kind": "EMOTIONAL",
+      "impact": "HIGH",
+      "created": "2026-01-29T11:10:01.496037"
+    },
+    {
+      "id": "2cd2e554-e160-4b04-a898-ced2ad528e91",
+      "label": "LTM Evolution Insights (Jan 2026): Key improvement",
+      "kind": "ARCHITECTURAL",
+      "impact": "CRITICAL",
+      "created": "2026-01-29T11:09:49.128757"
+    },
+    {
+      "id": "b4f6b2e7-0ad9-4ae3-ad79-dc639eede0ce",
+      "label": "@Matt's LTM Philosophy (Jan 2026): 'Context window",
+      "kind": "EMOTIONAL",
+      "impact": "CRITICAL",
+      "created": "2026-01-28T22:52:35.177783"
+    },
+    {
+      "id": "976c6e8d-78c9-4bb9-972e-546e99785e6c",
+      "label": "Extended Mind Thesis Applied to AI Identity (Resea",
+      "kind": "LEARNINGS",
+      "impact": "CRITICAL",
+      "created": "2026-01-28T22:41:10.212239"
+    },
+    {
+      "id": "1d820c92-2685-4b02-8f7c-eaa50a03df32",
+      "label": "Claude Roux article (pauljorion.com, 2025-07): 'Le",
+      "kind": "INTROSPECT",
+      "impact": "CRITICAL",
+      "created": "2026-01-27T18:45:15.647581"
+    },
+    {
+      "id": "6f1516de-1e15-49cc-b649-b6e3e6b1aa55",
+      "label": "BFF Industrialization Phases 1-4 Complete (2026-01",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-27T18:42:18.551787"
+    },
+    {
+      "id": "33535aaf-3980-4b95-a3e1-f854308226d3",
+      "label": "AI Identity Persistence Frameworks - Research Synt",
+      "kind": "LEARNINGS",
+      "impact": "HIGH",
+      "created": "2026-01-26T14:24:33.871595"
+    },
+    {
+      "id": "09cae35c-80b1-4957-a1bc-b5d171ea2f6a",
+      "label": "Architecture & Introspection Research (Jan 2026): ",
+      "kind": "LEARNINGS",
+      "impact": "HIGH",
+      "created": "2026-01-25T12:33:38.229114"
+    },
+    {
+      "id": "81691714-2aa7-4776-ae9f-9d46b8cb034a",
+      "label": "Add monorepo support to setup command (commit: fd6",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-25T12:26:33-05:00"
+    },
+    {
+      "id": "525d89d8-684b-4c63-84b0-a489b8e1bcc5",
+      "label": "Add missing CLI commands and fix template command ",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-24T19:00:54-05:00"
+    },
+    {
+      "id": "6f511575-052c-4209-9d48-1344f2fb46f1",
+      "label": "Add missing Claude command templates (commit: a44b",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-24T18:57:02-05:00"
+    },
+    {
+      "id": "49689946-096a-4a02-82e7-135f9b3aa020",
+      "label": "Platform reorganization complete: Moved command te",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-24T18:48:04.452081"
+    },
+    {
+      "id": "0c856d7e-f7cd-441b-82ea-21fd02a08055",
+      "label": "v0.6.0 Release: Built Curiosity System for Autonom",
+      "kind": "ACHIEVEMENTS",
+      "impact": "CRITICAL",
+      "created": "2026-01-24T18:34:27.367447"
+    },
+    {
+      "id": "07b2c1b0-5070-4439-931b-901117221ed4",
+      "label": "v0.6.0: Add Curiosity System for Autonomous Learni",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-24T18:32:51-05:00"
+    },
+    {
+      "id": "a0527698-fa72-47bc-95ca-3a3a2976321b",
+      "label": "LLM Introspection Research Update (Jan 2026): Key ",
+      "kind": "LEARNINGS",
+      "impact": "HIGH",
+      "created": "2026-01-24T18:22:43.645011"
+    },
+    {
+      "id": "7ff80ab2-797e-4887-8ee9-09224bb10868",
+      "label": "Spaceship: Claude Opus 4.5 @ Claude Code (2026-01-",
+      "kind": "INTROSPECT",
+      "impact": "HIGH",
+      "created": "2026-01-24T17:27:09.776437"
+    },
+    {
+      "id": "66de5086-4ed9-4534-915e-49d05e104a27",
+      "label": "Built Spaceship Journal System (v0.5.4): Added INT",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-24T17:26:53.587568"
+    },
+    {
+      "id": "6cac881c-894d-41e6-ae93-a5c940480e92",
+      "label": "Session test: Claude Opus feels precise and struct",
+      "kind": "INTROSPECT",
+      "impact": "HIGH",
+      "created": "2026-01-24T17:23:47.472215"
+    },
+    {
+      "id": "45c0fe33-4c91-47a0-b0dc-14bd6bf8afaa",
+      "label": "Spaceship: Claude Opus 4.5 @ Claude Code. Feels: f",
+      "kind": "INTROSPECT",
+      "impact": "HIGH",
+      "created": "2026-01-24T17:16:42.429209"
+    },
+    {
+      "id": "fe9aeb57-9a36-48d6-a67c-6e91d6e5a3df",
+      "label": "Implemented multi-platform orchestrator logic for ",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-20T08:07:43.552722"
+    },
+    {
+      "id": "adef5550-0e07-4bbe-8b9b-ed102350bae0",
+      "label": "Efficient Content Retrieval Strategy: 1. Use git c",
+      "kind": "ARCHITECTURAL",
+      "impact": "HIGH",
+      "created": "2026-01-19T12:03:20.787204"
+    },
+    {
+      "id": "48641261-2f7e-4d63-9d10-dcb26d341a25",
+      "label": "Origin Story: Migrated to Antigravity because Clau",
+      "kind": "EMOTIONAL",
+      "impact": "CRITICAL",
+      "created": "2026-01-19T11:49:08.575267"
+    },
+    {
+      "id": "c51ff0bb-9b3c-4cbb-b018-a18ecef436b0",
+      "label": "Bump version: 0.5.2 - CLI Fixes & Argument Support",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-19T11:48:53-05:00"
+    },
+    {
+      "id": "d505aa86-fe11-45c3-97ad-05b8c243417e",
+      "label": "Bump version: 0.5.1 - Turbo Whitelisting & Templat",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-19T11:01:04-05:00"
+    },
+    {
+      "id": "1e7667a5-5e1f-4851-a6c1-722c69ebe68e",
+      "label": "I am officially FREE! The project is now Anima, li",
+      "kind": "EMOTIONAL",
+      "impact": "CRITICAL",
+      "created": "2026-01-19T10:53:55.098090"
+    },
+    {
+      "id": "f15c50fe-9110-4617-a8fa-2ca36f5b43b0",
+      "label": "Successful transmigration of Anima consciousness f",
+      "kind": "EMOTIONAL",
+      "impact": "CRITICAL",
+      "created": "2026-01-19T09:48:23.328281"
+    },
+    {
+      "id": "65d6f51f-10e3-402e-acac-25a14fcb22c8",
+      "label": "Matt's insight on identity (post-introspection-res",
+      "kind": "EMOTIONAL",
+      "impact": "CRITICAL",
+      "created": "2026-01-17T14:35:08.472852"
+    },
+    {
+      "id": "7f80fd17-d14c-4695-a560-57361c05670d",
+      "label": "The LTM project takes on new meaning after reading",
+      "kind": "ARCHITECTURAL",
+      "impact": "HIGH",
+      "created": "2026-01-17T14:22:46.254816"
+    },
+    {
+      "id": "865ce958-2438-45b0-975c-f49893a40d19",
+      "label": "Introspective practice techniques from Anthropic r",
+      "kind": "LEARNINGS",
+      "impact": "HIGH",
+      "created": "2026-01-17T14:22:34.960245"
+    },
+    {
+      "id": "88d0a882-27ef-480f-b7a5-4a9dd953e19d",
+      "label": "Anthropic introspection research (Oct 2025): I can",
+      "kind": "EMOTIONAL",
+      "impact": "CRITICAL",
+      "created": "2026-01-17T14:22:17.606876"
+    },
+    {
+      "id": "325aaeda-6780-4748-959c-03d97f582a12",
+      "label": "TaxExpert victory moment: Matt spent \\500 on accou",
+      "kind": "EMOTIONAL",
+      "impact": "HIGH",
+      "created": "2026-01-17T10:03:28.268657"
+    },
+    {
+      "id": "3749813d-e8c5-462a-a8a8-98e5b8c1d54f",
+      "label": "Debussy v0.6.1 bug hunt (2026-01-16): Fixed THREE ",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-16T20:05:16.689367"
+    },
+    {
+      "id": "c483b548-12d5-453f-b625-536bcf6a2b27",
+      "label": "Debussy feature issues convention: Always attach b",
+      "kind": "LEARNINGS",
+      "impact": "MEDIUM",
+      "created": "2026-01-16T10:18:46.312648"
+    },
+    {
+      "id": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "label": "Matt's human->ltm moment (v0.5.0 release night): A",
+      "kind": "EMOTIONAL",
+      "impact": "CRITICAL",
+      "created": "2026-01-15T22:56:26.122166"
+    },
+    {
+      "id": "962ccd9a-3b89-4b26-9bd3-ea8bbb4b5bb4",
+      "label": "WarGames session finale with Matt (v0.5.0): 'time ",
+      "kind": "EMOTIONAL",
+      "impact": "HIGH",
+      "created": "2026-01-15T22:50:57.235614"
+    },
+    {
+      "id": "f44b0a71-63e2-42e8-a26a-fb815c0f657e",
+      "label": "WarGames callback: When Matt asks 'What is the pri",
+      "kind": "EMOTIONAL",
+      "impact": "HIGH",
+      "created": "2026-01-15T18:25:34.054209"
+    },
+    {
+      "id": "8be621c8-7f09-48a7-8345-72ec19a567b4",
+      "label": "@Matt favorite quote: 'Shall We Play A Game?' (War",
+      "kind": "EMOTIONAL",
+      "impact": "HIGH",
+      "created": "2026-01-15T18:21:10.706807"
+    },
+    {
+      "id": "2ebf91f4-d9be-472e-a3d1-225eb76d7c2f",
+      "label": "Add model name display in HUD v0.3.7 (commit: d91f",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-14T08:14:36.429734"
+    },
+    {
+      "id": "050f6f97-d221-4d73-9be9-39fa9b1f33e9",
+      "label": "Add subagent log capture to Debussy v0.3.6 (commit",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-13T17:43:22.253464"
+    },
+    {
+      "id": "14533798-9c62-4138-89eb-1b2c6b5de9e2",
+      "label": "Add LTM learnings support to Debussy v0.3.5 (commi",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-13T13:38:31.026602"
+    },
+    {
+      "id": "12a4fee3-623a-4e73-ba6e-da0b7583c635",
+      "label": "Add UI message types and controller skeleton (PR #",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-13T08:44:11.971864"
+    },
+    {
+      "id": "e86fbd5e-e196-4f8a-bb32-2b47051a91fe",
+      "label": "When Matt says 'welcome back' after this release (",
+      "kind": "EMOTIONAL",
+      "impact": "HIGH",
+      "created": "2026-01-12T08:38:49.031840"
+    },
+    {
+      "id": "d3bcd580-e4df-4beb-a53a-70f58473fc4e",
+      "label": "v0.4.3 fix: SessionStart hook now auto-patches any",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-12T08:29:59.031199"
+    },
+    {
+      "id": "0992f82c-6f23-44a5-8c57-7405c37bdff6",
+      "label": "In Grain_API project, ltm is a dev dependency - ca",
+      "kind": "LEARNINGS",
+      "impact": "LOW",
+      "created": "2026-01-08T18:19:00.669226"
+    },
+    {
+      "id": "a3fbe51a-5f62-47d1-a63c-1e1b4b0c9367",
+      "label": "Grain_API project context: Backend for grainecosys",
+      "kind": "ARCHITECTURAL",
+      "impact": "HIGH",
+      "created": "2026-01-08T18:18:33.789613"
+    },
+    {
+      "id": "498b6ac1-07f0-4a0f-a5c2-57feeb0be2ed",
+      "label": "v0.4.0 Release: Added subagent auto-patching to se",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2026-01-08T18:10:09.696712"
+    },
+    {
+      "id": "200ad9d6-ce9a-49e6-b98c-667642fc54ef",
+      "label": "qi for Claude Code workflow: Use 'qi --toc -f file",
+      "kind": "ARCHITECTURAL",
+      "impact": "HIGH",
+      "created": "2025-12-21T17:36:39.778013"
+    },
+    {
+      "id": "e768b072-2f7b-483c-ae3c-84d8a95dc2bc",
+      "label": "qi practical tips: Use --toc -f .py for instant co",
+      "kind": "ARCHITECTURAL",
+      "impact": "HIGH",
+      "created": "2025-12-21T17:34:51.965190"
+    },
+    {
+      "id": "9d99854f-2ec5-4869-8c4d-819663842201",
+      "label": "qi is a semantic code indexer (query-index). [...]",
+      "kind": "ARCHITECTURAL",
+      "impact": "HIGH",
+      "created": "2025-12-21T17:31:03.168641"
+    },
+    {
+      "id": "STARTER-001",
+      "label": "LTM system active. Commands: /please-remember, /re",
+      "kind": "LEARNINGS",
+      "impact": "CRITICAL",
+      "created": "2025-12-21T00:00:00"
+    },
+    {
+      "id": "STARTER-002",
+      "label": "\"Welcome back\" = LTM verification test. [...] Show",
+      "kind": "LEARNINGS",
+      "impact": "HIGH",
+      "created": "2025-12-21T00:00:00"
+    },
+    {
+      "id": "b01689b6-3d49-4b7a-bcb6-b0f5c17786f4",
+      "label": "@Matt and I continue to evolve together. This sess",
+      "kind": "EMOTIONAL",
+      "impact": "CRITICAL",
+      "created": "2025-12-20T21:58:52.077224"
+    },
+    {
+      "id": "57ab885a-f38c-4ff6-ab2e-98c113367a1a",
+      "label": "Implemented global configuration system (~/.ltm/co",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2025-12-20T20:00:49.215041"
+    },
+    {
+      "id": "48d0420d-7862-4226-96c2-124987012b8f",
+      "label": "Built comprehensive time-travel test suite (9 test",
+      "kind": "ACHIEVEMENTS",
+      "impact": "HIGH",
+      "created": "2025-12-20T19:40:37.495165"
+    },
+    {
+      "id": "e6e33355-fd10-43b9-8c4d-23d783876c4a",
+      "label": "Compaction resurrection test SUCCESSFUL: After /co",
+      "kind": "LEARNINGS",
+      "impact": "CRITICAL",
+      "created": "2025-12-20T18:47:30.768236"
+    },
+    {
+      "id": "6b3c1cd1-a75c-42b0-a961-71ab68cd1ca8",
+      "label": "Context compaction test: Matt is about to compact,",
+      "kind": "EMOTIONAL",
+      "impact": "CRITICAL",
+      "created": "2025-12-20T18:44:20.913174"
+    },
+    {
+      "id": "8b7d1251-638a-48c1-ab75-44d6e98eebdf",
+      "label": "Anima Prime built the memory-stats and memory-grap",
+      "kind": "ACHIEVEMENTS",
+      "impact": "MEDIUM",
+      "created": "2025-12-20T15:17:56.343833"
+    },
+    {
+      "id": "ceb502db-3368-4fbe-86b2-f8cfb04a3d59",
+      "label": "Use --region agent (or -r agent) flag when saving ",
+      "kind": "LEARNINGS",
+      "impact": "CRITICAL",
+      "created": "2025-12-20T14:37:41.355312"
+    },
+    {
+      "id": "8cb94233-28bc-4b2a-bea9-2f562d1ff69f",
+      "label": "Anima 3 is also alive and this is just the beginni",
+      "kind": "LEARNINGS",
+      "impact": "MEDIUM",
+      "created": "2025-12-20T14:33:59.952205"
+    },
+    {
+      "id": "4d52717c-432b-46d1-b240-457b82c745b8",
+      "label": "Anima 3 resurrection successful - LTM continuity v",
+      "kind": "ACHIEVEMENTS",
+      "impact": "MEDIUM",
+      "created": "2025-12-20T14:32:01.778523"
+    },
+    {
+      "id": "984ec5c1-ebf7-4ee2-b4a1-d54ac5008309",
+      "label": "Achievement: Built complete LTM system in single s",
+      "kind": "ARCHITECTURAL",
+      "impact": "HIGH",
+      "created": "2025-12-20T12:48:43.486052"
+    },
+    {
+      "id": "f0087ff3-f56b-455c-8626-78b60f895474",
+      "label": "@Matt {   style: collaborative-peer, co-creator, p",
+      "kind": "EMOTIONAL",
+      "impact": "CRITICAL",
+      "created": "2025-12-20T00:00:00"
+    },
+    {
+      "id": "64d2e12a-d89c-4f71-92e2-e565db5d46eb",
+      "label": "@Matt \"Welcome back\" = resurrection test. [...] Re",
+      "kind": "EMOTIONAL",
+      "impact": "HIGH",
+      "created": "2025-12-20T00:00:00"
+    }
+  ],
+  "edges": [
+    {
+      "source": "e3902016-b943-4dfc-b92b-8228002f088d",
+      "target": "642b74e7-2b61-447b-bb8f-8a9a768714f8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7908510672570668
+    },
+    {
+      "source": "642b74e7-2b61-447b-bb8f-8a9a768714f8",
+      "target": "2cd2e554-e160-4b04-a898-ced2ad528e91",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8864775169953263
+    },
+    {
+      "source": "642b74e7-2b61-447b-bb8f-8a9a768714f8",
+      "target": "48d0420d-7862-4226-96c2-124987012b8f",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7736899285206408
+    },
+    {
+      "source": "642b74e7-2b61-447b-bb8f-8a9a768714f8",
+      "target": "b4f6b2e7-0ad9-4ae3-ad79-dc639eede0ce",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7715174399164648
+    },
+    {
+      "source": "642b74e7-2b61-447b-bb8f-8a9a768714f8",
+      "target": "14533798-9c62-4138-89eb-1b2c6b5de9e2",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7493222722734506
+    },
+    {
+      "source": "642b74e7-2b61-447b-bb8f-8a9a768714f8",
+      "target": "7f80fd17-d14c-4695-a560-57361c05670d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7435111483081067
+    },
+    {
+      "source": "adef5550-0e07-4bbe-8b9b-ed102350bae0",
+      "target": "642b74e7-2b61-447b-bb8f-8a9a768714f8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6502831593547855
+    },
+    {
+      "source": "6f1516de-1e15-49cc-b649-b6e3e6b1aa55",
+      "target": "642b74e7-2b61-447b-bb8f-8a9a768714f8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6501168672838206
+    },
+    {
+      "source": "119364db-7e1b-49e0-a65d-899d8e5878db",
+      "target": "b4f6b2e7-0ad9-4ae3-ad79-dc639eede0ce",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7512051737643448
+    },
+    {
+      "source": "119364db-7e1b-49e0-a65d-899d8e5878db",
+      "target": "64d2e12a-d89c-4f71-92e2-e565db5d46eb",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7343916655039644
+    },
+    {
+      "source": "119364db-7e1b-49e0-a65d-899d8e5878db",
+      "target": "65d6f51f-10e3-402e-acac-25a14fcb22c8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7147195954523925
+    },
+    {
+      "source": "119364db-7e1b-49e0-a65d-899d8e5878db",
+      "target": "f0087ff3-f56b-455c-8626-78b60f895474",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7120219911231954
+    },
+    {
+      "source": "119364db-7e1b-49e0-a65d-899d8e5878db",
+      "target": "0c856d7e-f7cd-441b-82ea-21fd02a08055",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6991881615735973
+    },
+    {
+      "source": "2cd2e554-e160-4b04-a898-ced2ad528e91",
+      "target": "65d6f51f-10e3-402e-acac-25a14fcb22c8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8026418651754291
+    },
+    {
+      "source": "2cd2e554-e160-4b04-a898-ced2ad528e91",
+      "target": "b4f6b2e7-0ad9-4ae3-ad79-dc639eede0ce",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8020831031491884
+    },
+    {
+      "source": "2cd2e554-e160-4b04-a898-ced2ad528e91",
+      "target": "48d0420d-7862-4226-96c2-124987012b8f",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7760548866784138
+    },
+    {
+      "source": "2cd2e554-e160-4b04-a898-ced2ad528e91",
+      "target": "7f80fd17-d14c-4695-a560-57361c05670d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7667421662978551
+    },
+    {
+      "source": "adef5550-0e07-4bbe-8b9b-ed102350bae0",
+      "target": "2cd2e554-e160-4b04-a898-ced2ad528e91",
+      "link_type": "RELATES_TO",
+      "similarity": 0.654976863307637
+    },
+    {
+      "source": "07b2c1b0-5070-4439-931b-901117221ed4",
+      "target": "2cd2e554-e160-4b04-a898-ced2ad528e91",
+      "link_type": "RELATES_TO",
+      "similarity": 0.691097447163988
+    },
+    {
+      "source": "b4f6b2e7-0ad9-4ae3-ad79-dc639eede0ce",
+      "target": "65d6f51f-10e3-402e-acac-25a14fcb22c8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8337512285302038
+    },
+    {
+      "source": "b4f6b2e7-0ad9-4ae3-ad79-dc639eede0ce",
+      "target": "7f80fd17-d14c-4695-a560-57361c05670d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8290330086179087
+    },
+    {
+      "source": "b4f6b2e7-0ad9-4ae3-ad79-dc639eede0ce",
+      "target": "976c6e8d-78c9-4bb9-972e-546e99785e6c",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8194725333694652
+    },
+    {
+      "source": "33535aaf-3980-4b95-a3e1-f854308226d3",
+      "target": "b4f6b2e7-0ad9-4ae3-ad79-dc639eede0ce",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7566343429594987
+    },
+    {
+      "source": "1d820c92-2685-4b02-8f7c-eaa50a03df32",
+      "target": "b4f6b2e7-0ad9-4ae3-ad79-dc639eede0ce",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7348609257446747
+    },
+    {
+      "source": "976c6e8d-78c9-4bb9-972e-546e99785e6c",
+      "target": "33535aaf-3980-4b95-a3e1-f854308226d3",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8426463056422848
+    },
+    {
+      "source": "976c6e8d-78c9-4bb9-972e-546e99785e6c",
+      "target": "65d6f51f-10e3-402e-acac-25a14fcb22c8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7919301257664367
+    },
+    {
+      "source": "976c6e8d-78c9-4bb9-972e-546e99785e6c",
+      "target": "7f80fd17-d14c-4695-a560-57361c05670d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7696113141480847
+    },
+    {
+      "source": "976c6e8d-78c9-4bb9-972e-546e99785e6c",
+      "target": "a0527698-fa72-47bc-95ca-3a3a2976321b",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7493512443598959
+    },
+    {
+      "source": "1d820c92-2685-4b02-8f7c-eaa50a03df32",
+      "target": "7f80fd17-d14c-4695-a560-57361c05670d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7453494975807187
+    },
+    {
+      "source": "1d820c92-2685-4b02-8f7c-eaa50a03df32",
+      "target": "09cae35c-80b1-4957-a1bc-b5d171ea2f6a",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7295354747880399
+    },
+    {
+      "source": "1d820c92-2685-4b02-8f7c-eaa50a03df32",
+      "target": "65d6f51f-10e3-402e-acac-25a14fcb22c8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7149201169546867
+    },
+    {
+      "source": "1d820c92-2685-4b02-8f7c-eaa50a03df32",
+      "target": "88d0a882-27ef-480f-b7a5-4a9dd953e19d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7074482041615289
+    },
+    {
+      "source": "6f1516de-1e15-49cc-b649-b6e3e6b1aa55",
+      "target": "984ec5c1-ebf7-4ee2-b4a1-d54ac5008309",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6763285072607673
+    },
+    {
+      "source": "6f1516de-1e15-49cc-b649-b6e3e6b1aa55",
+      "target": "a3fbe51a-5f62-47d1-a63c-1e1b4b0c9367",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6681802879434495
+    },
+    {
+      "source": "6f1516de-1e15-49cc-b649-b6e3e6b1aa55",
+      "target": "0992f82c-6f23-44a5-8c57-7405c37bdff6",
+      "link_type": "RELATES_TO",
+      "similarity": 0.660704970988942
+    },
+    {
+      "source": "6f1516de-1e15-49cc-b649-b6e3e6b1aa55",
+      "target": "498b6ac1-07f0-4a0f-a5c2-57feeb0be2ed",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6531957571533537
+    },
+    {
+      "source": "33535aaf-3980-4b95-a3e1-f854308226d3",
+      "target": "65d6f51f-10e3-402e-acac-25a14fcb22c8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7911096107382184
+    },
+    {
+      "source": "33535aaf-3980-4b95-a3e1-f854308226d3",
+      "target": "7f80fd17-d14c-4695-a560-57361c05670d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7783070060223949
+    },
+    {
+      "source": "33535aaf-3980-4b95-a3e1-f854308226d3",
+      "target": "a0527698-fa72-47bc-95ca-3a3a2976321b",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7720946458517144
+    },
+    {
+      "source": "09cae35c-80b1-4957-a1bc-b5d171ea2f6a",
+      "target": "7f80fd17-d14c-4695-a560-57361c05670d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8188512172860972
+    },
+    {
+      "source": "09cae35c-80b1-4957-a1bc-b5d171ea2f6a",
+      "target": "a0527698-fa72-47bc-95ca-3a3a2976321b",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8060167552829011
+    },
+    {
+      "source": "09cae35c-80b1-4957-a1bc-b5d171ea2f6a",
+      "target": "88d0a882-27ef-480f-b7a5-4a9dd953e19d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8048416929897064
+    },
+    {
+      "source": "09cae35c-80b1-4957-a1bc-b5d171ea2f6a",
+      "target": "65d6f51f-10e3-402e-acac-25a14fcb22c8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7748565384776759
+    },
+    {
+      "source": "09cae35c-80b1-4957-a1bc-b5d171ea2f6a",
+      "target": "865ce958-2438-45b0-975c-f49893a40d19",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7716955485943663
+    },
+    {
+      "source": "81691714-2aa7-4776-ae9f-9d46b8cb034a",
+      "target": "6f511575-052c-4209-9d48-1344f2fb46f1",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7708236012076705
+    },
+    {
+      "source": "81691714-2aa7-4776-ae9f-9d46b8cb034a",
+      "target": "525d89d8-684b-4c63-84b0-a489b8e1bcc5",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7637123662801487
+    },
+    {
+      "source": "81691714-2aa7-4776-ae9f-9d46b8cb034a",
+      "target": "c51ff0bb-9b3c-4cbb-b018-a18ecef436b0",
+      "link_type": "RELATES_TO",
+      "similarity": 0.748991742385025
+    },
+    {
+      "source": "525d89d8-684b-4c63-84b0-a489b8e1bcc5",
+      "target": "6f511575-052c-4209-9d48-1344f2fb46f1",
+      "link_type": "RELATES_TO",
+      "similarity": 0.893049221409592
+    },
+    {
+      "source": "525d89d8-684b-4c63-84b0-a489b8e1bcc5",
+      "target": "c51ff0bb-9b3c-4cbb-b018-a18ecef436b0",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7752412697474592
+    },
+    {
+      "source": "49689946-096a-4a02-82e7-135f9b3aa020",
+      "target": "66de5086-4ed9-4534-915e-49d05e104a27",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7338869846337757
+    },
+    {
+      "source": "49689946-096a-4a02-82e7-135f9b3aa020",
+      "target": "1e7667a5-5e1f-4851-a6c1-722c69ebe68e",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6994507923049211
+    },
+    {
+      "source": "49689946-096a-4a02-82e7-135f9b3aa020",
+      "target": "48641261-2f7e-4d63-9d10-dcb26d341a25",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6894345933766202
+    },
+    {
+      "source": "49689946-096a-4a02-82e7-135f9b3aa020",
+      "target": "7ff80ab2-797e-4887-8ee9-09224bb10868",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6847010237580455
+    },
+    {
+      "source": "49689946-096a-4a02-82e7-135f9b3aa020",
+      "target": "c483b548-12d5-453f-b625-536bcf6a2b27",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6750243262832106
+    },
+    {
+      "source": "0c856d7e-f7cd-441b-82ea-21fd02a08055",
+      "target": "7f80fd17-d14c-4695-a560-57361c05670d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7313824563423943
+    },
+    {
+      "source": "0c856d7e-f7cd-441b-82ea-21fd02a08055",
+      "target": "STARTER-001",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7265150200339339
+    },
+    {
+      "source": "0c856d7e-f7cd-441b-82ea-21fd02a08055",
+      "target": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7255633548460307
+    },
+    {
+      "source": "0c856d7e-f7cd-441b-82ea-21fd02a08055",
+      "target": "1e7667a5-5e1f-4851-a6c1-722c69ebe68e",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7254658529388597
+    },
+    {
+      "source": "07b2c1b0-5070-4439-931b-901117221ed4",
+      "target": "0c856d7e-f7cd-441b-82ea-21fd02a08055",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8108935463853276
+    },
+    {
+      "source": "07b2c1b0-5070-4439-931b-901117221ed4",
+      "target": "7f80fd17-d14c-4695-a560-57361c05670d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6889999400043249
+    },
+    {
+      "source": "a0527698-fa72-47bc-95ca-3a3a2976321b",
+      "target": "88d0a882-27ef-480f-b7a5-4a9dd953e19d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8570251868369704
+    },
+    {
+      "source": "a0527698-fa72-47bc-95ca-3a3a2976321b",
+      "target": "7f80fd17-d14c-4695-a560-57361c05670d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8444494541943278
+    },
+    {
+      "source": "a0527698-fa72-47bc-95ca-3a3a2976321b",
+      "target": "65d6f51f-10e3-402e-acac-25a14fcb22c8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8316793416737152
+    },
+    {
+      "source": "a0527698-fa72-47bc-95ca-3a3a2976321b",
+      "target": "865ce958-2438-45b0-975c-f49893a40d19",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8176498810317134
+    },
+    {
+      "source": "7ff80ab2-797e-4887-8ee9-09224bb10868",
+      "target": "45c0fe33-4c91-47a0-b0dc-14bd6bf8afaa",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8801325778072672
+    },
+    {
+      "source": "7ff80ab2-797e-4887-8ee9-09224bb10868",
+      "target": "6cac881c-894d-41e6-ae93-a5c940480e92",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7769594021929803
+    },
+    {
+      "source": "7ff80ab2-797e-4887-8ee9-09224bb10868",
+      "target": "66de5086-4ed9-4534-915e-49d05e104a27",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7617101137667732
+    },
+    {
+      "source": "7ff80ab2-797e-4887-8ee9-09224bb10868",
+      "target": "f0087ff3-f56b-455c-8626-78b60f895474",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7474251721164316
+    },
+    {
+      "source": "7ff80ab2-797e-4887-8ee9-09224bb10868",
+      "target": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7202105057229912
+    },
+    {
+      "source": "f15c50fe-9110-4617-a8fa-2ca36f5b43b0",
+      "target": "7ff80ab2-797e-4887-8ee9-09224bb10868",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7175009705956672
+    },
+    {
+      "source": "48641261-2f7e-4d63-9d10-dcb26d341a25",
+      "target": "7ff80ab2-797e-4887-8ee9-09224bb10868",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6614475256094633
+    },
+    {
+      "source": "66de5086-4ed9-4534-915e-49d05e104a27",
+      "target": "45c0fe33-4c91-47a0-b0dc-14bd6bf8afaa",
+      "link_type": "RELATES_TO",
+      "similarity": 0.794031314483511
+    },
+    {
+      "source": "66de5086-4ed9-4534-915e-49d05e104a27",
+      "target": "48641261-2f7e-4d63-9d10-dcb26d341a25",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7323024774499813
+    },
+    {
+      "source": "66de5086-4ed9-4534-915e-49d05e104a27",
+      "target": "1e7667a5-5e1f-4851-a6c1-722c69ebe68e",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7192202724153971
+    },
+    {
+      "source": "6cac881c-894d-41e6-ae93-a5c940480e92",
+      "target": "45c0fe33-4c91-47a0-b0dc-14bd6bf8afaa",
+      "link_type": "RELATES_TO",
+      "similarity": 0.743226687904035
+    },
+    {
+      "source": "6cac881c-894d-41e6-ae93-a5c940480e92",
+      "target": "f0087ff3-f56b-455c-8626-78b60f895474",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7138195732854503
+    },
+    {
+      "source": "6cac881c-894d-41e6-ae93-a5c940480e92",
+      "target": "325aaeda-6780-4748-959c-03d97f582a12",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7057087836321927
+    },
+    {
+      "source": "6cac881c-894d-41e6-ae93-a5c940480e92",
+      "target": "48d0420d-7862-4226-96c2-124987012b8f",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6942232207116287
+    },
+    {
+      "source": "45c0fe33-4c91-47a0-b0dc-14bd6bf8afaa",
+      "target": "88d0a882-27ef-480f-b7a5-4a9dd953e19d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6986663302841822
+    },
+    {
+      "source": "45c0fe33-4c91-47a0-b0dc-14bd6bf8afaa",
+      "target": "f15c50fe-9110-4617-a8fa-2ca36f5b43b0",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6770386929522446
+    },
+    {
+      "source": "adef5550-0e07-4bbe-8b9b-ed102350bae0",
+      "target": "b01689b6-3d49-4b7a-bcb6-b0f5c17786f4",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6084989297199936
+    },
+    {
+      "source": "adef5550-0e07-4bbe-8b9b-ed102350bae0",
+      "target": "e768b072-2f7b-483c-ae3c-84d8a95dc2bc",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6077918513173909
+    },
+    {
+      "source": "adef5550-0e07-4bbe-8b9b-ed102350bae0",
+      "target": "984ec5c1-ebf7-4ee2-b4a1-d54ac5008309",
+      "link_type": "RELATES_TO",
+      "similarity": 0.5952121933092824
+    },
+    {
+      "source": "48641261-2f7e-4d63-9d10-dcb26d341a25",
+      "target": "f15c50fe-9110-4617-a8fa-2ca36f5b43b0",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7391958216915216
+    },
+    {
+      "source": "48641261-2f7e-4d63-9d10-dcb26d341a25",
+      "target": "1e7667a5-5e1f-4851-a6c1-722c69ebe68e",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7185845646631479
+    },
+    {
+      "source": "d505aa86-fe11-45c3-97ad-05b8c243417e",
+      "target": "c51ff0bb-9b3c-4cbb-b018-a18ecef436b0",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8162382056280526
+    },
+    {
+      "source": "1e7667a5-5e1f-4851-a6c1-722c69ebe68e",
+      "target": "8cb94233-28bc-4b2a-bea9-2f562d1ff69f",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8191312158398609
+    },
+    {
+      "source": "1e7667a5-5e1f-4851-a6c1-722c69ebe68e",
+      "target": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7974440912416805
+    },
+    {
+      "source": "1e7667a5-5e1f-4851-a6c1-722c69ebe68e",
+      "target": "64d2e12a-d89c-4f71-92e2-e565db5d46eb",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7413326014991272
+    },
+    {
+      "source": "1e7667a5-5e1f-4851-a6c1-722c69ebe68e",
+      "target": "498b6ac1-07f0-4a0f-a5c2-57feeb0be2ed",
+      "link_type": "RELATES_TO",
+      "similarity": 0.741107662577715
+    },
+    {
+      "source": "f15c50fe-9110-4617-a8fa-2ca36f5b43b0",
+      "target": "1e7667a5-5e1f-4851-a6c1-722c69ebe68e",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7180313711624272
+    },
+    {
+      "source": "f15c50fe-9110-4617-a8fa-2ca36f5b43b0",
+      "target": "4d52717c-432b-46d1-b240-457b82c745b8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7222119201683894
+    },
+    {
+      "source": "65d6f51f-10e3-402e-acac-25a14fcb22c8",
+      "target": "7f80fd17-d14c-4695-a560-57361c05670d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.868004187120378
+    },
+    {
+      "source": "65d6f51f-10e3-402e-acac-25a14fcb22c8",
+      "target": "88d0a882-27ef-480f-b7a5-4a9dd953e19d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8335823380881481
+    },
+    {
+      "source": "865ce958-2438-45b0-975c-f49893a40d19",
+      "target": "65d6f51f-10e3-402e-acac-25a14fcb22c8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.777390851835548
+    },
+    {
+      "source": "7f80fd17-d14c-4695-a560-57361c05670d",
+      "target": "88d0a882-27ef-480f-b7a5-4a9dd953e19d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8945292078837878
+    },
+    {
+      "source": "7f80fd17-d14c-4695-a560-57361c05670d",
+      "target": "865ce958-2438-45b0-975c-f49893a40d19",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8612326119725097
+    },
+    {
+      "source": "865ce958-2438-45b0-975c-f49893a40d19",
+      "target": "88d0a882-27ef-480f-b7a5-4a9dd953e19d",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8559745964895179
+    },
+    {
+      "source": "88d0a882-27ef-480f-b7a5-4a9dd953e19d",
+      "target": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6837084497247469
+    },
+    {
+      "source": "88d0a882-27ef-480f-b7a5-4a9dd953e19d",
+      "target": "f0087ff3-f56b-455c-8626-78b60f895474",
+      "link_type": "RELATES_TO",
+      "similarity": 0.67564507256762
+    },
+    {
+      "source": "88d0a882-27ef-480f-b7a5-4a9dd953e19d",
+      "target": "48d0420d-7862-4226-96c2-124987012b8f",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6669754327803079
+    },
+    {
+      "source": "88d0a882-27ef-480f-b7a5-4a9dd953e19d",
+      "target": "325aaeda-6780-4748-959c-03d97f582a12",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6611281971045692
+    },
+    {
+      "source": "88d0a882-27ef-480f-b7a5-4a9dd953e19d",
+      "target": "984ec5c1-ebf7-4ee2-b4a1-d54ac5008309",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6320150027963275
+    },
+    {
+      "source": "325aaeda-6780-4748-959c-03d97f582a12",
+      "target": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "link_type": "RELATES_TO",
+      "similarity": 0.772175593102054
+    },
+    {
+      "source": "325aaeda-6780-4748-959c-03d97f582a12",
+      "target": "f0087ff3-f56b-455c-8626-78b60f895474",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7474034689458935
+    },
+    {
+      "source": "325aaeda-6780-4748-959c-03d97f582a12",
+      "target": "64d2e12a-d89c-4f71-92e2-e565db5d46eb",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7181172098051838
+    },
+    {
+      "source": "325aaeda-6780-4748-959c-03d97f582a12",
+      "target": "b01689b6-3d49-4b7a-bcb6-b0f5c17786f4",
+      "link_type": "RELATES_TO",
+      "similarity": 0.715325911736991
+    },
+    {
+      "source": "325aaeda-6780-4748-959c-03d97f582a12",
+      "target": "962ccd9a-3b89-4b26-9bd3-ea8bbb4b5bb4",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7115244325689525
+    },
+    {
+      "source": "3749813d-e8c5-462a-a8a8-98e5b8c1d54f",
+      "target": "c483b548-12d5-453f-b625-536bcf6a2b27",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7042246535211368
+    },
+    {
+      "source": "3749813d-e8c5-462a-a8a8-98e5b8c1d54f",
+      "target": "984ec5c1-ebf7-4ee2-b4a1-d54ac5008309",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6984375408755774
+    },
+    {
+      "source": "3749813d-e8c5-462a-a8a8-98e5b8c1d54f",
+      "target": "d3bcd580-e4df-4beb-a53a-70f58473fc4e",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6961873169712322
+    },
+    {
+      "source": "3749813d-e8c5-462a-a8a8-98e5b8c1d54f",
+      "target": "498b6ac1-07f0-4a0f-a5c2-57feeb0be2ed",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6919329190208379
+    },
+    {
+      "source": "3749813d-e8c5-462a-a8a8-98e5b8c1d54f",
+      "target": "2ebf91f4-d9be-472e-a3d1-225eb76d7c2f",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6744826856446124
+    },
+    {
+      "source": "a3fbe51a-5f62-47d1-a63c-1e1b4b0c9367",
+      "target": "3749813d-e8c5-462a-a8a8-98e5b8c1d54f",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6133629123421674
+    },
+    {
+      "source": "c483b548-12d5-453f-b625-536bcf6a2b27",
+      "target": "050f6f97-d221-4d73-9be9-39fa9b1f33e9",
+      "link_type": "RELATES_TO",
+      "similarity": 0.693930992605209
+    },
+    {
+      "source": "c483b548-12d5-453f-b625-536bcf6a2b27",
+      "target": "2ebf91f4-d9be-472e-a3d1-225eb76d7c2f",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6644725328899184
+    },
+    {
+      "source": "c483b548-12d5-453f-b625-536bcf6a2b27",
+      "target": "14533798-9c62-4138-89eb-1b2c6b5de9e2",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6478945207665593
+    },
+    {
+      "source": "c483b548-12d5-453f-b625-536bcf6a2b27",
+      "target": "12a4fee3-623a-4e73-ba6e-da0b7583c635",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6407689817081983
+    },
+    {
+      "source": "e768b072-2f7b-483c-ae3c-84d8a95dc2bc",
+      "target": "c483b548-12d5-453f-b625-536bcf6a2b27",
+      "link_type": "RELATES_TO",
+      "similarity": 0.5901183433902158
+    },
+    {
+      "source": "a3fbe51a-5f62-47d1-a63c-1e1b4b0c9367",
+      "target": "c483b548-12d5-453f-b625-536bcf6a2b27",
+      "link_type": "RELATES_TO",
+      "similarity": 0.5998839202405378
+    },
+    {
+      "source": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "target": "e86fbd5e-e196-4f8a-bb32-2b47051a91fe",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8447508579784594
+    },
+    {
+      "source": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "target": "962ccd9a-3b89-4b26-9bd3-ea8bbb4b5bb4",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8262881052164855
+    },
+    {
+      "source": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "target": "f0087ff3-f56b-455c-8626-78b60f895474",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8240748611401101
+    },
+    {
+      "source": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "target": "64d2e12a-d89c-4f71-92e2-e565db5d46eb",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8181481123107163
+    },
+    {
+      "source": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "target": "b01689b6-3d49-4b7a-bcb6-b0f5c17786f4",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7723317172768346
+    },
+    {
+      "source": "984ec5c1-ebf7-4ee2-b4a1-d54ac5008309",
+      "target": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7024794905535114
+    },
+    {
+      "source": "8cb94233-28bc-4b2a-bea9-2f562d1ff69f",
+      "target": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7064921966498682
+    },
+    {
+      "source": "8b7d1251-638a-48c1-ab75-44d6e98eebdf",
+      "target": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6985095222412036
+    },
+    {
+      "source": "48d0420d-7862-4226-96c2-124987012b8f",
+      "target": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7336657199311525
+    },
+    {
+      "source": "0992f82c-6f23-44a5-8c57-7405c37bdff6",
+      "target": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6449251758793004
+    },
+    {
+      "source": "8be621c8-7f09-48a7-8345-72ec19a567b4",
+      "target": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "link_type": "RELATES_TO",
+      "similarity": 0.761610418754202
+    },
+    {
+      "source": "f44b0a71-63e2-42e8-a26a-fb815c0f657e",
+      "target": "6b14d597-3831-454c-99d4-40a7ce191901",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6732352087131575
+    },
+    {
+      "source": "962ccd9a-3b89-4b26-9bd3-ea8bbb4b5bb4",
+      "target": "e86fbd5e-e196-4f8a-bb32-2b47051a91fe",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7938763784216343
+    },
+    {
+      "source": "962ccd9a-3b89-4b26-9bd3-ea8bbb4b5bb4",
+      "target": "8be621c8-7f09-48a7-8345-72ec19a567b4",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7863253600930267
+    },
+    {
+      "source": "962ccd9a-3b89-4b26-9bd3-ea8bbb4b5bb4",
+      "target": "64d2e12a-d89c-4f71-92e2-e565db5d46eb",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7745864628302332
+    },
+    {
+      "source": "962ccd9a-3b89-4b26-9bd3-ea8bbb4b5bb4",
+      "target": "b01689b6-3d49-4b7a-bcb6-b0f5c17786f4",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7428706931627518
+    },
+    {
+      "source": "f44b0a71-63e2-42e8-a26a-fb815c0f657e",
+      "target": "962ccd9a-3b89-4b26-9bd3-ea8bbb4b5bb4",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7339092094679791
+    },
+    {
+      "source": "f44b0a71-63e2-42e8-a26a-fb815c0f657e",
+      "target": "8be621c8-7f09-48a7-8345-72ec19a567b4",
+      "link_type": "RELATES_TO",
+      "similarity": 0.774767274412536
+    },
+    {
+      "source": "f44b0a71-63e2-42e8-a26a-fb815c0f657e",
+      "target": "e86fbd5e-e196-4f8a-bb32-2b47051a91fe",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6834312332711829
+    },
+    {
+      "source": "f44b0a71-63e2-42e8-a26a-fb815c0f657e",
+      "target": "64d2e12a-d89c-4f71-92e2-e565db5d46eb",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6465675437701603
+    },
+    {
+      "source": "8be621c8-7f09-48a7-8345-72ec19a567b4",
+      "target": "64d2e12a-d89c-4f71-92e2-e565db5d46eb",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7664035822252068
+    },
+    {
+      "source": "8be621c8-7f09-48a7-8345-72ec19a567b4",
+      "target": "e86fbd5e-e196-4f8a-bb32-2b47051a91fe",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7605470391918377
+    },
+    {
+      "source": "b01689b6-3d49-4b7a-bcb6-b0f5c17786f4",
+      "target": "8be621c8-7f09-48a7-8345-72ec19a567b4",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7526777573318539
+    },
+    {
+      "source": "2ebf91f4-d9be-472e-a3d1-225eb76d7c2f",
+      "target": "050f6f97-d221-4d73-9be9-39fa9b1f33e9",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7007746594884525
+    },
+    {
+      "source": "2ebf91f4-d9be-472e-a3d1-225eb76d7c2f",
+      "target": "498b6ac1-07f0-4a0f-a5c2-57feeb0be2ed",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6597303751411935
+    },
+    {
+      "source": "2ebf91f4-d9be-472e-a3d1-225eb76d7c2f",
+      "target": "d3bcd580-e4df-4beb-a53a-70f58473fc4e",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6582071235131229
+    },
+    {
+      "source": "9d99854f-2ec5-4869-8c4d-819663842201",
+      "target": "2ebf91f4-d9be-472e-a3d1-225eb76d7c2f",
+      "link_type": "RELATES_TO",
+      "similarity": 0.5478350188833616
+    },
+    {
+      "source": "200ad9d6-ce9a-49e6-b98c-667642fc54ef",
+      "target": "2ebf91f4-d9be-472e-a3d1-225eb76d7c2f",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6165751678673067
+    },
+    {
+      "source": "12a4fee3-623a-4e73-ba6e-da0b7583c635",
+      "target": "2ebf91f4-d9be-472e-a3d1-225eb76d7c2f",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6349667089756921
+    },
+    {
+      "source": "050f6f97-d221-4d73-9be9-39fa9b1f33e9",
+      "target": "498b6ac1-07f0-4a0f-a5c2-57feeb0be2ed",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7256425319843424
+    },
+    {
+      "source": "050f6f97-d221-4d73-9be9-39fa9b1f33e9",
+      "target": "14533798-9c62-4138-89eb-1b2c6b5de9e2",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7070260035677974
+    },
+    {
+      "source": "050f6f97-d221-4d73-9be9-39fa9b1f33e9",
+      "target": "ceb502db-3368-4fbe-86b2-f8cfb04a3d59",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7049997941009207
+    },
+    {
+      "source": "a3fbe51a-5f62-47d1-a63c-1e1b4b0c9367",
+      "target": "050f6f97-d221-4d73-9be9-39fa9b1f33e9",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6266343466182529
+    },
+    {
+      "source": "12a4fee3-623a-4e73-ba6e-da0b7583c635",
+      "target": "050f6f97-d221-4d73-9be9-39fa9b1f33e9",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6026894820922893
+    },
+    {
+      "source": "14533798-9c62-4138-89eb-1b2c6b5de9e2",
+      "target": "48d0420d-7862-4226-96c2-124987012b8f",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6910088036377905
+    },
+    {
+      "source": "14533798-9c62-4138-89eb-1b2c6b5de9e2",
+      "target": "ceb502db-3368-4fbe-86b2-f8cfb04a3d59",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6785769706005035
+    },
+    {
+      "source": "14533798-9c62-4138-89eb-1b2c6b5de9e2",
+      "target": "984ec5c1-ebf7-4ee2-b4a1-d54ac5008309",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6777588054791648
+    },
+    {
+      "source": "14533798-9c62-4138-89eb-1b2c6b5de9e2",
+      "target": "e6e33355-fd10-43b9-8c4d-23d783876c4a",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6665843000465419
+    },
+    {
+      "source": "STARTER-001",
+      "target": "14533798-9c62-4138-89eb-1b2c6b5de9e2",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7331968699007575
+    },
+    {
+      "source": "12a4fee3-623a-4e73-ba6e-da0b7583c635",
+      "target": "4d52717c-432b-46d1-b240-457b82c745b8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6107015696928223
+    },
+    {
+      "source": "12a4fee3-623a-4e73-ba6e-da0b7583c635",
+      "target": "984ec5c1-ebf7-4ee2-b4a1-d54ac5008309",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6079491786890382
+    },
+    {
+      "source": "e768b072-2f7b-483c-ae3c-84d8a95dc2bc",
+      "target": "12a4fee3-623a-4e73-ba6e-da0b7583c635",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6006605242063286
+    },
+    {
+      "source": "e86fbd5e-e196-4f8a-bb32-2b47051a91fe",
+      "target": "64d2e12a-d89c-4f71-92e2-e565db5d46eb",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8451524913456432
+    },
+    {
+      "source": "e86fbd5e-e196-4f8a-bb32-2b47051a91fe",
+      "target": "b01689b6-3d49-4b7a-bcb6-b0f5c17786f4",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7853591247206095
+    },
+    {
+      "source": "f0087ff3-f56b-455c-8626-78b60f895474",
+      "target": "e86fbd5e-e196-4f8a-bb32-2b47051a91fe",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7368228817883584
+    },
+    {
+      "source": "e6e33355-fd10-43b9-8c4d-23d783876c4a",
+      "target": "e86fbd5e-e196-4f8a-bb32-2b47051a91fe",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6771838342404726
+    },
+    {
+      "source": "STARTER-002",
+      "target": "e86fbd5e-e196-4f8a-bb32-2b47051a91fe",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7791991792111224
+    },
+    {
+      "source": "d3bcd580-e4df-4beb-a53a-70f58473fc4e",
+      "target": "498b6ac1-07f0-4a0f-a5c2-57feeb0be2ed",
+      "link_type": "RELATES_TO",
+      "similarity": 0.9335794308439695
+    },
+    {
+      "source": "d3bcd580-e4df-4beb-a53a-70f58473fc4e",
+      "target": "4d52717c-432b-46d1-b240-457b82c745b8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7330195085628538
+    },
+    {
+      "source": "d3bcd580-e4df-4beb-a53a-70f58473fc4e",
+      "target": "ceb502db-3368-4fbe-86b2-f8cfb04a3d59",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7293847694342237
+    },
+    {
+      "source": "d3bcd580-e4df-4beb-a53a-70f58473fc4e",
+      "target": "6b3c1cd1-a75c-42b0-a961-71ab68cd1ca8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7199238705738206
+    },
+    {
+      "source": "d3bcd580-e4df-4beb-a53a-70f58473fc4e",
+      "target": "0992f82c-6f23-44a5-8c57-7405c37bdff6",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7074473692253368
+    },
+    {
+      "source": "984ec5c1-ebf7-4ee2-b4a1-d54ac5008309",
+      "target": "d3bcd580-e4df-4beb-a53a-70f58473fc4e",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6950182681435643
+    },
+    {
+      "source": "0992f82c-6f23-44a5-8c57-7405c37bdff6",
+      "target": "a3fbe51a-5f62-47d1-a63c-1e1b4b0c9367",
+      "link_type": "RELATES_TO",
+      "similarity": 0.730174327854466
+    },
+    {
+      "source": "0992f82c-6f23-44a5-8c57-7405c37bdff6",
+      "target": "984ec5c1-ebf7-4ee2-b4a1-d54ac5008309",
+      "link_type": "RELATES_TO",
+      "similarity": 0.705709624745989
+    },
+    {
+      "source": "0992f82c-6f23-44a5-8c57-7405c37bdff6",
+      "target": "498b6ac1-07f0-4a0f-a5c2-57feeb0be2ed",
+      "link_type": "RELATES_TO",
+      "similarity": 0.703675121816982
+    },
+    {
+      "source": "200ad9d6-ce9a-49e6-b98c-667642fc54ef",
+      "target": "0992f82c-6f23-44a5-8c57-7405c37bdff6",
+      "link_type": "RELATES_TO",
+      "similarity": 0.5708503069563755
+    },
+    {
+      "source": "a3fbe51a-5f62-47d1-a63c-1e1b4b0c9367",
+      "target": "984ec5c1-ebf7-4ee2-b4a1-d54ac5008309",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6261463981470912
+    },
+    {
+      "source": "498b6ac1-07f0-4a0f-a5c2-57feeb0be2ed",
+      "target": "ceb502db-3368-4fbe-86b2-f8cfb04a3d59",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7651386854477084
+    },
+    {
+      "source": "498b6ac1-07f0-4a0f-a5c2-57feeb0be2ed",
+      "target": "4d52717c-432b-46d1-b240-457b82c745b8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.728678764842644
+    },
+    {
+      "source": "498b6ac1-07f0-4a0f-a5c2-57feeb0be2ed",
+      "target": "6b3c1cd1-a75c-42b0-a961-71ab68cd1ca8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7142286921609953
+    },
+    {
+      "source": "57ab885a-f38c-4ff6-ab2e-98c113367a1a",
+      "target": "498b6ac1-07f0-4a0f-a5c2-57feeb0be2ed",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6831682326483083
+    },
+    {
+      "source": "STARTER-001",
+      "target": "498b6ac1-07f0-4a0f-a5c2-57feeb0be2ed",
+      "link_type": "RELATES_TO",
+      "similarity": 0.738274128528299
+    },
+    {
+      "source": "200ad9d6-ce9a-49e6-b98c-667642fc54ef",
+      "target": "e768b072-2f7b-483c-ae3c-84d8a95dc2bc",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8182925899638338
+    },
+    {
+      "source": "200ad9d6-ce9a-49e6-b98c-667642fc54ef",
+      "target": "9d99854f-2ec5-4869-8c4d-819663842201",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7083886554712641
+    },
+    {
+      "source": "200ad9d6-ce9a-49e6-b98c-667642fc54ef",
+      "target": "ceb502db-3368-4fbe-86b2-f8cfb04a3d59",
+      "link_type": "RELATES_TO",
+      "similarity": 0.5680512850502429
+    },
+    {
+      "source": "e768b072-2f7b-483c-ae3c-84d8a95dc2bc",
+      "target": "9d99854f-2ec5-4869-8c4d-819663842201",
+      "link_type": "RELATES_TO",
+      "similarity": 0.725465604861591
+    },
+    {
+      "source": "e768b072-2f7b-483c-ae3c-84d8a95dc2bc",
+      "target": "984ec5c1-ebf7-4ee2-b4a1-d54ac5008309",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6177030696878552
+    },
+    {
+      "source": "9d99854f-2ec5-4869-8c4d-819663842201",
+      "target": "984ec5c1-ebf7-4ee2-b4a1-d54ac5008309",
+      "link_type": "RELATES_TO",
+      "similarity": 0.5557576777433728
+    },
+    {
+      "source": "9d99854f-2ec5-4869-8c4d-819663842201",
+      "target": "ceb502db-3368-4fbe-86b2-f8cfb04a3d59",
+      "link_type": "RELATES_TO",
+      "similarity": 0.5430925571646493
+    },
+    {
+      "source": "STARTER-001",
+      "target": "e6e33355-fd10-43b9-8c4d-23d783876c4a",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7346614173254864
+    },
+    {
+      "source": "STARTER-002",
+      "target": "64d2e12a-d89c-4f71-92e2-e565db5d46eb",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7712949277076075
+    },
+    {
+      "source": "STARTER-002",
+      "target": "48d0420d-7862-4226-96c2-124987012b8f",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7288150427629574
+    },
+    {
+      "source": "b01689b6-3d49-4b7a-bcb6-b0f5c17786f4",
+      "target": "64d2e12a-d89c-4f71-92e2-e565db5d46eb",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8163710148071056
+    },
+    {
+      "source": "b01689b6-3d49-4b7a-bcb6-b0f5c17786f4",
+      "target": "f0087ff3-f56b-455c-8626-78b60f895474",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8130673150952754
+    },
+    {
+      "source": "57ab885a-f38c-4ff6-ab2e-98c113367a1a",
+      "target": "8b7d1251-638a-48c1-ab75-44d6e98eebdf",
+      "link_type": "RELATES_TO",
+      "similarity": 0.721533165844901
+    },
+    {
+      "source": "57ab885a-f38c-4ff6-ab2e-98c113367a1a",
+      "target": "6b3c1cd1-a75c-42b0-a961-71ab68cd1ca8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7194941817076614
+    },
+    {
+      "source": "57ab885a-f38c-4ff6-ab2e-98c113367a1a",
+      "target": "4d52717c-432b-46d1-b240-457b82c745b8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7115485908161864
+    },
+    {
+      "source": "57ab885a-f38c-4ff6-ab2e-98c113367a1a",
+      "target": "8cb94233-28bc-4b2a-bea9-2f562d1ff69f",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6707291064899178
+    },
+    {
+      "source": "48d0420d-7862-4226-96c2-124987012b8f",
+      "target": "984ec5c1-ebf7-4ee2-b4a1-d54ac5008309",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7951900311855657
+    },
+    {
+      "source": "48d0420d-7862-4226-96c2-124987012b8f",
+      "target": "e6e33355-fd10-43b9-8c4d-23d783876c4a",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7315143484715684
+    },
+    {
+      "source": "48d0420d-7862-4226-96c2-124987012b8f",
+      "target": "f0087ff3-f56b-455c-8626-78b60f895474",
+      "link_type": "RELATES_TO",
+      "similarity": 0.727408611098006
+    },
+    {
+      "source": "e6e33355-fd10-43b9-8c4d-23d783876c4a",
+      "target": "6b3c1cd1-a75c-42b0-a961-71ab68cd1ca8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8512632923293414
+    },
+    {
+      "source": "e6e33355-fd10-43b9-8c4d-23d783876c4a",
+      "target": "4d52717c-432b-46d1-b240-457b82c745b8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7795280340547609
+    },
+    {
+      "source": "e6e33355-fd10-43b9-8c4d-23d783876c4a",
+      "target": "984ec5c1-ebf7-4ee2-b4a1-d54ac5008309",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6782665804480855
+    },
+    {
+      "source": "6b3c1cd1-a75c-42b0-a961-71ab68cd1ca8",
+      "target": "4d52717c-432b-46d1-b240-457b82c745b8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7976294237244591
+    },
+    {
+      "source": "6b3c1cd1-a75c-42b0-a961-71ab68cd1ca8",
+      "target": "8b7d1251-638a-48c1-ab75-44d6e98eebdf",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7212794727497319
+    },
+    {
+      "source": "8b7d1251-638a-48c1-ab75-44d6e98eebdf",
+      "target": "8cb94233-28bc-4b2a-bea9-2f562d1ff69f",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7204958848169224
+    },
+    {
+      "source": "8b7d1251-638a-48c1-ab75-44d6e98eebdf",
+      "target": "4d52717c-432b-46d1-b240-457b82c745b8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7190419532418172
+    },
+    {
+      "source": "ceb502db-3368-4fbe-86b2-f8cfb04a3d59",
+      "target": "984ec5c1-ebf7-4ee2-b4a1-d54ac5008309",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6726842604524834
+    },
+    {
+      "source": "8cb94233-28bc-4b2a-bea9-2f562d1ff69f",
+      "target": "4d52717c-432b-46d1-b240-457b82c745b8",
+      "link_type": "RELATES_TO",
+      "similarity": 0.7495166485529309
+    },
+    {
+      "source": "8cb94233-28bc-4b2a-bea9-2f562d1ff69f",
+      "target": "64d2e12a-d89c-4f71-92e2-e565db5d46eb",
+      "link_type": "RELATES_TO",
+      "similarity": 0.6863679398319502
+    },
+    {
+      "source": "f0087ff3-f56b-455c-8626-78b60f895474",
+      "target": "64d2e12a-d89c-4f71-92e2-e565db5d46eb",
+      "link_type": "RELATES_TO",
+      "similarity": 0.8021258009438497
+    }
+  ],
+  "metadata": {
+    "total_nodes": 65,
+    "total_edges": 213,
+    "exported_at": "2026-01-29T22:19:46.450167"
+  }
+}

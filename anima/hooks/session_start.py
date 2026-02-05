@@ -20,6 +20,13 @@ from datetime import datetime
 from anima.core import AgentResolver, Agent
 from anima.core.types import MemoryKind
 from anima.lifecycle.injection import MemoryInjector
+from anima.logging import (
+    log_hook_start,
+    log_hook_end,
+    log_memories_loaded,
+    log_warning,
+    get_logger,
+)
 from anima.lifecycle.session import start_session, set_deferred_memories
 from anima.storage import MemoryStore, CuriosityStore, get_last_research
 from anima.storage.sqlite import get_default_db_path
@@ -220,6 +227,9 @@ def run(args: Optional[list[str]] = None) -> int:
     Returns:
         Exit code (0 for success)
     """
+    log = get_logger("hooks.session_start")
+    log_hook_start("SessionStart", cwd=str(Path.cwd()), args=args)
+
     project_dir = Path.cwd()
     output_format = "text"
     explicit_agent = None
@@ -251,11 +261,16 @@ def run(args: Optional[list[str]] = None) -> int:
     # Auto-patch any agents missing the subagent marker BEFORE resolving
     # This prevents new agents from shadowing Anima
     patched_agents, disabled_agents = auto_patch_agents(project_dir)
+    if patched_agents:
+        log.debug(f"Auto-patched agents: {patched_agents}")
+    if disabled_agents:
+        log_warning(f"Disabled incompatible agents: {disabled_agents}")
 
     # Resolve agent and project from current directory
     resolver = AgentResolver(project_dir)
     agent = resolver.resolve(explicit_agent)
     project = resolver.resolve_project()
+    log.info(f"Resolved agent: {agent.id} ({agent.name}), project: {project.id if project else 'None'}")
 
     # Initialize store and injector
     store = MemoryStore()
@@ -291,6 +306,9 @@ def run(args: Optional[list[str]] = None) -> int:
     if injection_result["deferred_ids"]:
         set_deferred_memories(injection_result["deferred_ids"])
 
+    # Log basic memory loading info (detailed stats logged after we compute them)
+    log.info(f"Injected {len(injection_result['injected_ids'])} memories, deferred {deferred_count}")
+
     # Build status notes
     status_notes = []
     if backup_path:
@@ -305,6 +323,14 @@ def run(args: Optional[list[str]] = None) -> int:
         # Get stats
         stats = injector.get_stats(agent, project)
         pc = stats["priority_counts"]
+
+        # Log detailed stats
+        log_memories_loaded(
+            agent_count=stats["agent_memories"],
+            project_count=stats["project_memories"],
+            deferred_count=deferred_count,
+            impact_breakdown=pc,
+        )
 
         # Check for updates (uses cache, won't hit network if checked recently)
         update_info = check_for_update_cached()
@@ -381,6 +407,7 @@ def run(args: Optional[list[str]] = None) -> int:
         else:
             print(no_mem_context)
 
+    log_hook_end("SessionStart", memories_loaded=bool(memories_dsl), deferred=deferred_count)
     return 0
 
 

@@ -16,6 +16,7 @@ from typing import Optional
 from anima.core import AgentResolver
 from anima.lifecycle.injection import MemoryInjector
 from anima.storage import MemoryStore
+from anima.logging import log_hook_start, log_hook_end, log_memories_injected, get_logger
 
 
 def run(args: Optional[list[str]] = None) -> int:
@@ -28,6 +29,8 @@ def run(args: Optional[list[str]] = None) -> int:
     Returns:
         Exit code (0 for success)
     """
+    log = get_logger("hooks.subagent_start")
+
     # Read hook input from stdin
     try:
         hook_input = json.load(sys.stdin)
@@ -35,12 +38,14 @@ def run(args: Optional[list[str]] = None) -> int:
         hook_input = {}
 
     agent_type = hook_input.get("agent_type", "unknown")
+    log_hook_start("SubagentStart", agent_type=agent_type, cwd=str(Path.cwd()))
 
     # Resolve agent and project from current directory
     project_dir = Path.cwd()
     resolver = AgentResolver(project_dir)
     agent = resolver.resolve()
     project = resolver.resolve_project()
+    log.debug(f"Resolved agent: {agent.id}, project: {project.id if project else 'None'}")
 
     # Initialize store and injector with reduced budget for subagents
     store = MemoryStore()
@@ -56,6 +61,8 @@ def run(args: Optional[list[str]] = None) -> int:
     )
 
     memories_dsl = injection_result["dsl"]
+    injected_count = len(injection_result["injected_ids"])
+    log_memories_injected(agent_type, injected_count)
 
     if not memories_dsl:
         # No context to inject
@@ -87,6 +94,7 @@ def run(args: Optional[list[str]] = None) -> int:
     # Status to stderr
     print(f"LTM: Subagent '{agent_type}' started with memory context", file=sys.stderr)
 
+    log_hook_end("SubagentStart", agent_type=agent_type, memories_injected=injected_count)
     return 0
 
 

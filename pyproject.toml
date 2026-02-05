@@ -1,6 +1,6 @@
 [project]
 name = "anima"
-version = "0.12.7"
+version = "0.12.8"
 description = "Long Term Memory for Anima Agents - human-like persistent memory across sessions"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -14,6 +14,7 @@ dependencies = [
     "jinja2>=3.1.0",
     "pyyaml>=6.0.0",
     "pydantic>=2.0.0",
+    "loguru>=0.7.0",
 ]
 
 [project.scripts]

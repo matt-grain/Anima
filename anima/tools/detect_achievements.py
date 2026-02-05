@@ -19,6 +19,7 @@ from anima.core import Memory, MemoryKind, ImpactLevel, RegionType, AgentResolve
 from anima.lifecycle.injection import ensure_token_count
 from anima.storage import MemoryStore
 from anima.utils.terminal import safe_print, get_icon
+from anima.logging import log_achievement_detected, get_logger
 
 
 # Patterns that suggest significant achievements
@@ -169,13 +170,17 @@ def run(args: list[str]) -> int:
         elif arg == "--dry-run":
             dry_run = True
 
+    log = get_logger("detect_achievements")
+
     # Get commits
     commits = get_recent_commits(since_hours)
 
     if not commits:
+        log.debug(f"No commits found in the last {since_hours} hours")
         print(f"No commits found in the last {since_hours} hours.")
         return 0
 
+    log.info(f"Scanning {len(commits)} commits from the last {since_hours} hours")
     print(f"Scanning {len(commits)} commits from the last {since_hours} hours...\n")
 
     # Resolve context
@@ -232,6 +237,7 @@ def run(args: list[str]) -> int:
             )
             ensure_token_count(memory)
             store.save_memory(memory)
+            log_achievement_detected(content, commit["hash"])
             safe_print(f"  {get_icon('🏆', '[ACH]')} Saved [{impact.value}]: {content[:60]}...")
 
         achievements_found += 1
@@ -241,6 +247,7 @@ def run(args: list[str]) -> int:
     if dry_run:
         print(f"Dry run: {achievements_found} achievements would be saved, {skipped} skipped")
     else:
+        log.info(f"Achievement detection complete: {achievements_found} saved, {skipped} skipped")
         print(f"{achievements_found} achievements saved, {skipped} skipped after detect-achievements")
 
     return 0
