@@ -330,8 +330,23 @@ class MemoryInjector:
         This ensures a project constraint like "always call Task-Review"
         surfaces 2 months later just as readily as 2 days later.
         """
+        from anima.core import ImpactLevel
+
         memories: list[Memory] = []
         seen_ids: set[str] = set()
+
+        # 0. Load WIP memories FIRST - these signal post-compact state
+        # WIP memories bypass tier logic and are always loaded with highest priority
+        for a in agents:
+            wip_memories = self.store.get_memories_by_impact(
+                agent_id=a.id,
+                impact=ImpactLevel.WIP,
+                project_id=project.id if project else None,
+            )
+            for mem in wip_memories:
+                if mem.id not in seen_ids:
+                    memories.append(mem)
+                    seen_ids.add(mem.id)
 
         # 1. Load AGENT-scoped memories by tier (temporal/recency matters)
         tiers_to_load = [MemoryTier.CORE, MemoryTier.ACTIVE, MemoryTier.CONTEXTUAL]

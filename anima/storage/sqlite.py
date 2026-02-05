@@ -421,6 +421,32 @@ class MemoryStore(MemoryStoreProtocol):
             rows = conn.execute(query, params).fetchall()
             return [self._row_to_memory(row) for row in rows]
 
+    def get_memories_by_impact(
+        self,
+        agent_id: str,
+        impact: ImpactLevel,
+        project_id: Optional[str] = None,
+        limit: int = 10,
+    ) -> list[Memory]:
+        """Get non-superseded memories of a specific impact level."""
+        query = """
+            SELECT * FROM memories
+            WHERE agent_id = ? AND impact = ?
+            AND superseded_by IS NULL
+        """
+        params: list = [agent_id, impact.value]
+
+        if project_id:
+            query += " AND project_id = ?"
+            params.append(project_id)
+
+        query += " ORDER BY created_at DESC LIMIT ?"
+        params.append(limit)
+
+        with self._connect() as conn:
+            rows = conn.execute(query, params).fetchall()
+            return [self._row_to_memory(row) for row in rows]
+
     def supersede_memory(self, old_memory_id: str, new_memory_id: str) -> None:
         """Mark a memory as superseded by another."""
         with self._connect() as conn:
