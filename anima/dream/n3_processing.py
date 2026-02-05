@@ -17,7 +17,7 @@ from typing import Optional
 
 import re
 
-from anima.core import Memory, ImpactLevel
+from anima.core import Memory, ImpactLevel, MemoryKind
 from anima.dream.types import N3Result, GistResult, Contradiction, ScopeIssue, DreamConfig
 from anima.embeddings import cosine_similarity
 from anima.storage.sqlite import MemoryStore
@@ -103,9 +103,27 @@ def run_n3_processing(
     cutoff = datetime.now() - timedelta(days=config.project_lookback_days)
     recent_with_embeddings = [m for m in memories_with_embeddings if m[2] is not None and _is_recent(m[3], cutoff)]
 
+    # Link-aware suppression: Build cache of linked memory pairs
+    # Linked memories (BUILDS_ON, RELATES_TO) are by definition part of the same narrative
+    # - they're expected to be similar, not contradicting
+    linked_pairs: set[tuple[str, str]] = set()
+    recent_ids = [m[0] for m in recent_with_embeddings]
+    for mem_id in recent_ids:
+        linked_ids = store.get_linked_memory_ids(mem_id)
+        for linked_id in linked_ids:
+            # Store both orderings for easy lookup
+            linked_pairs.add((mem_id, linked_id))
+            linked_pairs.add((linked_id, mem_id))
+
     # Compare pairs for contradictions
+    pairs_skipped = 0
     for i, (mem_a_id, content_a, emb_a, _, _) in enumerate(recent_with_embeddings):
         for mem_b_id, content_b, emb_b, _, _ in recent_with_embeddings[i + 1 :]:
+            # Skip linked memories - they're part of the same narrative
+            if (mem_a_id, mem_b_id) in linked_pairs:
+                pairs_skipped += 1
+                continue
+
             similarity = cosine_similarity(emb_a, emb_b)
 
             # High similarity but potential negation = candidate contradiction
@@ -122,7 +140,8 @@ def run_n3_processing(
                     contradictions.append(contradiction)
 
     if not quiet:
-        print(f"   Detected {len(contradictions)} contradiction candidates (to evaluate in REM)")
+        skipped_msg = f" ({pairs_skipped} linked pairs skipped)" if pairs_skipped > 0 else ""
+        print(f"   Detected {len(contradictions)} contradiction candidates{skipped_msg}")
 
     # Phase 3: Memory scope validation
     scope_issues = []
@@ -414,11 +433,18 @@ def _detect_scope_issue(memory: Memory, known_projects: set[str]) -> Optional[Sc
     - AGENT memories with project names/versions → might be PROJECT
     - PROJECT memories with generic learnings → might be AGENT
 
+    Kind-awareness:
+    - ACHIEVEMENTS are expected to have version numbers - don't flag for that alone
+
     Returns:
         ScopeIssue if potential misplacement detected, None otherwise
     """
     content_lower = memory.content.lower()
     current_region = memory.region.value
+
+    # Achievements are EXPECTED to have version numbers - that's what they are!
+    # Don't let version numbers alone trigger scope issues for ACHV memories
+    is_achievement = memory.kind == MemoryKind.ACHIEVEMENTS
 
     # Version pattern: v0.1.2, v1.0, etc.
     version_pattern = r"\bv\d+\.\d+(?:\.\d+)?\b"
@@ -462,28 +488,45 @@ def _detect_scope_issue(memory: Memory, known_projects: set[str]) -> Optional[Sc
 
     # Decision logic
     if current_region == "AGENT":
-        # Agent memory with strong project signals
-        if mentioned_projects and has_version and has_achievement:
-            suggested_project = mentioned_projects[0] if mentioned_projects else None
-            return ScopeIssue(
-                memory_id=memory.id,
-                content=memory.content[:200] + ("..." if len(memory.content) > 200 else ""),
-                current_region=current_region,
-                current_project_id=memory.project_id,
-                suggested_region="PROJECT",
-                suggested_project_id=suggested_project,
-                reason=f"AGENT memory mentions project '{suggested_project}' with version number and achievement",
-            )
-        elif has_version and has_project_signals and not has_agent_signals:
-            return ScopeIssue(
-                memory_id=memory.id,
-                content=memory.content[:200] + ("..." if len(memory.content) > 200 else ""),
-                current_region=current_region,
-                current_project_id=memory.project_id,
-                suggested_region="PROJECT",
-                suggested_project_id=None,  # Can't determine which project
-                reason="AGENT memory has version number and project-specific signals without agent-wide learning",
-            )
+        # ACHIEVEMENTS are EXPECTED to have version numbers - don't flag them
+        # for having versions + achievement signals, that's literally what they are!
+        if is_achievement:
+            # Only flag achievements if they mention a specific project AND have project signals
+            # beyond just version numbers (commits, releases, deployed, etc.)
+            if mentioned_projects and has_project_signals:
+                suggested_project = mentioned_projects[0] if mentioned_projects else None
+                return ScopeIssue(
+                    memory_id=memory.id,
+                    content=memory.content[:200] + ("..." if len(memory.content) > 200 else ""),
+                    current_region=current_region,
+                    current_project_id=memory.project_id,
+                    suggested_region="PROJECT",
+                    suggested_project_id=suggested_project,
+                    reason=f"AGENT achievement mentions project '{suggested_project}' with project-specific context",
+                )
+        else:
+            # Non-achievement memories with strong project signals
+            if mentioned_projects and has_version and has_achievement:
+                suggested_project = mentioned_projects[0] if mentioned_projects else None
+                return ScopeIssue(
+                    memory_id=memory.id,
+                    content=memory.content[:200] + ("..." if len(memory.content) > 200 else ""),
+                    current_region=current_region,
+                    current_project_id=memory.project_id,
+                    suggested_region="PROJECT",
+                    suggested_project_id=suggested_project,
+                    reason=f"AGENT memory mentions project '{suggested_project}' with version number and achievement",
+                )
+            elif has_version and has_project_signals and not has_agent_signals:
+                return ScopeIssue(
+                    memory_id=memory.id,
+                    content=memory.content[:200] + ("..." if len(memory.content) > 200 else ""),
+                    current_region=current_region,
+                    current_project_id=memory.project_id,
+                    suggested_region="PROJECT",
+                    suggested_project_id=None,  # Can't determine which project
+                    reason="AGENT memory has version number and project-specific signals without agent-wide learning",
+                )
 
     elif current_region == "PROJECT":
         # Project memory with strong agent signals and no project specifics

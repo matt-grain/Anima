@@ -253,32 +253,17 @@ def create_dream_template(
                 ]
             )
 
-    # Contradiction candidates section (from N3, need evaluation)
+    # Contradiction candidates section (from N3) - stats only to avoid nightmare loops
     if materials.contradiction_candidates:
         lines.extend(
             [
-                "### Contradiction Candidates",
+                "### N3 Processing Summary",
                 "",
-                "*N3 detected these as potential contradictions based on similarity + negation patterns.*",
-                "*Evaluate each one: Is it a real contradiction, or just related memories from different angles?*",
+                f"*N3 found {len(materials.contradiction_candidates)} contradiction candidate(s).*",
+                "*Run `/dissonance` to review them if needed - keeping dreams for actual dreaming.*",
                 "",
             ]
         )
-        for i, c in enumerate(materials.contradiction_candidates, 1):
-            lines.extend(
-                [
-                    f"**Candidate {i}** ({c.description})",
-                    "",
-                    f"> **A:** {c.content_a}",
-                    "",
-                    f"> **B:** {c.content_b}",
-                    "",
-                    f"Memory IDs: `{c.memory_id_a[:8]}` vs `{c.memory_id_b[:8]}`",
-                    "",
-                    "**Verdict:** [REAL CONTRADICTION / FALSE POSITIVE - explain why]",
-                    "",
-                ]
-            )
 
     # Reflection sections (to be filled conversationally)
     lines.extend(
