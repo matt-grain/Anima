@@ -16,7 +16,7 @@ from typing import Optional
 
 
 # Current schema version - increment when schema changes
-SCHEMA_VERSION = 7
+SCHEMA_VERSION = 8
 
 # Migration history:
 # v1: Original schema (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS)
@@ -72,7 +72,7 @@ def migrate_v1_to_v2(conn: sqlite3.Connection) -> None:
             kind TEXT NOT NULL CHECK (kind IN ('EMOTIONAL', 'ARCHITECTURAL', 'LEARNINGS', 'ACHIEVEMENTS', 'INTROSPECT', 'DREAM')),
             content TEXT NOT NULL,
             original_content TEXT NOT NULL,
-            impact TEXT NOT NULL CHECK (impact IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
+            impact TEXT NOT NULL CHECK (impact IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL', 'WIP')),
             confidence REAL DEFAULT 1.0,
             created_at TIMESTAMP NOT NULL,
             last_accessed TIMESTAMP NOT NULL,
@@ -259,7 +259,7 @@ def migrate_v5_to_v6(conn: sqlite3.Connection) -> None:
             kind TEXT NOT NULL CHECK (kind IN ('EMOTIONAL', 'ARCHITECTURAL', 'LEARNINGS', 'ACHIEVEMENTS', 'INTROSPECT', 'DREAM')),
             content TEXT NOT NULL,
             original_content TEXT NOT NULL,
-            impact TEXT NOT NULL CHECK (impact IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
+            impact TEXT NOT NULL CHECK (impact IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL', 'WIP')),
             confidence REAL DEFAULT 1.0,
             created_at TIMESTAMP NOT NULL,
             last_accessed TIMESTAMP NOT NULL,
@@ -356,6 +356,84 @@ def migrate_v6_to_v7(conn: sqlite3.Connection) -> None:
     conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_validated ON memories(validated_at)")
 
 
+def migrate_v7_to_v8(conn: sqlite3.Connection) -> None:
+    """
+    Migrate from v7 to v8: Add WIP impact level for post-compact recovery.
+
+    SQLite doesn't support ALTER TABLE for CHECK constraints,
+    so we recreate the memories table with the updated constraint
+    that includes WIP.
+    """
+    # Create new table with WIP in the impact CHECK constraint
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS memories_new (
+            id TEXT PRIMARY KEY,
+            agent_id TEXT NOT NULL,
+            region TEXT NOT NULL CHECK (region IN ('AGENT', 'PROJECT')),
+            project_id TEXT,
+            kind TEXT NOT NULL CHECK (kind IN ('EMOTIONAL', 'ARCHITECTURAL', 'LEARNINGS', 'ACHIEVEMENTS', 'INTROSPECT', 'DREAM')),
+            content TEXT NOT NULL,
+            original_content TEXT NOT NULL,
+            impact TEXT NOT NULL CHECK (impact IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL', 'WIP')),
+            confidence REAL DEFAULT 1.0,
+            created_at TIMESTAMP NOT NULL,
+            last_accessed TIMESTAMP NOT NULL,
+            previous_memory_id TEXT,
+            version INTEGER DEFAULT 1,
+            superseded_by TEXT,
+            signature TEXT,
+            token_count INTEGER,
+            platform TEXT,
+            embedding BLOB,
+            tier TEXT DEFAULT 'CONTEXTUAL',
+            session_id TEXT,
+            git_commit TEXT,
+            git_branch TEXT,
+            validated_at TIMESTAMP,
+
+            FOREIGN KEY (agent_id) REFERENCES agents(id),
+            FOREIGN KEY (project_id) REFERENCES projects(id),
+            FOREIGN KEY (previous_memory_id) REFERENCES memories(id),
+            FOREIGN KEY (superseded_by) REFERENCES memories(id),
+            CHECK (region = 'AGENT' OR project_id IS NOT NULL)
+        )
+    """)
+
+    # Copy all data from old table
+    conn.execute("""
+        INSERT INTO memories_new (
+            id, agent_id, region, project_id, kind, content, original_content,
+            impact, confidence, created_at, last_accessed, previous_memory_id,
+            version, superseded_by, signature, token_count, platform,
+            embedding, tier, session_id, git_commit, git_branch, validated_at
+        )
+        SELECT
+            id, agent_id, region, project_id, kind, content, original_content,
+            impact, confidence, created_at, last_accessed, previous_memory_id,
+            version, superseded_by, signature, token_count, platform,
+            embedding, tier, session_id, git_commit, git_branch, validated_at
+        FROM memories
+    """)
+
+    # Drop old table
+    conn.execute("DROP TABLE memories")
+
+    # Rename new table
+    conn.execute("ALTER TABLE memories_new RENAME TO memories")
+
+    # Recreate all indexes
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_agent_region ON memories(agent_id, region)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_project ON memories(project_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_kind ON memories(kind)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_created ON memories(created_at DESC)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_impact ON memories(impact)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_superseded ON memories(superseded_by)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_tier ON memories(tier)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_session ON memories(session_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_git_commit ON memories(git_commit)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_validated ON memories(validated_at)")
+
+
 def has_memories_table(db_path: Path) -> bool:
     """Check if the memories table exists in the database."""
     try:
@@ -412,6 +490,9 @@ def run_migrations(db_path: Path, target_version: Optional[int] = None) -> tuple
 
         if current < 7 and target >= 7:
             migrate_v6_to_v7(conn)
+
+        if current < 8 and target >= 8:
+            migrate_v7_to_v8(conn)
 
         set_schema_version(conn, target)
         conn.commit()

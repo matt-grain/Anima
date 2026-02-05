@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS memories (
     kind TEXT NOT NULL CHECK (kind IN ('EMOTIONAL', 'ARCHITECTURAL', 'LEARNINGS', 'ACHIEVEMENTS', 'INTROSPECT', 'DREAM')),
     content TEXT NOT NULL,
     original_content TEXT NOT NULL,
-    impact TEXT NOT NULL CHECK (impact IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
+    impact TEXT NOT NULL CHECK (impact IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL', 'WIP')),
     confidence REAL DEFAULT 1.0,
     created_at TIMESTAMP NOT NULL,
     last_accessed TIMESTAMP NOT NULL,
