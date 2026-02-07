@@ -1,0 +1,68 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python -m anima.hooks.session_start",
+            "name": "anima-session-start"
+          }
+        ]
+      },
+      {
+        "matcher": "resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python -m anima.hooks.session_start",
+            "name": "anima-session-resume"
+          }
+        ]
+      },
+      {
+        "matcher": "clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python -m anima.tools.detect_achievements --since 24",
+            "name": "anima-detect-achievements"
+          },
+          {
+            "type": "command",
+            "command": "uv run python -m anima.hooks.session_start",
+            "name": "anima-session-clear"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python -m anima.hooks.session_end",
+            "name": "anima-session-end"
+          },
+          {
+            "type": "command",
+            "command": "uv run python -m anima.tools.detect_achievements --since 24",
+            "name": "anima-detect-achievements-end"
+          }
+        ]
+      }
+    ],
+    "PreCompress": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python -m anima.hooks.pre_compact",
+            "name": "anima-pre-compress"
+          }
+        ]
+      }
+    ]
+  }
+}

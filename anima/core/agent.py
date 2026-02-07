@@ -118,8 +118,8 @@ class AgentResolver:
 
     Resolution order:
     1. Explicit agent (if specified)
-    2. Project-local agent definition (.agent/agents/ or .claude/agents/)
-    3. Global agent definition (~/.agent/agents/ or ~/.claude/agents/)
+    2. Project-local agent definition (.agent/agents/, .claude/agents/, or .gemini/agents/)
+    3. Global agent definition (~/.agent/agents/, ~/.claude/agents/, or ~/.gemini/agents/)
     4. Fallback to project name as implicit agent ID
     """
 
@@ -145,23 +145,21 @@ class AgentResolver:
             # If not found as file, return an implicit agent
             return Agent(id=slugify(explicit_agent), name=explicit_agent)
 
-        # 2. Project-local agent
-        local_agents_dir = self.project_path / ".agent" / "agents"
-        if not local_agents_dir.exists():
-            local_agents_dir = self.project_path / ".claude" / "agents"
+        # 2. Project-local agent (check .agent, .claude, .gemini in order)
+        for config_name in [".agent", ".claude", ".gemini"]:
+            local_agents_dir = self.project_path / config_name / "agents"
+            if local_agents_dir.exists():
+                agent = self._find_first_agent_in_dir(local_agents_dir)
+                if agent:
+                    return agent
 
-        agent = self._find_first_agent_in_dir(local_agents_dir)
-        if agent:
-            return agent
-
-        # 3. Global agent
-        global_agents_dir = self.home / ".agent" / "agents"
-        if not global_agents_dir.exists():
-            global_agents_dir = self.home / ".claude" / "agents"
-
-        agent = self._find_first_agent_in_dir(global_agents_dir)
-        if agent:
-            return agent
+        # 3. Global agent (check ~/.agent, ~/.claude, ~/.gemini in order)
+        for config_name in [".agent", ".claude", ".gemini"]:
+            global_agents_dir = self.home / config_name / "agents"
+            if global_agents_dir.exists():
+                agent = self._find_first_agent_in_dir(global_agents_dir)
+                if agent:
+                    return agent
 
         # 4. Fallback to default agent from config (default: "Anima")
         # This is the core identity that persists across all projects
@@ -184,21 +182,17 @@ class AgentResolver:
 
     def _find_agent_by_name(self, name: str) -> Optional[Agent]:
         """Find an agent by name in local or global dirs."""
-        # Check local first
-        local_path = self.project_path / ".agent" / "agents" / f"{name}.md"
-        if not local_path.exists():
-            local_path = self.project_path / ".claude" / "agents" / f"{name}.md"
+        # Check local first (in order: .agent, .claude, .gemini)
+        for config_name in [".agent", ".claude", ".gemini"]:
+            local_path = self.project_path / config_name / "agents" / f"{name}.md"
+            if local_path.exists():
+                return self._load_agent_from_file(local_path)
 
-        if local_path.exists():
-            return self._load_agent_from_file(local_path)
-
-        # Check global
-        global_path = self.home / ".agent" / "agents" / f"{name}.md"
-        if not global_path.exists():
-            global_path = self.home / ".claude" / "agents" / f"{name}.md"
-
-        if global_path.exists():
-            return self._load_agent_from_file(global_path)
+        # Check global (in order: ~/.agent, ~/.claude, ~/.gemini)
+        for config_name in [".agent", ".claude", ".gemini"]:
+            global_path = self.home / config_name / "agents" / f"{name}.md"
+            if global_path.exists():
+                return self._load_agent_from_file(global_path)
 
         return None
 

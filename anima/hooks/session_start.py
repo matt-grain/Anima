@@ -178,8 +178,12 @@ def auto_patch_agents(project_dir: Path) -> tuple[list[str], list[str]]:
     Returns:
         Tuple of (patched_agents, disabled_agents) filenames
     """
-    # Check both .agent and .claude directories
-    local_dirs = [project_dir / ".agent" / "agents", project_dir / ".claude" / "agents"]
+    # Check .agent, .claude, and .gemini directories
+    local_dirs = [
+        project_dir / ".agent" / "agents",
+        project_dir / ".claude" / "agents",
+        project_dir / ".gemini" / "agents",
+    ]
 
     patched = []
     disabled = []

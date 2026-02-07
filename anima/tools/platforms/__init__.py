@@ -4,7 +4,7 @@
 """
 Platform setup abstractions.
 
-Each supported platform (Claude, Antigravity, Opencode, Copilot) has its own
+Each supported platform (Claude, Antigravity, Opencode, Copilot, Gemini) has its own
 setup class that knows how to configure hooks, copy commands, and handle
 platform-specific features.
 """
@@ -14,6 +14,7 @@ from anima.tools.platforms.claude import ClaudeSetup
 from anima.tools.platforms.antigravity import AntigravitySetup
 from anima.tools.platforms.opencode import OpencodeSetup
 from anima.tools.platforms.copilot import CopilotSetup
+from anima.tools.platforms.gemini import GeminiSetup
 
 # Registry of all supported platforms
 PLATFORMS: dict[str, type[BasePlatformSetup]] = {
@@ -21,6 +22,7 @@ PLATFORMS: dict[str, type[BasePlatformSetup]] = {
     "antigravity": AntigravitySetup,
     "opencode": OpencodeSetup,
     "copilot": CopilotSetup,
+    "gemini": GeminiSetup,
 }
 
 
@@ -47,6 +49,7 @@ __all__ = [
     "AntigravitySetup",
     "OpencodeSetup",
     "CopilotSetup",
+    "GeminiSetup",
     "PLATFORMS",
     "get_platform",
     "detect_platforms",
