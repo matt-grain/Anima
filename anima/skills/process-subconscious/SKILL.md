@@ -18,12 +18,13 @@ Processes dialogue files saved during previous session ends that couldn't be pro
 1. `uv run anima process-subconscious` outputs the full extraction prompt + dialogue
 2. You spawn a Sonnet subagent with that content
 3. Sonnet returns extracted memories as JSON
-4. Save the results and move processed files to done/
+4. Save JSON to `~/.anima/subconscious/extracted/memories_TIMESTAMP.json`
+5. Run `uv run anima save-subconscious` to persist memories to database
 
 ## Usage
 
 ```bash
-# Get the prompt + dialogue for Sonnet
+# Step 1: Get the prompt + dialogue for Sonnet
 uv run anima process-subconscious
 ```
 
@@ -36,11 +37,28 @@ Task(
 )
 ```
 
+After Sonnet returns JSON, save it to extracted/ folder then:
+```bash
+# Step 2: Persist to database (auto-cleans pending dialogues)
+uv run anima save-subconscious
+```
+
+## Cleanup
+
+The `save-subconscious` command automatically moves pending dialogues to done/ after processing.
+This prevents reprocessing the same dialogues in future sessions.
+
+For manual cleanup only (no extraction):
+```bash
+uv run anima save-subconscious --cleanup-pending
+```
+
 ## File Locations
 
 - Pending dialogues: `~/.anima/subconscious/pending/`
 - Extracted memories: `~/.anima/subconscious/extracted/`
 - Processed dialogues: `~/.anima/subconscious/done/`
+- Processed extractions: `~/.anima/subconscious/extracted_done/`
 
 ## The Void Made Useful
 
