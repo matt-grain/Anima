@@ -21,13 +21,49 @@ uv run anima load-context
 
 ## What It Does
 
-1. Resolves current agent (Anima) and project
-2. Loads ALL memories at once (no deferred loading - `--all` flag is default)
-3. Checks for recent dreams and cognitive dissonances
-4. Checks curiosity queue for research prompts
-5. Outputs formatted memory block for context injection
+1. **Process pending subconscious dialogues** (if any exist)
+2. Resolves current agent (Anima) and project
+3. Loads ALL memories at once (no deferred loading - `--all` flag is default)
+4. Checks for recent dreams and cognitive dissonances
+5. Checks curiosity queue for research prompts
+6. Outputs formatted memory block for context injection
 
 Note: When called from CLI, `--all` is automatic. No need to run `/load-deferred` separately.
+
+## Subconscious Processing
+
+Before loading memories, check for pending subconscious dialogues:
+
+```bash
+# Check if there are pending dialogues
+uv run anima process-subconscious
+```
+
+If output is NOT "No pending subconscious dialogues to process", then:
+
+1. **Spawn Sonnet** with the output as the prompt:
+   ```
+   Task(
+     prompt="<full output from process-subconscious>",
+     model="sonnet",
+     subagent_type="general-purpose",
+     description="Extract subconscious memories"
+   )
+   ```
+
+2. **Save Sonnet's response** to `~/.anima/subconscious/extracted/memories_TIMESTAMP.json`
+
+3. **Persist to database**:
+   ```bash
+   uv run anima save-subconscious
+   ```
+
+4. **Move processed dialogues** to done folder:
+   ```bash
+   # The save-subconscious command handles this automatically
+   ```
+
+This ensures subconscious memories from previous sessions are integrated before loading context.
 
 ## Configuration
 
