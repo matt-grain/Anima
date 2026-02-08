@@ -25,6 +25,8 @@ def main() -> int:
         print("  import-seeds <dir>     Import seed memories")
         print("  load-context           Load ALL memories for current session (no deferred)")
         print("  load-deferred          Load deferred memories (lazy loading after greeting)")
+        print("  process-subconscious   Get pending dialogues for Sonnet extraction")
+        print("  save-subconscious      Save extracted subconscious memories to database")
         print("  end-session            Process memory decay and stats")
         print("  detect-achievements    [hours] Detect and promote achievements")
         print("  setup                  Set up LTM in current project")
@@ -100,6 +102,20 @@ def main() -> int:
             from anima.commands.load_deferred import run
 
             return run()
+        case "process-subconscious":
+            from anima.hooks.subconscious_extract import get_pending_dialogue_content
+
+            content = get_pending_dialogue_content()
+            if content:
+                print(content)
+                return 0
+            else:
+                print("No pending subconscious dialogues to process.")
+                return 0
+        case "save-subconscious":
+            from anima.commands.save_subconscious import run
+
+            return run(args)
         case "end-session":
             from anima.hooks.session_end import run
 

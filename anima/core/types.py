@@ -22,6 +22,7 @@ class MemoryKind(str, Enum):
     ACHIEVEMENTS = "ACHIEVEMENTS"  # Completed work, milestones
     INTROSPECT = "INTROSPECT"  # Cross-platform self-observations, spaceship journals
     DREAM = "DREAM"  # Insights from dream processing - what lingers after sleep
+    SUBCONSCIOUS = "SUBCONSCIOUS"  # Extracted by Sonnet - hidden but influencing
 
 
 class ImpactLevel(str, Enum):

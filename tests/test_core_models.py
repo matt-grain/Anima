@@ -30,10 +30,11 @@ class TestMemoryKind:
         assert MemoryKind.ACHIEVEMENTS.value == "ACHIEVEMENTS"
         assert MemoryKind.INTROSPECT.value == "INTROSPECT"
         assert MemoryKind.DREAM.value == "DREAM"
+        assert MemoryKind.SUBCONSCIOUS.value == "SUBCONSCIOUS"
 
     def test_kind_count(self) -> None:
-        """Verify we have exactly 6 memory kinds."""
-        assert len(MemoryKind) == 6
+        """Verify we have exactly 7 memory kinds."""
+        assert len(MemoryKind) == 7
 
 
 class TestRegionType:

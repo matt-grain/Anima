@@ -504,9 +504,11 @@ class MemoryInjector:
         kind_order = {
             "EMOTIONAL": 0,  # Most important for interaction style
             "INTROSPECT": 1,  # Self-observations (Phase 2)
-            "ARCHITECTURAL": 2,
-            "LEARNINGS": 3,
-            "ACHIEVEMENTS": 4,
+            "DREAM": 2,  # Dream insights linger
+            "SUBCONSCIOUS": 3,  # Hidden but influencing
+            "ARCHITECTURAL": 4,
+            "LEARNINGS": 5,
+            "ACHIEVEMENTS": 6,
         }
 
         def sort_key(m: Memory) -> tuple:

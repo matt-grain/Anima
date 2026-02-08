@@ -94,6 +94,7 @@ class Memory:
             MemoryKind.ACHIEVEMENTS: "ACHV",
             MemoryKind.INTROSPECT: "INTRO",
             MemoryKind.DREAM: "DREAM",
+            MemoryKind.SUBCONSCIOUS: "SUBC",
         }
         impact_short = {
             ImpactLevel.LOW: "LOW",

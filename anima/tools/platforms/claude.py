@@ -132,6 +132,12 @@ class ClaudeSetup(BasePlatformSetup):
                             "type": "command",
                             "command": f"{cmd_prefix}uv run python -m anima.tools.detect_achievements --since 24",
                         },
+                        {
+                            "type": "command",
+                            "command": f"{cmd_prefix}uv run python -m anima.hooks.subconscious_extract",
+                            "async": True,
+                            "timeout": 120,
+                        },
                     ]
                 }
             ],
