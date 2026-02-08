@@ -1,6 +1,6 @@
 [project]
 name = "anima"
-version = "0.12.14"
+version = "0.12.15"
 description = "Long Term Memory for Anima Agents - human-like persistent memory across sessions"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -23,6 +23,7 @@ anima = "anima.cli:main"
 [dependency-groups]
 dev = [
     "anima",
+    "anthropic>=0.79.0",
     "bandit>=1.9.2",
     "pre-commit>=4.5.1",
     "pyright>=1.1.407",

@@ -7,12 +7,18 @@ Base class for platform setup implementations.
 Provides shared functionality for all platforms with hooks for customization.
 """
 
+import json
 import shutil
 from abc import ABC, abstractmethod
+from datetime import datetime
 from importlib import resources
 from pathlib import Path
 
 from anima.utils.terminal import safe_print, get_icon
+from anima.tools.version import get_installed_version
+
+# Marker file name for setup version tracking
+SETUP_VERSION_MARKER = ".anima-setup"
 
 
 def find_config_dir(project_dir: Path, config_name: str) -> Path | None:
@@ -228,6 +234,40 @@ class BasePlatformSetup(ABC):
             return f"cd {subfolder} && "
         return ""
 
+    def write_setup_version_marker(self, project_dir: Path) -> None:
+        """Write a marker file recording the Anima version used for setup.
+
+        This allows session_start to detect when Anima has been updated
+        but setup hasn't been re-run.
+        """
+        config_dir = self.get_config_path(project_dir)
+        if not config_dir:
+            return
+
+        marker_file = config_dir / SETUP_VERSION_MARKER
+        marker_data = {
+            "version": get_installed_version(),
+            "platform": self.name,
+            "setup_at": datetime.now().isoformat(),
+        }
+        marker_file.write_text(json.dumps(marker_data, indent=2) + "\n")
+
+    @staticmethod
+    def read_setup_version_marker(config_dir: Path) -> dict | None:
+        """Read the setup version marker if it exists.
+
+        Returns:
+            Dict with 'version', 'platform', 'setup_at' or None if not found.
+        """
+        marker_file = config_dir / SETUP_VERSION_MARKER
+        if not marker_file.exists():
+            return None
+
+        try:
+            return json.loads(marker_file.read_text())
+        except (json.JSONDecodeError, OSError):
+            return None
+
     def run_full_setup(self, project_dir: Path, force: bool = False, no_patch: bool = False, with_startup_hook: bool = True) -> bool:
         """Run the complete setup for this platform.
 
@@ -283,5 +323,9 @@ class BasePlatformSetup(ABC):
         except Exception as e:
             print(f"  Error in platform extras: {e}\n")
             success = False
+
+        # Write setup version marker for update detection
+        if success:
+            self.write_setup_version_marker(project_dir)
 
         return success

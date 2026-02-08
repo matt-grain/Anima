@@ -34,7 +34,8 @@ from anima.storage.migrations import backup_database
 from anima.storage.dream_state import DreamStateStore
 from anima.storage.dissonance import DissonanceStore
 from anima.utils.agent_patching import has_subagent_marker, add_subagent_marker
-from anima.tools.version import check_for_update_cached
+from anima.tools.version import check_for_update_cached, get_installed_version
+from anima.tools.platforms.base import find_config_dir, SETUP_VERSION_MARKER
 
 
 def get_curiosity_prompt(agent_id: str, project_id: str) -> str | None:
@@ -165,6 +166,32 @@ def get_dream_prompt(agent_id: str, project_id: Optional[str], store: MemoryStor
         return None
 
     return "\n".join(lines) if lines else None
+
+
+def check_setup_version(project_dir: Path) -> str | None:
+    """Check if Anima was updated but setup hasn't been re-run.
+
+    Returns:
+        Warning message if setup is outdated, None otherwise.
+    """
+    # Check common config directories
+    for config_name in [".claude", ".gemini", ".agent", ".opencode"]:
+        config_dir = find_config_dir(project_dir, config_name)
+        if config_dir:
+            marker_file = config_dir / SETUP_VERSION_MARKER
+            if marker_file.exists():
+                try:
+                    marker = json.loads(marker_file.read_text())
+                    setup_version = marker.get("version", "")
+                    installed_version = get_installed_version()
+
+                    if setup_version and setup_version != installed_version:
+                        return f"# LTM-SETUP: Anima updated ({setup_version} → {installed_version}) but setup not re-run.\n" f"#   Run: uv run anima setup --hooks"
+                except (json.JSONDecodeError, OSError):
+                    pass
+                break  # Only check first config dir found
+
+    return None
 
 
 def auto_patch_agents(project_dir: Path) -> tuple[list[str], list[str]]:
@@ -404,6 +431,12 @@ def run(args: Optional[list[str]] = None) -> int:
             status_notes.append("# LTM-POSTCOMPACT: Resuming after compaction (WIP signal detected)")
     if backup_path:
         status_notes.append(f"# LTM: Session backup created: {backup_path.name}")
+
+    # Check if Anima was updated but setup hasn't been re-run
+    setup_warning = check_setup_version(project_dir)
+    if setup_warning:
+        status_notes.append(setup_warning)
+
     if patched_agents:
         status_notes.append(f"# LTM: Auto-patched {len(patched_agents)} agent(s) as subagents: {', '.join(patched_agents)}")
     if disabled_agents:
