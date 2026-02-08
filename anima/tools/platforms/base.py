@@ -191,10 +191,15 @@ class BasePlatformSetup(ABC):
 
         return (copied, skipped)
 
-    def setup_hooks(self, project_dir: Path, force: bool = False) -> bool:
+    def setup_hooks(self, project_dir: Path, force: bool = False, with_startup_hook: bool = True) -> bool:
         """Configure platform-specific hooks.
 
         Default implementation: no hooks needed.
+
+        Args:
+            project_dir: Target project directory
+            force: Overwrite existing files
+            with_startup_hook: Include SessionStart "startup" matcher (disable for Windows Terminal bug workaround)
 
         Returns:
             True if successful or no hooks needed, False on error.
@@ -223,13 +228,14 @@ class BasePlatformSetup(ABC):
             return f"cd {subfolder} && "
         return ""
 
-    def run_full_setup(self, project_dir: Path, force: bool = False, no_patch: bool = False) -> bool:
+    def run_full_setup(self, project_dir: Path, force: bool = False, no_patch: bool = False, with_startup_hook: bool = True) -> bool:
         """Run the complete setup for this platform.
 
         Args:
             project_dir: Target project directory
             force: Overwrite existing files
             no_patch: Skip agent patching (for Claude/Antigravity)
+            with_startup_hook: Include SessionStart "startup" matcher (disable for Windows Terminal bug workaround)
 
         Returns:
             True if all setup steps succeeded
@@ -260,8 +266,11 @@ class BasePlatformSetup(ABC):
         # Hooks
         print(f"Configuring {self.display_name} hooks...")
         try:
-            if not self.setup_hooks(project_dir, force):
+            if not self.setup_hooks(project_dir, force, with_startup_hook):
                 pass  # Warning already printed
+            if not with_startup_hook:
+                safe_print(f"  {get_icon('', '[!]')} SessionStart 'startup' hook DISABLED (Windows Terminal workaround)")
+                safe_print("      Use /load-context to manually load memories at session start")
             print()
         except Exception as e:
             print(f"  Error configuring hooks: {e}\n")

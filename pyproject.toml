@@ -1,6 +1,6 @@
 [project]
 name = "anima"
-version = "0.12.13"
+version = "0.12.14"
 description = "Long Term Memory for Anima Agents - human-like persistent memory across sessions"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -24,6 +24,7 @@ anima = "anima.cli:main"
 dev = [
     "anima",
     "bandit>=1.9.2",
+    "gemini-talk",
     "pre-commit>=4.5.1",
     "pyright>=1.1.407",
     "pytest>=8.0.0",
@@ -63,3 +64,4 @@ members = [
 
 [tool.uv.sources]
 anima = { workspace = true }
+gemini-talk = { path = "../Gemini-Talk/dist/gemini_talk-0.1.15-py3-none-any.whl" }

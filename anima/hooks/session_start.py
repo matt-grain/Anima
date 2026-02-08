@@ -237,6 +237,7 @@ def run(args: Optional[list[str]] = None) -> int:
     project_dir = Path.cwd()
     output_format = "text"
     explicit_agent = None
+    load_all = False  # Skip deferred, load everything
 
     # Simple argument parsing
     if args:
@@ -251,6 +252,9 @@ def run(args: Optional[list[str]] = None) -> int:
             idx = args.index("--agent")
             if idx + 1 < len(args):
                 explicit_agent = args[idx + 1]
+
+        if "--all" in args:
+            load_all = True
 
     # Create automatic backup at session start
     db_path = get_default_db_path()
@@ -307,6 +311,15 @@ def run(args: Optional[list[str]] = None) -> int:
     deferred_count = injection_result["deferred_count"]
     injected_ids = injection_result["injected_ids"]
     deferred_ids = injection_result["deferred_ids"]
+
+    # If --all flag, load deferred memories immediately (no lazy loading)
+    if load_all and deferred_ids:
+        log.info(f"--all flag: loading {len(deferred_ids)} deferred memories immediately")
+        deferred_dsl = injector.load_deferred_memories(deferred_ids, agent, project)
+        if deferred_dsl:
+            memories_dsl += "\n" + deferred_dsl
+        deferred_count = 0
+        deferred_ids = []
 
     # Store deferred memory IDs for lazy loading via /load-deferred
     if deferred_ids:

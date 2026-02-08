@@ -68,12 +68,13 @@ def run(args: list[str]) -> int:
         ltm setup [options] [project-dir]
 
     Options:
-        --platform <p>  Target platform: claude, antigravity, opencode, copilot
-        --commands      Install slash commands only
-        --hooks         Configure hooks only
-        --no-patch      Skip patching existing agents as subagents
-        --force         Overwrite existing files
-        --help          Show this help
+        --platform <p>      Target platform: claude, antigravity, opencode, copilot
+        --commands          Install slash commands only
+        --hooks             Configure hooks only
+        --no-patch          Skip patching existing agents as subagents
+        --no-startup-hook   Disable SessionStart 'startup' hook (Windows Terminal workaround)
+        --force             Overwrite existing files
+        --help              Show this help
 
     If no options specified, installs commands, hooks, and patches subagents.
     """
@@ -82,6 +83,7 @@ def run(args: list[str]) -> int:
     commands_only = "--commands" in args
     hooks_only = "--hooks" in args
     no_patch = "--no-patch" in args
+    no_startup_hook = "--no-startup-hook" in args  # Windows Terminal bug workaround
     show_help = "--help" in args or "-h" in args
 
     # Platform selection
@@ -101,6 +103,7 @@ def run(args: list[str]) -> int:
         "--commands",
         "--hooks",
         "--no-patch",
+        "--no-startup-hook",
         "--help",
         "-h",
         "--platform",
@@ -129,12 +132,13 @@ Usage:
     uv run anima setup [options] [project-dir]
 
 Options:
-    --platform <p>  Target platform (see list below)
-    --commands      Install slash commands/workflows only
-    --hooks         Configure hooks/plugins only
-    --no-patch      Skip patching existing agents as subagents
-    --force         Overwrite existing files
-    --help          Show this help
+    --platform <p>      Target platform (see list below)
+    --commands          Install slash commands/workflows only
+    --hooks             Configure hooks/plugins only
+    --no-patch          Skip patching existing agents as subagents
+    --no-startup-hook   Disable SessionStart 'startup' hook (Windows Terminal workaround)
+    --force             Overwrite existing files
+    --help              Show this help
 
 Platforms:
 {platforms_help}
@@ -194,14 +198,17 @@ Examples:
     elif hooks_only:
         print(f"Configuring {platform.display_name} hooks...")
         try:
-            platform.setup_hooks(project_dir, force)
+            platform.setup_hooks(project_dir, force, with_startup_hook=not no_startup_hook)
+            if no_startup_hook:
+                safe_print(f"  {get_icon('', '[!]')} SessionStart 'startup' hook DISABLED (Windows Terminal workaround)")
+                safe_print("      Use /load-context to manually load memories at session start")
             print()
         except Exception as e:
             print(f"  Error configuring hooks: {e}\n")
             success = False
     else:
         # Full setup
-        success = platform.run_full_setup(project_dir, force, no_patch)
+        success = platform.run_full_setup(project_dir, force, no_patch, with_startup_hook=not no_startup_hook)
 
     if success:
         print("Setup complete!")

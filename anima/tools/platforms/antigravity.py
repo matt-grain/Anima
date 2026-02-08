@@ -21,10 +21,11 @@ class AntigravitySetup(BasePlatformSetup):
     def display_name(self) -> str:
         return "Google Antigravity"
 
-    def setup_hooks(self, project_dir: Path, force: bool = False) -> bool:
+    def setup_hooks(self, project_dir: Path, force: bool = False, with_startup_hook: bool = True) -> bool:
         """Antigravity hooks are configured via rules files, not JSON.
 
         The LTM integration is handled through workflow triggers.
+        Note: with_startup_hook is accepted for interface compatibility but not used.
         """
         safe_print(f"  {get_icon('', '[i]')} Antigravity uses rules-based hook integration")
         return True

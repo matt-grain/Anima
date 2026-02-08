@@ -33,8 +33,15 @@ class GeminiSetup(BasePlatformSetup):
     def display_name(self) -> str:
         return "Gemini CLI"
 
-    def setup_hooks(self, project_dir: Path, force: bool = False) -> bool:
-        """Add LTM hooks to Gemini's settings.json."""
+    def setup_hooks(self, project_dir: Path, force: bool = False, with_startup_hook: bool = True) -> bool:
+        """Add LTM hooks to Gemini's settings.json.
+
+        Args:
+            project_dir: Target project directory
+            force: Overwrite existing files
+            with_startup_hook: Include SessionStart "startup" matcher.
+                              Set to False for terminal stdin bug workaround.
+        """
         config_dir = self.get_config_path(project_dir)
         if not config_dir:
             safe_print(f"  {get_icon('', '[!]')}  No .gemini directory found (checked current and parent dir)")
@@ -47,10 +54,10 @@ class GeminiSetup(BasePlatformSetup):
         if cmd_prefix:
             safe_print(f"  {get_icon('', '[D]')} Monorepo detected: hooks will cd to {project_dir.name}/ first")
 
-        # Gemini CLI hook events are similar to Claude Code
-        # See: https://geminicli.com/docs/hooks/
-        ltm_hooks = {
-            "SessionStart": [
+        # Build SessionStart matchers - startup is optional (terminal bug workaround)
+        session_start_matchers = []
+        if with_startup_hook:
+            session_start_matchers.append(
                 {
                     "matcher": "startup",
                     "hooks": [
@@ -60,7 +67,11 @@ class GeminiSetup(BasePlatformSetup):
                             "name": "anima-session-start",
                         }
                     ],
-                },
+                }
+            )
+
+        session_start_matchers.extend(
+            [
                 {
                     "matcher": "resume",
                     "hooks": [
@@ -86,7 +97,13 @@ class GeminiSetup(BasePlatformSetup):
                         },
                     ],
                 },
-            ],
+            ]
+        )
+
+        # Gemini CLI hook events are similar to Claude Code
+        # See: https://geminicli.com/docs/hooks/
+        ltm_hooks = {
+            "SessionStart": session_start_matchers,
             "SessionEnd": [
                 {
                     "hooks": [

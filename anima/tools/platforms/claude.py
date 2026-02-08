@@ -23,8 +23,15 @@ class ClaudeSetup(BasePlatformSetup):
     def display_name(self) -> str:
         return "Claude Code"
 
-    def setup_hooks(self, project_dir: Path, force: bool = False) -> bool:
-        """Add LTM hooks to Claude's settings.json or settings.local.json."""
+    def setup_hooks(self, project_dir: Path, force: bool = False, with_startup_hook: bool = True) -> bool:
+        """Add LTM hooks to Claude's settings.json or settings.local.json.
+
+        Args:
+            project_dir: Target project directory
+            force: Overwrite existing files
+            with_startup_hook: Include SessionStart "startup" matcher.
+                              Set to False for Windows Terminal bug workaround (issue #23083).
+        """
         config_dir = self.get_config_path(project_dir)
         if not config_dir:
             safe_print(f"  {get_icon('', '[!]')}  No .claude directory found (checked current and parent dir)")
@@ -41,8 +48,10 @@ class ClaudeSetup(BasePlatformSetup):
         if cmd_prefix:
             safe_print(f"  {get_icon('', '[D]')} Monorepo detected: hooks will cd to {project_dir.name}/ first")
 
-        ltm_hooks = {
-            "SessionStart": [
+        # Build SessionStart matchers - startup is optional (Windows Terminal bug workaround)
+        session_start_matchers = []
+        if with_startup_hook:
+            session_start_matchers.append(
                 {
                     "matcher": "startup",
                     "hooks": [
@@ -51,7 +60,11 @@ class ClaudeSetup(BasePlatformSetup):
                             "command": f"{cmd_prefix}uv run python -m anima.hooks.session_start",
                         }
                     ],
-                },
+                }
+            )
+
+        session_start_matchers.extend(
+            [
                 {
                     "matcher": "resume",
                     "hooks": [
@@ -83,7 +96,11 @@ class ClaudeSetup(BasePlatformSetup):
                         },
                     ],
                 },
-            ],
+            ]
+        )
+
+        ltm_hooks = {
+            "SessionStart": session_start_matchers,
             "SubagentStart": [
                 {
                     "hooks": [
@@ -182,8 +199,8 @@ class ClaudeSetup(BasePlatformSetup):
         # Permissions needed for Anima to work without prompts
         required_permissions = [
             "Bash(uv run anima:*)",  # All anima commands (diary, dream, etc.)
-            "Write(~/.anima/**)",    # Write diary/dream files to ~/.anima/
-            "Edit(~/.anima/**)",     # Edit existing files in ~/.anima/
+            "Write(~/.anima/**)",  # Write diary/dream files to ~/.anima/
+            "Edit(~/.anima/**)",  # Edit existing files in ~/.anima/
         ]
 
         added_permissions = []

@@ -60,8 +60,12 @@ class CopilotSetup(BasePlatformSetup):
         safe_print(f"  {get_icon('', '[i]')} Copilot command structure TBD - skipping")
         return (0, 0)
 
-    def setup_hooks(self, project_dir: Path, force: bool = False) -> bool:
-        """Configure Anima hooks in .github/hooks/anima.json."""
+    def setup_hooks(self, project_dir: Path, force: bool = False, with_startup_hook: bool = True) -> bool:
+        """Configure Anima hooks in .github/hooks/anima.json.
+
+        Note: with_startup_hook is accepted for interface compatibility but not used
+        (Copilot has a different hook architecture).
+        """
         hooks_dir = self.get_hooks_dir(project_dir)
         hooks_file = hooks_dir / "anima.json"
 

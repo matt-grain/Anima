@@ -23,7 +23,7 @@ def main() -> int:
         print("  diary [title]          Create/manage research diary entries")
         print("  keygen <agent>         Add signing key to Anima agent")
         print("  import-seeds <dir>     Import seed memories")
-        print("  load-context           Load memories for current session")
+        print("  load-context           Load ALL memories for current session (no deferred)")
         print("  load-deferred          Load deferred memories (lazy loading after greeting)")
         print("  end-session            Process memory decay and stats")
         print("  detect-achievements    [hours] Detect and promote achievements")
@@ -33,7 +33,7 @@ def main() -> int:
         print("  memory-export          Export memories to JSON")
         print("  memory-import          Import memories from JSON")
         print("  sign-memories          Sign unsigned memories")
-        print("  refresh-memories       Re-inject memories into context (alias for load-context)")
+        print("  refresh-memories       Re-inject ALL memories into context (alias for load-context)")
         print("  backfill               Generate embeddings and tiers for existing memories")
         print("  dream                  Between-session memory processing")
         print("  dream-wake             Save dream insights to long-term memory")
@@ -91,7 +91,10 @@ def main() -> int:
         case "load-context":
             from anima.hooks.session_start import run
 
-            # Handle arguments like --format json or --agent name
+            # Load all memories by default (no deferred) when called from CLI
+            # User can override with --no-all if they want tiered loading
+            if "--no-all" not in args:
+                args = ["--all"] + list(args)
             return run(args)
         case "load-deferred":
             from anima.commands.load_deferred import run
@@ -132,6 +135,9 @@ def main() -> int:
         case "refresh-memories":
             from anima.hooks.session_start import run
 
+            # Load all memories by default (no deferred) when called from CLI
+            if "--no-all" not in args:
+                args = ["--all"] + list(args)
             return run(args)
         case "backfill":
             from anima.commands.backfill import run

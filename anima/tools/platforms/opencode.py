@@ -21,8 +21,12 @@ class OpencodeSetup(BasePlatformSetup):
     def display_name(self) -> str:
         return "Opencode"
 
-    def setup_hooks(self, project_dir: Path, force: bool = False) -> bool:
-        """Opencode uses a plugin-based hook system."""
+    def setup_hooks(self, project_dir: Path, force: bool = False, with_startup_hook: bool = True) -> bool:
+        """Opencode uses a plugin-based hook system.
+
+        Note: with_startup_hook is accepted for interface compatibility but not used
+        (Opencode has a different plugin-based hook architecture).
+        """
         safe_print(f"  {get_icon('', '[i]')} Opencode uses plugin-based hook integration")
         return True
 
