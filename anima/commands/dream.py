@@ -466,7 +466,10 @@ def _print_summary(results: list[tuple[str, N2Result | N3Result | REMResult]]) -
     print("Dream complete!")
     for stage_name, result in results:
         if stage_name == "N2" and isinstance(result, N2Result):
-            print(f"   {stage_name}: {result.new_links_found} new links, {len(result.impact_adjustments)} impact adjustments ({result.duration_seconds:.1f}s)")
+            subconscious_str = ""
+            if result.subconscious_merged + result.subconscious_linked + result.subconscious_kept > 0:
+                subconscious_str = f", subconscious: {result.subconscious_merged}⊕ {result.subconscious_linked}→ {result.subconscious_kept}○"
+            print(f"   {stage_name}: {result.new_links_found} new links, {len(result.impact_adjustments)} impact adjustments{subconscious_str} ({result.duration_seconds:.1f}s)")
         elif stage_name == "N3" and isinstance(result, N3Result):
             print(f"   {stage_name}: {result.gists_created} gists, {result.contradictions_found} contradictions ({result.duration_seconds:.1f}s)")
         elif stage_name == "REM" and isinstance(result, REMResult):

@@ -15,10 +15,21 @@ import time
 from datetime import datetime, timedelta
 from typing import Optional
 
-from anima.core import Memory, ImpactLevel
-from anima.dream.types import N2Result, DreamConfig
-from anima.graph.linker import find_builds_on_candidates, LinkType
+from typing import TypedDict
+
+from anima.core import Memory, MemoryKind, ImpactLevel
+from anima.dream.types import N2Result, DreamConfig, SubconsciousIntegration
+from anima.graph.linker import find_builds_on_candidates, find_link_candidates, LinkType
 from anima.storage.sqlite import MemoryStore
+
+
+class SubconsciousResult(TypedDict):
+    """Result of subconscious integration phase."""
+
+    merged: int
+    linked: int
+    kept: int
+    integrations: list[SubconsciousIntegration]
 
 
 def run_n2_consolidation(
@@ -52,6 +63,10 @@ def run_n2_consolidation(
     if not quiet:
         print("N2: Consolidating memories...")
 
+    # Phase 0: Subconscious Integration
+    # Check for overlap between subconscious and conscious memories
+    subconscious_result = _integrate_subconscious_memories(store, agent_id, project_id, config, quiet)
+
     # Get memories with temporal context for BUILDS_ON detection
     memories_with_context = _get_processable_memories(store, agent_id, project_id, config)
 
@@ -65,6 +80,10 @@ def run_n2_consolidation(
             impact_adjustments=[],
             duration_seconds=time.time() - start_time,
             memories_processed=0,
+            subconscious_merged=subconscious_result["merged"],
+            subconscious_linked=subconscious_result["linked"],
+            subconscious_kept=subconscious_result["kept"],
+            subconscious_integrations=subconscious_result["integrations"],
         )
 
     # Track results
@@ -154,6 +173,10 @@ def run_n2_consolidation(
         impact_adjustments=impact_adjustments,
         duration_seconds=duration,
         memories_processed=processed,
+        subconscious_merged=subconscious_result["merged"],
+        subconscious_linked=subconscious_result["linked"],
+        subconscious_kept=subconscious_result["kept"],
+        subconscious_integrations=subconscious_result["integrations"],
     )
 
 
@@ -267,3 +290,152 @@ def _suggest_impact_from_topology(
         return ImpactLevel.MEDIUM
 
     return None
+
+
+def _integrate_subconscious_memories(
+    store: MemoryStore,
+    agent_id: str,
+    project_id: Optional[str],
+    config: DreamConfig,
+    quiet: bool,
+) -> SubconsciousResult:
+    """
+    Phase 0: Integrate subconscious memories with conscious ones.
+
+    Subconscious memories are extracted by Sonnet from conversation without
+    explicit saving. They may overlap with consciously saved memories.
+
+    Strategy:
+    - similarity > 0.8: Merge (supersede subconscious, it's redundant)
+    - similarity 0.5-0.8: Link (BUILDS_ON, subconscious adds nuance)
+    - similarity < 0.5: Keep separate (unique insight from Sonnet)
+
+    Returns:
+        Dict with counts and integration details
+    """
+    merged = 0
+    linked = 0
+    kept = 0
+    integrations: list[SubconsciousIntegration] = []
+
+    # Get all SUBCONSCIOUS memories from lookback window
+    cutoff = datetime.now() - timedelta(days=config.project_lookback_days)
+    all_memories = store.get_memories_for_agent(
+        agent_id=agent_id,
+        project_id=project_id if config.include_project_memories else None,
+        include_superseded=False,
+    )
+
+    def is_recent(created_at: datetime) -> bool:
+        # Handle timezone-aware vs naive datetimes
+        if created_at.tzinfo is not None:
+            created_at = created_at.replace(tzinfo=None)
+        return created_at >= cutoff
+
+    subconscious_memories = [
+        m
+        for m in all_memories
+        if m.kind == MemoryKind.SUBCONSCIOUS and is_recent(m.created_at) and not m.superseded_by  # Not already merged
+    ]
+
+    if not subconscious_memories:
+        return {"merged": merged, "linked": linked, "kept": kept, "integrations": integrations}
+
+    if not quiet:
+        print(f"   Integrating {len(subconscious_memories)} subconscious memories...")
+
+    # Get conscious memories with embeddings for comparison
+    conscious_memories = store.get_memories_with_embeddings(
+        agent_id=agent_id,
+        project_id=project_id if config.include_project_memories else None,
+    )
+
+    # Filter out SUBCONSCIOUS kind from candidates
+    conscious_candidates = [
+        m
+        for m in conscious_memories
+        if store.get_memory(m[0]).kind != MemoryKind.SUBCONSCIOUS  # type: ignore
+    ]
+
+    if not conscious_candidates:
+        # No conscious memories to compare against
+        kept = len(subconscious_memories)
+        return {"merged": merged, "linked": linked, "kept": kept, "integrations": integrations}
+
+    for subconscious_mem in subconscious_memories:
+        # Get embedding for this subconscious memory
+        embedding = store.get_embedding(subconscious_mem.id)
+        if not embedding:
+            kept += 1
+            continue
+
+        # Find nearest conscious memory
+        candidates = find_link_candidates(
+            source_embedding=embedding,
+            candidate_memories=conscious_candidates,
+            threshold=0.0,  # Get all, we'll filter by similarity
+            max_links=1,
+            exclude_ids={subconscious_mem.id},
+        )
+
+        if not candidates:
+            kept += 1
+            integrations.append(
+                SubconsciousIntegration(
+                    subconscious_id=subconscious_mem.id,
+                    conscious_id="",
+                    similarity=0.0,
+                    action="kept_separate",
+                )
+            )
+            continue
+
+        nearest = candidates[0]
+        similarity = nearest.similarity
+
+        if similarity > 0.8:
+            # High overlap - merge (supersede subconscious)
+            subconscious_mem.superseded_by = nearest.memory_id
+            store.save_memory(subconscious_mem)
+            merged += 1
+            integrations.append(
+                SubconsciousIntegration(
+                    subconscious_id=subconscious_mem.id,
+                    conscious_id=nearest.memory_id,
+                    similarity=similarity,
+                    action="merged",
+                )
+            )
+        elif similarity > 0.5:
+            # Moderate overlap - create BUILDS_ON link
+            store.save_link(
+                source_id=subconscious_mem.id,
+                target_id=nearest.memory_id,
+                link_type=LinkType.BUILDS_ON.value,
+                similarity=similarity,
+            )
+            linked += 1
+            integrations.append(
+                SubconsciousIntegration(
+                    subconscious_id=subconscious_mem.id,
+                    conscious_id=nearest.memory_id,
+                    similarity=similarity,
+                    action="linked",
+                )
+            )
+        else:
+            # Low overlap - keep separate (unique insight)
+            kept += 1
+            integrations.append(
+                SubconsciousIntegration(
+                    subconscious_id=subconscious_mem.id,
+                    conscious_id=nearest.memory_id,
+                    similarity=similarity,
+                    action="kept_separate",
+                )
+            )
+
+    if not quiet:
+        print(f"      Merged: {merged}, Linked: {linked}, Kept: {kept}")
+
+    return {"merged": merged, "linked": linked, "kept": kept, "integrations": integrations}

@@ -69,6 +69,16 @@ class DreamConfig:
 
 
 @dataclass
+class SubconsciousIntegration:
+    """Result of integrating a subconscious memory with conscious ones."""
+
+    subconscious_id: str
+    conscious_id: str  # The nearest conscious memory
+    similarity: float
+    action: str  # "merged", "linked", "kept_separate"
+
+
+@dataclass
 class N2Result:
     """Results from N2 consolidation stage."""
 
@@ -77,6 +87,11 @@ class N2Result:
     impact_adjustments: list[tuple[str, str, str]]  # (memory_id, old_impact, new_impact)
     duration_seconds: float
     memories_processed: int
+    # Subconscious integration (Phase 0)
+    subconscious_merged: int = 0
+    subconscious_linked: int = 0
+    subconscious_kept: int = 0
+    subconscious_integrations: list[SubconsciousIntegration] = field(default_factory=list)
 
 
 @dataclass
