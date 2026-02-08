@@ -48,9 +48,23 @@ class ClaudeSetup(BasePlatformSetup):
         if cmd_prefix:
             safe_print(f"  {get_icon('', '[D]')} Monorepo detected: hooks will cd to {project_dir.name}/ first")
 
+        # Check if user previously disabled startup hook (preserve their choice)
+        startup_was_disabled = False
+        if settings_file.exists():
+            try:
+                existing = json.loads(settings_file.read_text())
+                existing_session_start = existing.get("hooks", {}).get("SessionStart", [])
+                if existing_session_start:  # Has SessionStart hooks
+                    has_startup = any(m.get("matcher") == "startup" for m in existing_session_start)
+                    if not has_startup:
+                        startup_was_disabled = True
+                        safe_print(f"  {get_icon('', '[D]')} Detected: 'startup' hook was previously disabled, preserving choice")
+            except (json.JSONDecodeError, OSError):
+                pass
+
         # Build SessionStart matchers - startup is optional (Windows Terminal bug workaround)
         session_start_matchers = []
-        if with_startup_hook:
+        if with_startup_hook and not startup_was_disabled:
             session_start_matchers.append(
                 {
                     "matcher": "startup",
