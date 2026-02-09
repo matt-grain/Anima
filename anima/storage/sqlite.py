@@ -266,9 +266,9 @@ class MemoryStore(MemoryStoreProtocol):
                     content, original_content, impact, confidence,
                     created_at, last_accessed, previous_memory_id,
                     version, superseded_by, signature, token_count, platform,
-                    session_id, git_commit, git_branch
+                    model, session_id, git_commit, git_branch
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id) DO UPDATE SET
                     content = excluded.content,
                     confidence = excluded.confidence,
@@ -278,6 +278,7 @@ class MemoryStore(MemoryStoreProtocol):
                     signature = excluded.signature,
                     token_count = excluded.token_count,
                     platform = excluded.platform,
+                    model = excluded.model,
                     session_id = excluded.session_id,
                     git_commit = excluded.git_commit,
                     git_branch = excluded.git_branch
@@ -300,6 +301,7 @@ class MemoryStore(MemoryStoreProtocol):
                     memory.signature,
                     memory.token_count,
                     memory.platform,
+                    memory.model,
                     memory.session_id,
                     memory.git_commit,
                     memory.git_branch,
@@ -704,6 +706,7 @@ class MemoryStore(MemoryStoreProtocol):
             signature=row["signature"],
             token_count=row["token_count"],
             platform=row["platform"] if "platform" in row.keys() else None,
+            model=row["model"] if "model" in row.keys() else None,
             session_id=row["session_id"] if "session_id" in row.keys() else None,
             git_commit=row["git_commit"] if "git_commit" in row.keys() else None,
             git_branch=row["git_branch"] if "git_branch" in row.keys() else None,
@@ -967,6 +970,14 @@ class MemoryStore(MemoryStoreProtocol):
             conn.execute(
                 "DELETE FROM memory_links WHERE source_id = ? OR target_id = ?",
                 (memory_id, memory_id),
+            )
+
+    def delete_link(self, source_id: str, target_id: str) -> None:
+        """Delete a specific link between two memories."""
+        with self._connect() as conn:
+            conn.execute(
+                "DELETE FROM memory_links WHERE source_id = ? AND target_id = ?",
+                (source_id, target_id),
             )
 
     # --- Memory validation operations (v7) ---

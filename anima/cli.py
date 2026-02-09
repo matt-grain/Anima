@@ -174,6 +174,14 @@ def main() -> int:
             from anima.commands.dissonance import run
 
             return run(args)
+        case "re-embed":
+            from anima.commands.re_embed import run
+
+            return run(args)
+        case "mirror-review" | "mirror":
+            from anima.commands.mirror_review import run
+
+            return run(args)
         case "version":
             from anima.tools.version import run_version
 

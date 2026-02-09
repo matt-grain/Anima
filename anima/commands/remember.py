@@ -28,6 +28,7 @@ from anima.lifecycle.injection import ensure_token_count
 from anima.lifecycle.session import get_current_session_id
 from anima.storage import MemoryStore
 from anima.utils.git import get_git_context
+from anima.utils.spaceship import detect_spaceship
 
 
 def infer_impact(text: str) -> ImpactLevel:
@@ -220,7 +221,11 @@ def create_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--platform",
-        help="Which platform/spaceship is creating this memory (claude, antigravity, opencode)",
+        help="Override auto-detected platform (claude, antigravity, opencode)",
+    )
+    parser.add_argument(
+        "--model",
+        help="Override auto-detected LLM model (e.g., claude-opus-4-5-20251101)",
     )
     parser.add_argument(
         "--git",
@@ -321,6 +326,11 @@ def run(args: list[str]) -> int:
         git_commit = git_ctx.commit
         git_branch = git_ctx.branch
 
+    # Auto-detect spaceship (platform + model) from environment
+    spaceship = detect_spaceship()
+    platform = parsed.platform or spaceship.platform
+    model = parsed.model or spaceship.model
+
     # Create the memory
     memory = Memory(
         agent_id=agent.id,
@@ -334,7 +344,8 @@ def run(args: list[str]) -> int:
         created_at=now,
         last_accessed=now,
         previous_memory_id=previous.id if previous else None,
-        platform=parsed.platform,  # Track which spaceship created this
+        platform=platform,  # Auto-detected or overridden platform
+        model=model,  # Auto-detected or overridden LLM model
         session_id=session_id,  # Group with current session for temporal queries
         git_commit=git_commit,  # Link to git commit for temporal correlation
         git_branch=git_branch,  # Track branch for context

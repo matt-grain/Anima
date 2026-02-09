@@ -98,9 +98,11 @@ def lookup_by_id(memory_id: str) -> int:
     print(f"Region: {region_icon} {memory.region.value}")
     print(f"Created: {date_str}")
     print(f"Confidence: {memory.confidence}")
-    if memory.platform:
-        spaceship_icon = {"claude": "🔵", "antigravity": "🟣", "opencode": "🟢"}.get(memory.platform, "🚀")
-        print(f"Platform: {spaceship_icon} {memory.platform}")
+    if memory.platform or memory.model:
+        spaceship_icon = {"claude": "🔵", "antigravity": "🟣", "opencode": "🟢"}.get(memory.platform or "", "🚀")
+        platform_str = memory.platform or "unknown"
+        model_str = f" ({memory.model})" if memory.model else ""
+        print(f"Spaceship: {spaceship_icon} {platform_str}{model_str}")
     if memory.superseded_by:
         safe_print(f"{get_icon('⚠️', '[!]')}  Superseded by: {memory.superseded_by}")
     print()

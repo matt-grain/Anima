@@ -58,6 +58,7 @@ class Memory:
 
     # Platform tracking (spaceship journals)
     platform: Optional[str] = None  # Which platform created this memory (claude, antigravity, opencode)
+    model: Optional[str] = None  # Which LLM model created this memory (e.g., claude-opus-4-5-20251101)
 
     # Session tracking (Phase 3: Temporal Infrastructure)
     session_id: Optional[str] = None  # Groups memories by conversation session

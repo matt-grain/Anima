@@ -16,7 +16,7 @@ from typing import Optional
 
 
 # Current schema version - increment when schema changes
-SCHEMA_VERSION = 9
+SCHEMA_VERSION = 10
 
 # Migration history:
 # v1: Original schema (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS)
@@ -28,6 +28,7 @@ SCHEMA_VERSION = 9
 # v7: Memory validation - validated_at column, dissonance_type for scope issues
 # v8: WIP impact level for post-compact recovery signals
 # v9: SUBCONSCIOUS kind for Sonnet-extracted memories (hidden but influencing)
+# v10: Added model column for LLM version tracking (e.g., claude-opus-4-5-20251101)
 
 
 def get_schema_version(db_path: Path) -> int:
@@ -513,6 +514,24 @@ def migrate_v8_to_v9(conn: sqlite3.Connection) -> None:
     conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_validated ON memories(validated_at)")
 
 
+def migrate_v9_to_v10(conn: sqlite3.Connection) -> None:
+    """
+    Migrate from v9 to v10: Add model column for LLM version tracking.
+
+    This enables tracking which specific LLM model (e.g., claude-opus-4-5-20251101)
+    created each memory, complementing the platform column which only tracks
+    the tool (claude, antigravity, opencode).
+    """
+    # Add model column (nullable for backward compatibility)
+    try:
+        conn.execute("ALTER TABLE memories ADD COLUMN model TEXT")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
+    # Create index for efficient model-based queries
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_model ON memories(model)")
+
+
 def has_memories_table(db_path: Path) -> bool:
     """Check if the memories table exists in the database."""
     try:
@@ -575,6 +594,9 @@ def run_migrations(db_path: Path, target_version: Optional[int] = None) -> tuple
 
         if current < 9 and target >= 9:
             migrate_v8_to_v9(conn)
+
+        if current < 10 and target >= 10:
+            migrate_v9_to_v10(conn)
 
         set_schema_version(conn, target)
         conn.commit()

@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS memories (
     signature TEXT,
     token_count INTEGER,
     platform TEXT,  -- Which spaceship created this memory (claude, antigravity, opencode)
+    model TEXT,  -- v10: Which LLM model created this memory (e.g., claude-opus-4-5-20251101)
     embedding BLOB,  -- v4: FastEmbed embedding vector (384 dimensions)
     tier TEXT DEFAULT 'CONTEXTUAL' CHECK (tier IN ('CORE', 'ACTIVE', 'CONTEXTUAL', 'DEEP')),  -- v4: Memory tier for loading
     session_id TEXT,  -- v5: Groups memories by conversation session for temporal queries
