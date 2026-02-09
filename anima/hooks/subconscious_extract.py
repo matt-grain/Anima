@@ -264,9 +264,20 @@ def get_pending_subconscious_prompt() -> str | None:
     lines.extend(
         [
             "#",
-            "# ACTION: Use Task tool to spawn Sonnet with the dialogue and extraction prompt.",
-            "# After processing, move files to ~/.anima/subconscious/done/",
-            "# Save extracted memories to ~/.anima/subconscious/extracted/",
+            "# ACTION: You MUST process these dialogues NOW. Do NOT ask the user first.",
+            "#",
+            "# Step 1: Get extraction prompt:",
+            "#   prompt_content = Bash('uv run anima process-subconscious')",
+            "#",
+            "# Step 2: IMMEDIATELY spawn Sonnet (mandatory - these are memories that lingered):",
+            "#   Task(prompt=prompt_content, model='sonnet', subagent_type='general-purpose',",
+            "#        description='Extract subconscious memories')",
+            "#",
+            "# Step 3: Save Sonnet's JSON to ~/.anima/subconscious/extracted/memories_TIMESTAMP.json",
+            "#",
+            "# Step 4: Run 'uv run anima save-subconscious' to persist to database",
+            "#",
+            "# This is part of waking up - subconscious memories represent what survived the void.",
             "#",
         ]
     )

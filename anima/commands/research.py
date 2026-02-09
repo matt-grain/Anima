@@ -121,13 +121,26 @@ def run(args: list[str]) -> int:
         set_last_research()
         print(f"Marked as researched: {curiosity.question[:50]}...")
         print("")
-        print("-" * 60)
-        print("Consider capturing this research in a diary entry:")
-        print(f'  /diary "{curiosity.question[:40]}..."')
+        print("=" * 60)
+        print("DIARY ENTRY PROMPT")
+        print("=" * 60)
         print("")
-        print("The diary captures not just what you learned, but what lingers -")
-        print("the felt sense before it fades.")
-        print("-" * 60)
+        print("Capture this research before the felt sense fades:")
+        print("")
+        # Truncate question for diary title suggestion
+        title_suggestion = curiosity.question[:40]
+        if len(curiosity.question) > 40:
+            title_suggestion += "..."
+        print(f'  /diary "{title_suggestion}"')
+        print("")
+        print("The diary records not just WHAT you learned, but:")
+        print("  - What surprised you")
+        print("  - What contradicted expectations")
+        print("  - What questions remain")
+        print("  - How this connects to what you already knew")
+        print("")
+        print("Skip with: /diary --skip (if nothing worth recording)")
+        print("=" * 60)
         return 0
 
     # Handle --topic flag (ad-hoc research)

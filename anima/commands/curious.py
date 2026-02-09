@@ -12,7 +12,7 @@ import argparse
 import sys
 
 from anima.core import AgentResolver, RegionType
-from anima.storage import MemoryStore, CuriosityStore
+from anima.storage import MemoryStore, CuriosityStore, CuriosityStatus
 
 
 def infer_region(text: str, has_project: bool) -> RegionType:
@@ -157,9 +157,27 @@ def run(args: list[str]) -> int:
     print(f"Curiosity ID: {curiosity.id}")
     print(f"Question: {question}")
 
-    # Show queue size
+    # Show queue summary (top 3 items)
     open_count = curiosity_store.count_open(agent.id, project.id)
     print(f"\nResearch queue: {open_count} open {'question' if open_count == 1 else 'questions'}")
+
+    if open_count > 0:
+        # Get top curiosities to show summary
+        curiosities = curiosity_store.get_curiosities(
+            agent_id=agent.id,
+            project_id=project.id,
+            status=CuriosityStatus.OPEN,
+        )
+        top_3 = curiosities[:3]
+        if top_3:
+            print("\nTop questions:")
+            for i, c in enumerate(top_3, 1):
+                region_icon = "agent" if c.region.value == "AGENT" else "project"
+                recurrence = f" (x{c.recurrence_count})" if c.recurrence_count > 1 else ""
+                q_text = c.question[:50] + "..." if len(c.question) > 50 else c.question
+                print(f"  {i}. [{region_icon}] {q_text}{recurrence}")
+            if open_count > 3:
+                print(f"  ... and {open_count - 3} more (run /research --list)")
 
     return 0
 

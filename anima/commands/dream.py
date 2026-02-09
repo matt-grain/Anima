@@ -333,6 +333,25 @@ def run(args: list[str]) -> int:
     if not parsed.quiet and not parsed.dry_run and results:
         _print_summary(results)
 
+        # After REM, prompt for reflection
+        rem_result = next((r for name, r in results if name == "REM"), None)
+        if rem_result and isinstance(rem_result, REMResult) and rem_result.dream_journal_path:
+            print()
+            print("=" * 60)
+            print("DREAM REFLECTION")
+            print("=" * 60)
+            print()
+            print("Materials gathered. Ready to reflect?")
+            print()
+            print("Options:")
+            print("  1. Say 'good night' to enter conversational dream reflection")
+            print("     (Fill in: distant connections, questions, self-observations, what lingers)")
+            print()
+            print("  2. Skip reflection now, save later with: /dream-wake")
+            print()
+            print(f"Journal: {rem_result.dream_journal_path}")
+            print("=" * 60)
+
     return 0
 
 
