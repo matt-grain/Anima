@@ -665,7 +665,8 @@ if _check_tts_available():
 
                 config = Config.load(_eyes_config_path)
                 set_volume(config.tts.volume)
-                tts_speak(text, voice_name=config.tts.voice)
+                # Don't pass voice_name - let it use _default_voice_name set by voice("set")
+                tts_speak(text)
                 return {"speaking": text[:50]}
             except Exception as e:
                 return {"error": str(e)}
