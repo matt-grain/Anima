@@ -62,13 +62,17 @@ def set_default_voice(voice_name: str) -> str:
     Returns:
         The full voice name that was set
     """
-    global _default_voice_name
+    global _default_voice_name, _voice, _current_voice_name
 
     # Check if it's a short name
     if voice_name in AVAILABLE_VOICES:
         _default_voice_name = AVAILABLE_VOICES[voice_name]
     else:
         _default_voice_name = voice_name
+
+    # Invalidate cached voice so next speak() loads the new one
+    _voice = None
+    _current_voice_name = None
 
     logger.info(f"Default voice set to: {_default_voice_name}")
     return _default_voice_name
