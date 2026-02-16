@@ -34,6 +34,7 @@ class EyesDisplay:
         self._thread: threading.Thread | None = None
         self._borderless = False  # Current borderless state (can be toggled)
         self._last_click_time = 0  # For double-click detection
+        self._current_scale = config.display.scale  # Track current scale for resizing
 
     @property
     def face(self) -> Face | None:
@@ -47,10 +48,42 @@ class EyesDisplay:
             flags |= pygame.FULLSCREEN
         if self._borderless:
             flags |= pygame.NOFRAME
+        if cfg.resizable and not cfg.fullscreen and not self._borderless:
+            flags |= pygame.RESIZABLE
 
-        screen = pygame.display.set_mode((cfg.width * cfg.scale, cfg.height * cfg.scale), flags)
+        screen = pygame.display.set_mode((cfg.width * self._current_scale, cfg.height * self._current_scale), flags)
         pygame.display.set_caption(cfg.title)
         return screen
+
+    def _handle_resize(self, new_width: int, new_height: int):
+        """Handle window resize event."""
+        cfg = self._config.display
+
+        # Calculate min/max window sizes
+        min_width = cfg.width * cfg.min_scale
+        min_height = cfg.height * cfg.min_scale
+        max_width = cfg.width * cfg.max_scale
+        max_height = cfg.height * cfg.max_scale
+
+        # Clamp window size to bounds
+        clamped_width = max(min_width, min(max_width, new_width))
+        clamped_height = max(min_height, min(max_height, new_height))
+
+        # Calculate new scale based on clamped size (use minimum to maintain aspect ratio)
+        scale_x = clamped_width // cfg.width
+        scale_y = clamped_height // cfg.height
+        new_scale = min(scale_x, scale_y)
+
+        # Update scale and recreate window at correct size
+        self._current_scale = new_scale
+        self._screen = self._create_window()
+
+        # Update renderer with new scale and surface
+        if self._renderer:
+            self._renderer.scale = new_scale
+            self._renderer.surface = self._screen
+
+        logger.debug(f"Window resized to scale {new_scale} ({cfg.width * new_scale}x{cfg.height * new_scale})")
 
     def _toggle_borderless(self):
         """Toggle between borderless and normal window mode."""
@@ -117,7 +150,7 @@ class EyesDisplay:
         self._clock = pygame.time.Clock()
 
         # Create renderer
-        self._renderer = EyeRenderer(self._screen, cfg.scale, self._config.colors.eye_color, self._config.colors.background_color, cfg.smooth_corners)
+        self._renderer = EyeRenderer(self._screen, self._current_scale, self._config.colors.eye_color, self._config.colors.background_color, cfg.smooth_corners)
 
         # Create face
         self._face = Face(self._config)
@@ -156,6 +189,8 @@ class EyesDisplay:
                         if current_time - self._last_click_time < 400:  # Double-click threshold (ms)
                             self._toggle_borderless()
                         self._last_click_time = current_time
+                elif event.type == pygame.VIDEORESIZE:
+                    self._handle_resize(event.w, event.h)
 
             # Process commands from MCP
             self._process_commands()

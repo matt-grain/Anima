@@ -21,6 +21,9 @@ class DisplayConfig:
     fps: int = 60  # Target frame rate
     fullscreen: bool = False
     borderless: bool = False  # Remove window title bar (useful for MCP mode)
+    resizable: bool = True  # Allow window resizing
+    min_scale: int = 2  # Minimum scale factor (128*2 = 256px min width)
+    max_scale: int = 10  # Maximum scale factor (128*10 = 1280px max width)
     window_x: int | None = None  # Window X position (None = system default)
     window_y: int | None = None  # Window Y position (None = system default)
     title: str = "Anima Eyes"
