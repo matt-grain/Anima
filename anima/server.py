@@ -675,10 +675,9 @@ if _check_tts_available():
             if not name:
                 return {"error": "name required"}
             try:
-                from anima.eyes.tts import set_default_voice, speak
+                from anima.eyes.tts import set_default_voice
 
                 full_name = set_default_voice(name)
-                speak(f"Hello! This is my {name} voice!", blocking=False)
                 return {"voice": full_name}
             except Exception as e:
                 return {"error": str(e)}
