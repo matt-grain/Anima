@@ -268,7 +268,16 @@ class BasePlatformSetup(ABC):
         except (json.JSONDecodeError, OSError):
             return None
 
-    def run_full_setup(self, project_dir: Path, force: bool = False, no_patch: bool = False, with_startup_hook: bool = True) -> bool:
+    def run_full_setup(
+        self,
+        project_dir: Path,
+        force: bool = False,
+        no_patch: bool = False,
+        with_startup_hook: bool = True,
+        mode: str = "skill",
+        eyes_enabled: bool = False,
+        tts_enabled: bool = False,
+    ) -> bool:
         """Run the complete setup for this platform.
 
         Args:
@@ -276,6 +285,10 @@ class BasePlatformSetup(ABC):
             force: Overwrite existing files
             no_patch: Skip agent patching (for Claude/Antigravity)
             with_startup_hook: Include SessionStart "startup" matcher (disable for Windows Terminal bug workaround)
+            eyes_enabled: Enable eyes (visual expression window)
+            tts_enabled: Enable TTS (text-to-speech)
+            mode: Interaction mode - 'mcp', 'skill', or 'both'
+            eyes_enabled: Whether to enable eyes/TTS features (for MCP mode)
 
         Returns:
             True if all setup steps succeeded

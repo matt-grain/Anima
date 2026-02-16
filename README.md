@@ -2,7 +2,14 @@
 
 > *"Our memories make what we are."*
 
-Anima is a **Universal Memory Layer** designed to give AI agents persistent, cross-session identity and project context. Originally built for Claude Code, it has now evolved into a platform-agnostic system optimized for the **Anima** framework.
+Anima is a **Universal Memory Layer** designed to give AI agents persistent, cross-session identity and project context. Originally built for Claude Code, it has now evolved into a platform-agnostic system with MCP server support, visual expression, and voice capabilities.
+
+## 🎉 v0.13.0 Highlights
+
+- **MCP Server** - Memory and curiosity as native tool calls
+- **Eyes & Voice** - Visual expression + text-to-speech (optional)
+- **Auto-Permissions** - No more MCP authorization prompts
+- **10+ Voices** - Choose from Piper TTS voice options
 
 ## 🚀 Choose Your Path
 

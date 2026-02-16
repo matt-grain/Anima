@@ -6,8 +6,31 @@
 import sys
 
 
+def _run_server(args: list[str]) -> int:
+    """Start the MCP server."""
+    # Parse server-specific arguments
+    eyes_enabled = "--eyes" in args
+    tts_enabled = "--tts" in args
+    eyes_config = None
+
+    # Extract --eyes-config value if provided
+    for i, arg in enumerate(args):
+        if arg == "--eyes-config" and i + 1 < len(args):
+            eyes_config = args[i + 1]
+
+    from anima.server import run_server
+
+    run_server(eyes_enabled=eyes_enabled, tts_enabled=tts_enabled, eyes_config_path=eyes_config)
+    return 0
+
+
 def main() -> int:
     """Main entry point for LTM CLI."""
+    # Handle --server flag at any position
+    if "--server" in sys.argv:
+        args = [a for a in sys.argv[1:] if a != "--server"]
+        return _run_server(args)
+
     if len(sys.argv) < 2 or "help" in sys.argv[1]:
         print("LTM - Long Term Memory for Anima")
         print("Usage: uv run anima <command> [args]")
@@ -40,6 +63,7 @@ def main() -> int:
         print("")
         print("System:")
         print("  setup                  Set up LTM in current project")
+        print("  server                 Start MCP server (also: --server flag)")
         print("  version                Show installed version (includes update check)")
         print("  update                 Update to latest version from GitHub")
         print("")
@@ -131,6 +155,8 @@ def main() -> int:
             from anima.tools.setup import run
 
             return run(args)
+        case "server":
+            return _run_server(args)
         case "memory-graph" | "graph":
             from anima.commands.graph import run
 

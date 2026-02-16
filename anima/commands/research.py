@@ -104,6 +104,15 @@ def run(args: list[str]) -> int:
     agent = resolver.resolve()
     project = resolver.resolve_project()
 
+    # Get primary agent ID - subagents should see primary's curiosity queue too
+    from anima.core.config import get_config
+
+    config = get_config()
+    primary_agent_id = config.agent.id
+    agent_ids = [agent.id]
+    if agent.id != primary_agent_id:
+        agent_ids.append(primary_agent_id)
+
     # Ensure agent/project exist in DB
     store = MemoryStore()
     store.save_agent(agent)
@@ -156,12 +165,21 @@ def run(args: list[str]) -> int:
         print("=" * 60)
         return 0
 
-    # Get curiosities for current context
-    curiosities = curiosity_store.get_curiosities(
-        agent_id=agent.id,
-        project_id=project.id,
-        status=CuriosityStatus.OPEN,
-    )
+    # Get curiosities for current context (check both current agent and primary)
+    curiosities = []
+    seen_ids = set()
+    for aid in agent_ids:
+        for c in curiosity_store.get_curiosities(
+            agent_id=aid,
+            project_id=project.id,
+            status=CuriosityStatus.OPEN,
+        ):
+            if c.id not in seen_ids:
+                curiosities.append(c)
+                seen_ids.add(c.id)
+
+    # Sort by priority
+    curiosities.sort(key=lambda c: c.priority_score, reverse=True)
 
     # Handle --list flag
     if parsed.list:

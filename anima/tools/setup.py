@@ -6,8 +6,11 @@ LTM setup tool.
 
 Sets up LTM/Anima in a project by copying commands and configuring hooks.
 Supports multiple platforms: Claude Code, Google Antigravity, Opencode, GitHub Copilot.
+
+Now supports MCP vs SKILL mode selection for how Claude interacts with memory.
 """
 
+import json
 import sys
 from pathlib import Path
 
@@ -17,6 +20,119 @@ from anima.tools.platforms import (
     detect_platforms,
 )
 from anima.utils.terminal import safe_print, get_icon
+
+
+# Interaction mode constants
+MODE_MCP = "mcp"
+MODE_SKILL = "skill"
+MODE_BOTH = "both"
+
+
+def get_anima_config_path() -> Path:
+    """Get path to ~/.anima/config.json"""
+    return Path.home() / ".anima" / "config.json"
+
+
+def load_anima_config() -> dict:
+    """Load or create ~/.anima/config.json"""
+    config_path = get_anima_config_path()
+    if config_path.exists():
+        try:
+            return json.loads(config_path.read_text())
+        except json.JSONDecodeError:
+            pass
+    return {}
+
+
+def save_anima_config(config: dict) -> None:
+    """Save config to ~/.anima/config.json"""
+    config_path = get_anima_config_path()
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(json.dumps(config, indent=2) + "\n")
+
+
+def prompt_mode_choice() -> str | None:
+    """Prompt user to choose MCP/SKILL/Both mode.
+
+    Returns:
+        Selected mode ('mcp', 'skill', or 'both'), or None if cancelled
+    """
+    print("\nHow do you want to use Anima?")
+    print()
+    print("  1. MCP Server (Recommended)")
+    print("     - Tools available implicitly: remember(), recall(), set_emotion()")
+    print("     - Claude can use memory mid-thought without /commands")
+    print("     - Requires MCP server configuration")
+    print()
+    print("  2. Skills/Commands")
+    print("     - Use /remember, /recall slash commands")
+    print("     - User-invoked, follows skill instructions")
+    print("     - Current behavior (no MCP needed)")
+    print()
+    print("  3. Both (MCP + Skills as fallback)")
+    print("     - MCP tools for implicit access")
+    print("     - Skills available if MCP fails")
+    print()
+    print("  q. Cancel")
+    print()
+
+    try:
+        choice = input("Select mode [1/2/3/q]: ").strip().lower()
+        if choice == "1":
+            return MODE_MCP
+        elif choice == "2":
+            return MODE_SKILL
+        elif choice == "3":
+            return MODE_BOTH
+        elif choice in ("q", "quit", "exit", ""):
+            print("Setup cancelled.")
+            return None
+        else:
+            print(f"Invalid choice: {choice}")
+            return None
+    except (EOFError, KeyboardInterrupt):
+        print("\nSetup cancelled.")
+        return None
+
+
+def prompt_eyes_choice() -> bool:
+    """Prompt user whether to enable eyes (visual expression).
+
+    Returns:
+        True if eyes should be enabled
+    """
+    print("\nEnable Anima Eyes (visual expression window)?")
+    print("  Requires: pip install anima[eyes]")
+    print()
+    print("  y. Yes - Enable eyes window (pygame)")
+    print("  n. No  - No visual display (default)")
+    print()
+
+    try:
+        choice = input("Enable eyes? [y/N]: ").strip().lower()
+        return choice in ("y", "yes")
+    except (EOFError, KeyboardInterrupt):
+        return False
+
+
+def prompt_tts_choice() -> bool:
+    """Prompt user whether to enable TTS (text-to-speech).
+
+    Returns:
+        True if TTS should be enabled
+    """
+    print("\nEnable Anima Voice (text-to-speech)?")
+    print("  Requires: pip install anima[tts]")
+    print()
+    print("  y. Yes - Enable TTS with Piper voices")
+    print("  n. No  - No voice output (default)")
+    print()
+
+    try:
+        choice = input("Enable TTS? [y/N]: ").strip().lower()
+        return choice in ("y", "yes")
+    except (EOFError, KeyboardInterrupt):
+        return False
 
 
 def prompt_platform_choice(found_configs: list[str]) -> str | None:
@@ -69,6 +185,9 @@ def run(args: list[str]) -> int:
 
     Options:
         --platform <p>      Target platform: claude, antigravity, opencode, copilot
+        --mode <m>          Interaction mode: mcp, skill, or both (prompts if not specified)
+        --eyes              Enable eyes (visual expression window)
+        --tts               Enable TTS (text-to-speech with Piper)
         --commands          Install slash commands only
         --hooks             Configure hooks only
         --no-patch          Skip patching existing agents as subagents
@@ -85,6 +204,20 @@ def run(args: list[str]) -> int:
     no_patch = "--no-patch" in args
     no_startup_hook = "--no-startup-hook" in args  # Windows Terminal bug workaround
     show_help = "--help" in args or "-h" in args
+    eyes_enabled = "--eyes" in args
+    tts_enabled = "--tts" in args
+
+    # Mode selection
+    selected_mode = None
+    if "--mode" in args:
+        idx = args.index("--mode")
+        if idx + 1 < len(args):
+            mode_arg = args[idx + 1].lower()
+            if mode_arg in (MODE_MCP, MODE_SKILL, MODE_BOTH):
+                selected_mode = mode_arg
+            else:
+                print(f"Error: Invalid mode '{mode_arg}'. Use: mcp, skill, or both")
+                return 1
 
     # Platform selection
     target_platform = None
@@ -108,6 +241,9 @@ def run(args: list[str]) -> int:
         "-h",
         "--platform",
         "--target",
+        "--mode",
+        "--eyes",
+        "--tts",
     }
     project_args = []
     skip_next = False
@@ -115,7 +251,7 @@ def run(args: list[str]) -> int:
         if skip_next:
             skip_next = False
             continue
-        if arg in ("--platform", "--target"):
+        if arg in ("--platform", "--target", "--mode"):
             skip_next = True
             continue
         if arg not in flag_args:
@@ -133,6 +269,12 @@ Usage:
 
 Options:
     --platform <p>      Target platform (see list below)
+    --mode <m>          Interaction mode: mcp, skill, or both
+                        - mcp:   MCP server tools (remember(), recall(), etc.)
+                        - skill: Slash commands (/remember, /recall)
+                        - both:  MCP tools + skills as fallback
+    --eyes              Enable eyes (visual expression window)
+    --tts               Enable TTS (text-to-speech with Piper voices)
     --commands          Install slash commands/workflows only
     --hooks             Configure hooks/plugins only
     --no-patch          Skip patching existing agents as subagents
@@ -144,8 +286,17 @@ Platforms:
 {platforms_help}
 
 Examples:
-    # Set up everything with auto-detection
+    # Set up everything with auto-detection (interactive mode selection)
     uv run anima setup
+
+    # MCP mode with eyes and TTS
+    uv run anima setup --mode mcp --eyes --tts
+
+    # MCP mode with just TTS (no visual window)
+    uv run anima setup --mode mcp --tts
+
+    # Skills only (current behavior)
+    uv run anima setup --mode skill
 
     # Force Copilot setup
     uv run anima setup --platform copilot
@@ -207,16 +358,70 @@ Examples:
             print(f"  Error configuring hooks: {e}\n")
             success = False
     else:
-        # Full setup
-        success = platform.run_full_setup(project_dir, force, no_patch, with_startup_hook=not no_startup_hook)
+        # Full setup - prompt for mode if not specified
+        if selected_mode is None and target_platform == "claude":
+            # Claude supports MCP mode, prompt for choice
+            selected_mode = prompt_mode_choice()
+            if selected_mode is None:
+                return 1  # User cancelled
+
+            # If MCP mode, ask about eyes and TTS separately
+            if selected_mode in (MODE_MCP, MODE_BOTH):
+                if not eyes_enabled:
+                    eyes_enabled = prompt_eyes_choice()
+                if not tts_enabled:
+                    tts_enabled = prompt_tts_choice()
+
+        # Default to skill mode for non-Claude platforms (they don't support MCP)
+        if selected_mode is None:
+            selected_mode = MODE_SKILL
+
+        # Save mode choice to config
+        config = load_anima_config()
+        config["mode"] = selected_mode
+        config["eyes_enabled"] = eyes_enabled
+        config["tts_enabled"] = tts_enabled
+        save_anima_config(config)
+        safe_print(f"{get_icon('', '[OK]')} Saved mode '{selected_mode}' to ~/.anima/config.json")
+        if eyes_enabled:
+            safe_print(f"{get_icon('', '[OK]')} Eyes enabled (visual expression)")
+        if tts_enabled:
+            safe_print(f"{get_icon('', '[OK]')} TTS enabled (text-to-speech)")
+        print()
+
+        # Run full setup
+        success = platform.run_full_setup(
+            project_dir,
+            force,
+            no_patch,
+            with_startup_hook=not no_startup_hook,
+            mode=selected_mode,
+            eyes_enabled=eyes_enabled,
+            tts_enabled=tts_enabled,
+        )
 
     if success:
         print("Setup complete!")
         print("\nNext steps:")
-        print("  1. Import starter seeds:")
-        print("     uv run anima import-seeds seeds/")
-        print("  2. If using Anima, check your platform's rules/agent file is configured.")
-        print("  3. Start a new session and say 'Welcome back'")
+        if selected_mode in (MODE_MCP, MODE_BOTH):
+            print("  1. Restart Claude Code to load MCP server")
+            print("  2. Memory tools (remember, recall) are now available implicitly")
+            if eyes_enabled or tts_enabled:
+                deps = []
+                if eyes_enabled:
+                    deps.append("eyes")
+                if tts_enabled:
+                    deps.append("tts")
+                print(f"  3. Install dependencies: pip install anima[{','.join(deps)}]")
+                if eyes_enabled:
+                    print("  4. Eyes window will appear on next session")
+                if tts_enabled:
+                    print(f"  {'5' if eyes_enabled else '4'}. Voice will activate on next session")
+        else:
+            print("  1. Import starter seeds:")
+            print("     uv run anima import-seeds seeds/")
+            print("  2. If using Anima, check your platform's rules/agent file is configured.")
+            print("  3. Start a new session and say 'Welcome back'")
 
     return 0 if success else 1
 

@@ -12,6 +12,11 @@ from anima.utils.agent_patching import has_subagent_marker, add_subagent_marker
 from anima.utils.terminal import safe_print, get_icon
 
 
+def get_global_claude_settings_path() -> Path:
+    """Get the global Claude settings path (~/.claude.json)."""
+    return Path.home() / ".claude.json"
+
+
 class ClaudeSetup(BasePlatformSetup):
     """Setup implementation for Claude Code."""
 
@@ -311,3 +316,241 @@ class ClaudeSetup(BasePlatformSetup):
                 skipped += 1
 
         return (patched, skipped, disabled)
+
+    def _patch_global_agents(self) -> tuple[int, int]:
+        """Patch global agent definitions (~/.claude/agents/) to add subagent marker.
+
+        Global agents without subagent: true will override the primary agent (anima)
+        in ALL projects, which breaks curiosity queue, memories, etc.
+
+        Returns:
+            Tuple of (patched_count, skipped_count)
+        """
+        global_agents_dir = Path.home() / ".claude" / "agents"
+        if not global_agents_dir.exists():
+            return (0, 0)
+
+        patched = 0
+        skipped = 0
+
+        for agent_file in sorted(global_agents_dir.glob("*.md")):
+            try:
+                content = agent_file.read_text(encoding="utf-8")
+
+                # Check if it already has ltm: subagent: true
+                if has_subagent_marker(content):
+                    skipped += 1
+                    continue
+
+                # Check if it has frontmatter at all
+                if not content.startswith("---"):
+                    skipped += 1
+                    continue
+
+                # Add ltm: subagent: true after the opening ---
+                new_content = add_subagent_marker(content)
+
+                if new_content != content:
+                    agent_file.write_text(new_content, encoding="utf-8")
+                    safe_print(f"  {get_icon('', '[OK]')} ~/.claude/agents/{agent_file.name} (marked as subagent)")
+                    patched += 1
+                else:
+                    skipped += 1
+            except (OSError, UnicodeDecodeError):
+                skipped += 1
+                continue
+
+        return (patched, skipped)
+
+    def setup_mcp_server(self, eyes_enabled: bool = False, tts_enabled: bool = False) -> bool:
+        """Configure Anima MCP server in global Claude settings (~/.claude.json).
+
+        Args:
+            eyes_enabled: Whether to enable eyes (visual expression)
+            tts_enabled: Whether to enable TTS (text-to-speech)
+
+        Returns:
+            True if successful
+        """
+        settings_path = get_global_claude_settings_path()
+
+        # Load existing settings or create new
+        settings = {}
+        if settings_path.exists():
+            try:
+                settings = json.loads(settings_path.read_text())
+            except json.JSONDecodeError:
+                safe_print(f"  {get_icon('', '[!]')}  Invalid JSON in {settings_path}, creating backup")
+                shutil.copy2(settings_path, settings_path.with_suffix(".json.bak"))
+                settings = {}
+
+        # Ensure mcpServers section exists
+        if "mcpServers" not in settings:
+            settings["mcpServers"] = {}
+
+        # Find the uv executable path
+        uv_path = shutil.which("uv") or "uv"
+
+        # Build server arguments
+        server_args = ["run", "anima", "--server"]
+        if eyes_enabled:
+            server_args.append("--eyes")
+        if tts_enabled:
+            server_args.append("--tts")
+
+        # Configure Anima MCP server
+        settings["mcpServers"]["anima"] = {
+            "type": "stdio",
+            "command": uv_path,
+            "args": server_args,
+        }
+
+        # Add MCP tool permissions to avoid authorization prompts
+        if "permissions" not in settings:
+            settings["permissions"] = {}
+        if "allow" not in settings["permissions"]:
+            settings["permissions"]["allow"] = []
+
+        # MCP tool permissions use format: mcp__<server>__<tool>
+        # Memory tools (always available)
+        mcp_permissions = [
+            "mcp__anima__remember",
+            "mcp__anima__recall",
+            "mcp__anima__forget",
+            "mcp__anima__list_memories",
+            "mcp__anima__refresh_memories",
+            # Curiosity/research tools
+            "mcp__anima__curious",
+            "mcp__anima__research",
+            "mcp__anima__diary",
+        ]
+
+        # Eyes tools (visual expression)
+        if eyes_enabled:
+            mcp_permissions.extend(
+                [
+                    "mcp__anima__set_emotion",
+                    "mcp__anima__look_at",
+                    "mcp__anima__blink",
+                    "mcp__anima__set_eye_color",
+                    "mcp__anima__get_eyes_state",
+                    "mcp__anima__list_emotions",
+                ]
+            )
+
+        # TTS tools (voice)
+        if tts_enabled:
+            mcp_permissions.extend(
+                [
+                    "mcp__anima__speak",
+                    "mcp__anima__set_voice",
+                    "mcp__anima__list_voices",
+                ]
+            )
+
+        added_permissions = []
+        for perm in mcp_permissions:
+            if perm not in settings["permissions"]["allow"]:
+                settings["permissions"]["allow"].append(perm)
+                added_permissions.append(perm)
+
+        # Write back
+        settings_path.write_text(json.dumps(settings, indent=2) + "\n")
+        safe_print(f"  {get_icon('', '[OK]')} MCP server configured in {settings_path}")
+
+        if added_permissions:
+            safe_print(f"  {get_icon('', '[OK]')} Added {len(added_permissions)} MCP tool permissions")
+
+        if eyes_enabled:
+            safe_print(f"  {get_icon('', '[OK]')} Eyes enabled (visual expression)")
+        if tts_enabled:
+            safe_print(f"  {get_icon('', '[OK]')} TTS enabled (text-to-speech)")
+
+        return True
+
+    def run_full_setup(
+        self,
+        project_dir: Path,
+        force: bool = False,
+        no_patch: bool = False,
+        with_startup_hook: bool = True,
+        mode: str = "skill",
+        eyes_enabled: bool = False,
+        tts_enabled: bool = False,
+    ) -> bool:
+        """Run the complete setup for Claude Code.
+
+        Extends base setup to handle MCP server configuration.
+        """
+        success = True
+
+        # If MCP mode, configure MCP server first
+        if mode in ("mcp", "both"):
+            print("Configuring MCP server...")
+            try:
+                if not self.setup_mcp_server(eyes_enabled, tts_enabled):
+                    success = False
+                print()
+            except Exception as e:
+                print(f"  Error configuring MCP server: {e}\n")
+                success = False
+
+        # Commands - always install (needed as fallback even in MCP mode,
+        # and some commands like /refresh-memories are essential at startup)
+        print(f"Installing commands ({self.name})...")
+        try:
+            copied, skipped = self.setup_commands(project_dir, force)
+            print(f"  Commands: {copied} installed, {skipped} skipped\n")
+        except Exception as e:
+            print(f"  Error installing commands: {e}\n")
+            success = False
+
+        # Skills - always install (many skills like /dream, /curious
+        # don't have MCP equivalents, so they're needed even in MCP mode)
+        print("Installing skills...")
+        try:
+            copied, skipped = self.setup_skills(project_dir, force)
+            if copied > 0 or skipped > 0:
+                print(f"  Skills: {copied} installed, {skipped} skipped\n")
+            else:
+                print("  No skills found in package\n")
+        except Exception as e:
+            print(f"  Error installing skills: {e}\n")
+            success = False
+
+        # Hooks (always configure)
+        print(f"Configuring {self.display_name} hooks...")
+        try:
+            if not self.setup_hooks(project_dir, force, with_startup_hook):
+                pass  # Warning already printed
+            if not with_startup_hook:
+                safe_print(f"  {get_icon('', '[!]')} SessionStart 'startup' hook DISABLED (Windows Terminal workaround)")
+                safe_print("      Use /load-context to manually load memories at session start")
+            print()
+        except Exception as e:
+            print(f"  Error configuring hooks: {e}\n")
+            success = False
+
+        # Patch global agents (~/.claude/agents/) to prevent them overriding anima
+        if not no_patch:
+            try:
+                patched, skipped = self._patch_global_agents()
+                if patched > 0:
+                    print(f"Patched {patched} global agent(s) as subagents\n")
+            except Exception as e:
+                print(f"  Error patching global agents: {e}\n")
+
+        # Extras (local agent patching, only if SKILL or BOTH mode)
+        if mode in ("skill", "both") and not no_patch:
+            try:
+                if not self.setup_extras(project_dir, force):
+                    pass  # Warning already printed
+            except Exception as e:
+                print(f"  Error in platform extras: {e}\n")
+                success = False
+
+        # Write setup version marker for update detection
+        if success:
+            self.write_setup_version_marker(project_dir)
+
+        return success

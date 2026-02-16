@@ -1,6 +1,6 @@
 [project]
 name = "anima"
-version = "0.12.22"
+version = "0.13.0"
 description = "Long Term Memory for Anima Agents - human-like persistent memory across sessions"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -15,6 +15,20 @@ dependencies = [
     "pyyaml>=6.0.0",
     "pydantic>=2.0.0",
     "loguru>=0.7.0",
+    "mcp>=1.1.0",
+]
+
+[project.optional-dependencies]
+eyes = [
+    "pygame>=2.5.0",
+]
+tts = [
+    "piper-tts>=1.2.0",
+]
+# Install both with: pip install anima[eyes,tts]
+all = [
+    "pygame>=2.5.0",
+    "piper-tts>=1.2.0",
 ]
 
 [project.scripts]
