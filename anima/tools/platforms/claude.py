@@ -412,41 +412,19 @@ class ClaudeSetup(BasePlatformSetup):
             settings["permissions"]["allow"] = []
 
         # MCP tool permissions use format: mcp__<server>__<tool>
-        # Memory tools (always available)
+        # Consolidated tools (token-optimized - see Anthropic MCP best practices)
         mcp_permissions = [
-            "mcp__anima__remember",
-            "mcp__anima__recall",
-            "mcp__anima__forget",
-            "mcp__anima__list_memories",
-            "mcp__anima__refresh_memories",
-            # Curiosity/research tools
-            "mcp__anima__curious",
-            "mcp__anima__research",
-            "mcp__anima__diary",
+            "mcp__anima__memory",  # remember|recall|forget|list|refresh
+            "mcp__anima__curiosity",  # add|research|complete|diary|list
         ]
 
-        # Eyes tools (visual expression)
+        # Eyes tool (visual expression)
         if eyes_enabled:
-            mcp_permissions.extend(
-                [
-                    "mcp__anima__set_emotion",
-                    "mcp__anima__look_at",
-                    "mcp__anima__blink",
-                    "mcp__anima__set_eye_color",
-                    "mcp__anima__get_eyes_state",
-                    "mcp__anima__list_emotions",
-                ]
-            )
+            mcp_permissions.append("mcp__anima__eyes")  # emotion|look|blink|color|state|list
 
-        # TTS tools (voice)
+        # Voice tool (TTS)
         if tts_enabled:
-            mcp_permissions.extend(
-                [
-                    "mcp__anima__speak",
-                    "mcp__anima__set_voice",
-                    "mcp__anima__list_voices",
-                ]
-            )
+            mcp_permissions.append("mcp__anima__voice")  # speak|set|list
 
         added_permissions = []
         for perm in mcp_permissions:
