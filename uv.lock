@@ -8,7 +8,7 @@ resolution-markers = [
 
 [[package]]
 name = "anima"
-version = "0.13.3"
+version = "0.13.4"
 source = { editable = "." }
 dependencies = [
     { name = "fastembed" },
@@ -37,7 +37,9 @@ dev = [
     { name = "anima" },
     { name = "anthropic" },
     { name = "bandit" },
+    { name = "piper-tts" },
     { name = "pre-commit" },
+    { name = "pygame" },
     { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -68,7 +70,9 @@ dev = [
     { name = "anima", editable = "." },
     { name = "anthropic", specifier = ">=0.79.0" },
     { name = "bandit", specifier = ">=1.9.2" },
+    { name = "piper-tts", specifier = ">=1.2.0" },
     { name = "pre-commit", specifier = ">=4.5.1" },
+    { name = "pygame", specifier = ">=2.5.0" },
     { name = "pyright", specifier = ">=1.1.407" },
     { name = "pytest", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", specifier = ">=0.24.0" },

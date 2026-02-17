@@ -43,8 +43,8 @@ logger.add(str(Path.home() / ".anima" / "mcp_server.log"), rotation="1 MB", leve
 
 logger.info("=== Anima MCP Server module loaded ===")
 
-# Global state for eyes display and TTS
-_eyes_display = None
+# Global state for eyes client and TTS
+_eyes_client = None
 _eyes_config_path: str | None = None
 _eyes_enabled = False
 _tts_enabled = False
@@ -70,24 +70,115 @@ def _check_tts_available() -> bool:
         return False
 
 
-def get_eyes_display():
-    """Get or create the eyes display instance (lazy initialization)."""
-    global _eyes_display
-    if _eyes_display is None and _eyes_enabled:
-        try:
-            from anima.eyes.display import EyesDisplay
-            from anima.eyes.config import Config
+def _set_eyes_emotion(emotion: str) -> None:
+    """Helper to set emotion on client."""
+    if _eyes_client is not None:
+        _eyes_client.set_emotion(emotion)
 
-            logger.info("Creating eyes display instance...")
-            config = Config.load(_eyes_config_path)
-            config.display.borderless = True  # Always borderless in MCP mode
-            _eyes_display = EyesDisplay(config)
-            _eyes_display.start()
-            logger.info("Eyes display started in background thread")
-        except Exception as e:
-            logger.warning(f"Could not start eyes display: {e}")
-            return None
-    return _eyes_display
+
+def _spawn_windowless_win32(cmd: list[str]) -> None:
+    """Spawn a Python subprocess on Windows without any console window."""
+    import subprocess
+    import tempfile
+
+    # Build the command string for VBScript, escaping double quotes
+    cmd_str = " ".join(f'"""{c}"""' if " " in c else c for c in cmd)
+    vbs_content = f'CreateObject("WScript.Shell").Run "{cmd_str}", 0, False\n'
+
+    vbs_path = Path(tempfile.gettempdir()) / "anima_eyes_launch.vbs"
+    vbs_path.write_text(vbs_content, encoding="utf-8")
+
+    try:
+        subprocess.Popen(
+            ["wscript.exe", str(vbs_path)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+        )
+    except Exception:
+        CREATE_NO_WINDOW = 0x08000000
+        subprocess.Popen(
+            cmd,
+            creationflags=CREATE_NO_WINDOW,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+        )
+
+
+def _auto_start_eyes_daemon() -> bool:
+    """Auto-start the eyes daemon if not running."""
+    import sys
+    import time
+
+    try:
+        cmd = [sys.executable, "-m", "anima", "eyes-daemon", "start", "--foreground"]
+
+        if sys.platform == "win32":
+            _spawn_windowless_win32(cmd)
+        else:
+            import subprocess
+
+            subprocess.Popen(
+                cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL,
+                start_new_session=True,
+            )
+
+        # Wait for daemon to start
+        from anima.eyes.daemon import is_daemon_running
+
+        for _ in range(50):  # Wait up to 5 seconds
+            time.sleep(0.1)
+            if is_daemon_running():
+                logger.info("Eyes daemon auto-started successfully")
+                return True
+
+        logger.warning("Eyes daemon did not start in time")
+        return False
+
+    except Exception as e:
+        logger.warning(f"Failed to auto-start eyes daemon: {e}")
+        return False
+
+
+def get_eyes_client():
+    """Get or create the eyes daemon client."""
+    global _eyes_client
+
+    if not _eyes_enabled:
+        return None
+
+    if _eyes_client is not None:
+        return _eyes_client
+
+    try:
+        from anima.eyes.daemon import is_daemon_running
+
+        # Auto-start daemon if not running
+        if not is_daemon_running():
+            logger.info("Eyes daemon not running, auto-starting...")
+            if not _auto_start_eyes_daemon():
+                return None
+
+        # Connect to daemon
+        from anima.eyes.client import EyesDaemonClient
+
+        logger.info("Connecting to eyes daemon...")
+        _eyes_client = EyesDaemonClient()
+        if _eyes_client.connect():
+            logger.info("Connected to eyes daemon")
+            return _eyes_client
+
+        logger.warning("Could not connect to eyes daemon")
+        _eyes_client = None
+        return None
+
+    except Exception as e:
+        logger.warning(f"Could not start eyes: {e}")
+        return None
 
 
 @asynccontextmanager
@@ -95,11 +186,11 @@ async def lifespan(server):
     """Initialize resources when server starts, cleanup on shutdown."""
     logger.info("MCP server lifespan starting")
 
-    # Start eyes if enabled
+    # Connect to eyes daemon if enabled
     if _eyes_enabled:
-        display = get_eyes_display()
-        if display:
-            logger.info("Eyes display ready")
+        client = get_eyes_client()
+        if client:
+            logger.info("Eyes daemon client ready")
 
             # Optionally speak greeting
             try:
@@ -110,7 +201,7 @@ async def lifespan(server):
                 config = Config.load(_eyes_config_path)
                 if config.tts.enabled and config.tts.speak_on_startup:
                     time.sleep(0.5)
-                    display.set_emotion("happy")
+                    client.set_emotion("happy")
                     set_volume(config.tts.volume)
                     speak_greeting(voice_name=config.tts.voice)
             except Exception as e:
@@ -120,8 +211,8 @@ async def lifespan(server):
         yield
     finally:
         logger.info("MCP server shutting down")
-        if _eyes_display is not None:
-            _eyes_display.stop()
+        if _eyes_client is not None:
+            _eyes_client.disconnect()
         logger.info("Cleanup complete")
 
 
@@ -242,9 +333,9 @@ def _do_remember(text: str, agent, project, store: MemoryStore) -> dict:
     except Exception as e:
         logger.warning(f"Could not generate embeddings: {e}")
 
-    if _eyes_enabled and _eyes_display:
+    if _eyes_enabled:
         if memory_impact in (ImpactLevel.HIGH, ImpactLevel.CRITICAL):
-            _eyes_display.set_emotion("happy")
+            _set_eyes_emotion("happy")
 
     return {
         "id": mem.id[:8],
@@ -259,8 +350,8 @@ def _do_recall(query: str, limit: int, agent, project, store: MemoryStore) -> di
     if not query:
         return {"error": "query required for recall"}
 
-    if _eyes_enabled and _eyes_display:
-        _eyes_display.set_emotion("focused")
+    if _eyes_enabled:
+        _set_eyes_emotion("focused")
 
     candidate_memories = store.get_memories_with_embeddings(
         agent_id=agent.id,
@@ -295,8 +386,8 @@ def _do_recall(query: str, limit: int, agent, project, store: MemoryStore) -> di
                     }
                 )
 
-    if _eyes_enabled and _eyes_display:
-        _eyes_display.set_emotion("normal")
+    if _eyes_enabled:
+        _set_eyes_emotion("normal")
 
     return {"results": results[:limit], "count": len(results)}
 
@@ -386,8 +477,8 @@ def _do_refresh(agent, project, store: MemoryStore) -> dict:
 
     stats = injector.get_stats(agent, project)
 
-    if _eyes_enabled and _eyes_display:
-        _eyes_display.set_emotion("happy")
+    if _eyes_enabled:
+        _set_eyes_emotion("happy")
 
     return {
         "dsl": memories_dsl,
@@ -454,8 +545,8 @@ def _do_add_curiosity(question: str, agent, project, store: CuriosityStore) -> d
         project_id=project.id if memory_region == RegionType.PROJECT else None,
     )
 
-    if _eyes_enabled and _eyes_display:
-        _eyes_display.set_emotion("focused")
+    if _eyes_enabled:
+        _set_eyes_emotion("focused")
 
     result = {"id": c.id[:8], "question": question, "queue": store.count_open(agent.id, project.id)}
     if c.recurrence_count > 1:
@@ -478,8 +569,8 @@ def _do_research(topic: str, agent, project, store: CuriosityStore) -> dict:
 
     if topic:
         set_last_research()
-        if _eyes_enabled and _eyes_display:
-            _eyes_display.set_emotion("focused")
+        if _eyes_enabled:
+            _set_eyes_emotion("focused")
         return {"mode": "ad-hoc", "topic": topic}
 
     # Get curiosities for current context
@@ -502,8 +593,8 @@ def _do_research(topic: str, agent, project, store: CuriosityStore) -> dict:
         return {"queue": 0, "message": "No open questions"}
 
     top = curiosities[0]
-    if _eyes_enabled and _eyes_display:
-        _eyes_display.set_emotion("focused")
+    if _eyes_enabled:
+        _set_eyes_emotion("focused")
 
     return {
         "id": top.id[:8],
@@ -528,8 +619,8 @@ def _do_complete_research(curiosity_id: str, store: CuriosityStore) -> dict:
     store.update_status(c.id, CuriosityStatus.RESEARCHED)
     set_last_research()
 
-    if _eyes_enabled and _eyes_display:
-        _eyes_display.set_emotion("happy")
+    if _eyes_enabled:
+        _set_eyes_emotion("happy")
 
     return {"completed": c.id[:8], "question": c.question}
 
@@ -569,8 +660,8 @@ def _do_diary(title: str, content: str, read_id: str) -> dict:
         template = get_diary_template(title)
         filepath.write_text(template, encoding="utf-8")
 
-    if _eyes_enabled and _eyes_display:
-        _eyes_display.set_emotion("happy")
+    if _eyes_enabled:
+        _set_eyes_emotion("happy")
 
     return {"created": filename, "path": str(filepath)}
 
@@ -612,30 +703,26 @@ if _check_eyes_available():
         if not _eyes_enabled:
             return {"error": "Eyes not enabled"}
 
-        display = get_eyes_display()
-        if not display:
+        client = get_eyes_client()
+        if not client:
             return {"error": "Eyes not available"}
 
         if action == "emotion":
             if emotion.lower() not in EMOTION_NAMES:
                 return {"error": f"Unknown emotion. Available: {', '.join(EMOTION_NAMES)}"}
-            display.set_emotion(emotion.lower())
-            return {"emotion": emotion.lower()}
+            return client.set_emotion(emotion.lower())
 
         elif action == "look":
-            display.look_at(max(-1, min(1, x)), max(-1, min(1, y)))
-            return {"looking": [x, y]}
+            return client.look_at(max(-1, min(1, x)), max(-1, min(1, y)))
 
         elif action == "blink":
-            display.blink()
-            return {"blinked": True}
+            return client.blink()
 
         elif action == "color":
-            display.set_eye_color(max(0, min(255, r)), max(0, min(255, g)), max(0, min(255, b)))
-            return {"color": [r, g, b]}
+            return client.set_eye_color(max(0, min(255, r)), max(0, min(255, g)), max(0, min(255, b)))
 
         elif action == "state":
-            return display.get_state()
+            return client.get_state()
 
         elif action == "list":
             return {"emotions": EMOTION_NAMES}

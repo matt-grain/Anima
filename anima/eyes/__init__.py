@@ -32,3 +32,17 @@ def get_config():
     from .config import Config
 
     return Config
+
+
+def get_daemon_client():
+    """Get the EyesDaemonClient class (lazy import)."""
+    from .client import EyesDaemonClient
+
+    return EyesDaemonClient
+
+
+def get_daemon_server():
+    """Get the EyesDaemonServer class (lazy import)."""
+    from .daemon import EyesDaemonServer
+
+    return EyesDaemonServer

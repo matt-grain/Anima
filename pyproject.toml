@@ -1,6 +1,6 @@
 [project]
 name = "anima"
-version = "0.13.3"
+version = "0.13.4"
 description = "Long Term Memory for Anima Agents - human-like persistent memory across sessions"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -47,6 +47,8 @@ dev = [
     "radon>=6.0.1",
     "ruff>=0.14.10",
     "ty>=0.0.12",
+    "pygame>=2.5.0",
+    "piper-tts>=1.2.0",
 ]
 
 [build-system]

@@ -64,6 +64,7 @@ def main() -> int:
         print("System:")
         print("  setup                  Set up LTM in current project")
         print("  server                 Start MCP server (also: --server flag)")
+        print("  eyes-daemon            Manage the eyes display daemon (start/stop/status)")
         print("  version                Show installed version (includes update check)")
         print("  update                 Update to latest version from GitHub")
         print("")
@@ -157,6 +158,10 @@ def main() -> int:
             return run(args)
         case "server":
             return _run_server(args)
+        case "eyes-daemon":
+            from anima.commands.eyes_daemon import run
+
+            return run(args)
         case "memory-graph" | "graph":
             from anima.commands.graph import run
 

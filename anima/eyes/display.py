@@ -52,8 +52,19 @@ class EyesDisplay:
             flags |= pygame.RESIZABLE
 
         screen = pygame.display.set_mode((cfg.width * self._current_scale, cfg.height * self._current_scale), flags)
+        # Initial caption - will be updated with emotion in _update_window_title
         pygame.display.set_caption(cfg.title)
         return screen
+
+    def _update_window_title(self) -> None:
+        """Update window title with PID and current emotion."""
+        pid = os.getpid()
+        emotion = "unknown"
+        if self._face:
+            state = self._face.get_state()
+            emotion = state.get("emotion", "unknown")
+        title = f"Anima Eyes [PID:{pid}] - {emotion}"
+        pygame.display.set_caption(title)
 
     def _handle_resize(self, new_width: int, new_height: int):
         """Handle window resize event."""
@@ -150,11 +161,20 @@ class EyesDisplay:
         self._clock = pygame.time.Clock()
 
         # Create renderer
-        self._renderer = EyeRenderer(self._screen, self._current_scale, self._config.colors.eye_color, self._config.colors.background_color, cfg.smooth_corners)
+        self._renderer = EyeRenderer(
+            self._screen,
+            self._current_scale,
+            self._config.colors.eye_color,
+            self._config.colors.background_color,
+            cfg.smooth_corners,
+        )
 
         # Create face
         self._face = Face(self._config)
         self._face.set_emotion("normal")
+
+        # Set initial window title with PID and emotion
+        self._update_window_title()
 
     def _process_commands(self):
         """Process any pending commands from the queue."""
@@ -195,11 +215,12 @@ class EyesDisplay:
             # Process commands from MCP
             self._process_commands()
 
-            # Re-assert always-on-top every second (60 frames)
+            # Re-assert always-on-top and update title every second (60 frames)
             frame_count += 1
             if frame_count >= 60:
                 frame_count = 0
                 self._set_always_on_top()
+                self._update_window_title()
 
             # Clear and draw
             self._renderer.clear()
