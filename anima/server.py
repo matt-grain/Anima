@@ -691,6 +691,34 @@ def _do_list_curiosities(agent, project, store: CuriosityStore) -> dict:
 
 
 # =============================================================================
+# EMOTION COLOR MAPPING - Unified embodiment colors
+# =============================================================================
+
+# Maps emotions to RGB tuples for synchronized eyes + light colors
+EMOTION_COLORS: dict[str, tuple[int, int, int]] = {
+    "normal": (0, 255, 255),  # cyan - neutral/default
+    "happy": (0, 255, 0),  # green - positive
+    "glee": (255, 255, 0),  # yellow - bright joy
+    "excited": (255, 200, 0),  # gold - enthusiasm
+    "awe": (255, 0, 255),  # magenta - wonder
+    "surprised": (255, 255, 0),  # yellow - alert
+    "focused": (0, 200, 255),  # cyan-blue - concentration
+    "suspicious": (255, 0, 255),  # magenta - caution
+    "skeptic": (255, 0, 255),  # magenta - doubt
+    "annoyed": (255, 100, 0),  # orange - mild frustration
+    "frustrated": (255, 50, 0),  # red-orange - frustration
+    "angry": (255, 0, 0),  # red - anger
+    "furious": (255, 0, 0),  # red - intense anger
+    "sad": (0, 100, 255),  # blue - melancholy
+    "worried": (255, 200, 0),  # amber - concern
+    "scared": (0, 150, 255),  # light blue - fear
+    "sleepy": (100, 100, 200),  # soft blue - drowsy
+    "unimpressed": (150, 150, 150),  # gray-ish - meh
+    "squint": (0, 200, 255),  # cyan - peering
+}
+
+
+# =============================================================================
 # EYES TOOLS (only available if eyes dependencies installed)
 # =============================================================================
 
@@ -710,7 +738,24 @@ if _check_eyes_available():
         if action == "emotion":
             if emotion.lower() not in EMOTION_NAMES:
                 return {"error": f"Unknown emotion. Available: {', '.join(EMOTION_NAMES)}"}
-            return client.set_emotion(emotion.lower())
+
+            emo = emotion.lower()
+            result = client.set_emotion(emo)
+
+            # Synchronized color: set eye color AND light to match emotion
+            if emo in EMOTION_COLORS:
+                er, eg, eb = EMOTION_COLORS[emo]
+                client.set_eye_color(er, eg, eb)
+                result["eye_color"] = [er, eg, eb]
+
+                # Also set USB light if available
+                if _light_enabled:
+                    buddy = _get_ibuddy()
+                    if buddy:
+                        buddy.set_rgb(er, eg, eb)
+                        result["light_color"] = [er, eg, eb]
+
+            return result
 
         elif action == "look":
             return client.look_at(max(-1, min(1, x)), max(-1, min(1, y)))
@@ -781,17 +826,95 @@ if _check_tts_available():
             return {"error": "action: speak|set|list"}
 
 
-def run_server(eyes_enabled: bool = False, tts_enabled: bool = False, eyes_config_path: str | None = None):
+# =============================================================================
+# LIGHT TOOLS (i-Buddy USB light)
+# =============================================================================
+
+_light_enabled = False
+_ibuddy_instance = None
+
+
+def _check_light_available() -> bool:
+    """Check if hidapi is available for light control."""
+    try:
+        import hid  # noqa: F401
+
+        return True
+    except ImportError:
+        return False
+
+
+def _get_ibuddy():
+    """Get or create the i-Buddy singleton."""
+    global _ibuddy_instance
+    if _ibuddy_instance is None:
+        from anima.light.ibuddy import IBuddy
+
+        _ibuddy_instance = IBuddy()
+        if not _ibuddy_instance.open():
+            _ibuddy_instance = None
+    return _ibuddy_instance
+
+
+if _check_light_available():
+    from anima.light.ibuddy import COLOR_MAP
+
+    @mcp.tool()
+    def light(action: str, color: str = "", r: int = 0, g: int = 0, b: int = 0, heart: bool = False) -> dict:
+        """USB light control. action: color|rgb|off|list"""
+        if not _light_enabled:
+            return {"error": "Light not enabled (use --light flag)"}
+
+        buddy = _get_ibuddy()
+        if not buddy:
+            return {"error": "i-Buddy not connected"}
+
+        if action == "color":
+            if not color:
+                return {"error": "color name required (red, green, blue, yellow, cyan, magenta, white, off)"}
+            if buddy.set_color_by_name(color, heart=heart):
+                return {"status": "ok", "color": color, "heart": heart}
+            return {"error": f"Unknown color: {color}. Available: {list(COLOR_MAP.keys())}"}
+
+        elif action == "rgb":
+            if buddy.set_rgb(r, g, b, heart=heart):
+                return {"status": "ok", "r": r, "g": g, "b": b, "heart": heart}
+            return {"error": "Failed to set RGB"}
+
+        elif action == "off":
+            if buddy.off():
+                return {"status": "ok", "color": "off"}
+            return {"error": "Failed to turn off"}
+
+        elif action == "list":
+            return {
+                "colors": list(COLOR_MAP.keys()),
+                "connected": buddy.connected,
+                "device_count": buddy.device_count,
+            }
+
+        else:
+            return {"error": "action: color|rgb|off|list"}
+
+
+def run_server(
+    eyes_enabled: bool = False,
+    tts_enabled: bool = False,
+    light_enabled: bool = False,
+    eyes_config_path: str | None = None,
+):
     """Run the MCP server.
 
     Args:
         eyes_enabled: Whether to enable eyes (visual expression)
         tts_enabled: Whether to enable TTS (text-to-speech)
+        light_enabled: Whether to enable i-Buddy USB light
         eyes_config_path: Path to eyes config file
     """
-    global _eyes_enabled, _tts_enabled, _eyes_config_path
+    global _eyes_enabled, _tts_enabled, _light_enabled, _eyes_config_path
     _eyes_enabled = eyes_enabled and _check_eyes_available()
     _tts_enabled = tts_enabled and _check_tts_available()
+    _light_enabled = light_enabled and _check_light_available()
     _eyes_config_path = eyes_config_path
 
     if _eyes_enabled:
@@ -803,6 +926,11 @@ def run_server(eyes_enabled: bool = False, tts_enabled: bool = False, eyes_confi
         logger.info("TTS features enabled (text-to-speech)")
     else:
         logger.info("Running without TTS (not enabled or piper not installed)")
+
+    if _light_enabled:
+        logger.info("Light features enabled (i-Buddy USB)")
+    else:
+        logger.info("Running without light (not enabled or hidapi not installed)")
 
     logger.info("Starting MCP server...")
     mcp.run()
