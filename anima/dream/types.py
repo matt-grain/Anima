@@ -14,6 +14,7 @@ from enum import Enum
 class DreamStage(str, Enum):
     """Sleep stages for dream processing."""
 
+    CLEANUP = "CLEANUP"  # Memory hygiene (dedup, decay, prune stale)
     N2 = "N2"  # Memory consolidation (systematic, housekeeping)
     N3 = "N3"  # Deep processing (analytical, reductive)
     REM = "REM"  # Divergent dreaming (wandering, associative)
@@ -23,6 +24,8 @@ class DreamState(str, Enum):
     """FSM states for dream crash recovery."""
 
     IDLE = "IDLE"  # No dream in progress
+    CLEANUP_RUNNING = "CLEANUP_RUNNING"  # Cleanup stage in progress
+    CLEANUP_COMPLETE = "CLEANUP_COMPLETE"  # Cleanup done, ready for N2
     N2_RUNNING = "N2_RUNNING"  # N2 stage in progress
     N2_COMPLETE = "N2_COMPLETE"  # N2 done, ready for N3
     N3_RUNNING = "N3_RUNNING"  # N3 stage in progress
@@ -45,7 +48,7 @@ class DreamConfig:
     """Configuration for dream execution."""
 
     # Which stages to run
-    stages: list[DreamStage] = field(default_factory=lambda: [DreamStage.N2, DreamStage.N3, DreamStage.REM])
+    stages: list[DreamStage] = field(default_factory=lambda: [DreamStage.CLEANUP, DreamStage.N2, DreamStage.N3, DreamStage.REM])
 
     # N2 configuration
     n2_similarity_threshold: float = 0.6  # Higher than normal (0.5) to reduce noise
@@ -61,11 +64,45 @@ class DreamConfig:
     rem_max_iterations: int = 5  # Bounded wandering (avoid AI coma!)
     rem_temperature: float = 0.9  # Higher creativity
 
+    # Cleanup configuration
+    cleanup_wip_max_age_days: int = 7  # Delete WIP memories older than this
+    cleanup_low_max_age_days: int = 14  # Delete LOW impact older than this
+    cleanup_duplicate_threshold: float = 0.9  # Similarity above this = duplicate
+    cleanup_dry_run: bool = False  # If True, report but don't delete
+
     # General
     project_lookback_days: int = 7  # Process memories from last N days
     diary_lookback_days: int = 7  # Process diaries from last N days
     include_agent_memories: bool = True
     include_project_memories: bool = True
+
+
+@dataclass
+class CleanupResult:
+    """Results from cleanup stage."""
+
+    # Forgotten memories deleted
+    forgotten_deleted: int
+
+    # Stale WIP memories deleted
+    wip_deleted: int
+
+    # Duplicates handled
+    duplicates_found: int
+    duplicates_deleted: int  # SUBCONSCIOUS duplicates
+    duplicates_merged: int  # Other kinds merged
+
+    # LOW impact old memories deleted
+    low_impact_deleted: int
+
+    # Stats
+    duration_seconds: float
+    memories_scanned: int
+    total_deleted: int
+
+    # Details for verbose output
+    deleted_ids: list[str] = field(default_factory=list)
+    merged_pairs: list[tuple[str, str]] = field(default_factory=list)  # (kept_id, deleted_id)
 
 
 @dataclass

@@ -415,13 +415,31 @@ def _detect_contradiction(
 
 
 def _get_known_project_names(store: MemoryStore) -> set[str]:
-    """Get all known project names/IDs from the database."""
+    """Get all known project names/IDs from the database.
+
+    Also extracts meaningful word-parts from hyphenated IDs (e.g. "biochar" from
+    "biochar-impact-tool") so that memories referencing a project by keyword
+    rather than exact ID are still matched.  Short/generic words (≤ 5 chars)
+    are excluded to avoid false positives.
+    """
+    # Generic words that appear in project IDs but are too common to be meaningful
+    _GENERIC_WORDS = {"test", "grain", "backend", "stats", "anima", "claude", "tool"}
+
     projects = set()
     with store._connect() as conn:
         rows = conn.execute("SELECT id, name FROM projects").fetchall()
         for row in rows:
-            projects.add(row["id"].lower())
-            projects.add(row["name"].lower())
+            pid = row["id"].lower()
+            pname = row["name"].lower()
+            projects.add(pid)
+            projects.add(pname)
+            # Add significant word-parts from hyphenated/underscored IDs
+            for part in re.split(r"[-_]", pid):
+                if len(part) > 5 and part not in _GENERIC_WORDS:
+                    projects.add(part)
+            for part in re.split(r"[-_ ]", pname):
+                if len(part) > 5 and part not in _GENERIC_WORDS:
+                    projects.add(part)
     return projects
 
 
@@ -482,19 +500,14 @@ def _detect_scope_issue(memory: Memory, known_projects: set[str]) -> Optional[Sc
     ]
     has_project_signals = any(signal in content_lower for signal in project_signals)
 
-    # Achievement with version = likely project-specific
-    achievement_signals = ["built", "released", "completed", "shipped", "implemented"]
-    has_achievement = any(signal in content_lower for signal in achievement_signals)
-
     # Decision logic
     if current_region == "AGENT":
-        # ACHIEVEMENTS are EXPECTED to have version numbers - don't flag them
-        # for having versions + achievement signals, that's literally what they are!
+        # ACHIEVEMENTS are EXPECTED to have version numbers - that's literally what they are!
+        # Flag them when they mention a known project name (any project-specific keyword
+        # is enough - achievements are always about project work, not agent-wide identity).
         if is_achievement:
-            # Only flag achievements if they mention a specific project AND have project signals
-            # beyond just version numbers (commits, releases, deployed, etc.)
-            if mentioned_projects and has_project_signals:
-                suggested_project = mentioned_projects[0] if mentioned_projects else None
+            if mentioned_projects:
+                suggested_project = mentioned_projects[0]
                 return ScopeIssue(
                     memory_id=memory.id,
                     content=memory.content[:200] + ("..." if len(memory.content) > 200 else ""),
@@ -502,12 +515,14 @@ def _detect_scope_issue(memory: Memory, known_projects: set[str]) -> Optional[Sc
                     current_project_id=memory.project_id,
                     suggested_region="PROJECT",
                     suggested_project_id=suggested_project,
-                    reason=f"AGENT achievement mentions project '{suggested_project}' with project-specific context",
+                    reason=f"AGENT achievement mentions project '{suggested_project}' — achievements are project-specific events",
                 )
         else:
-            # Non-achievement memories with strong project signals
-            if mentioned_projects and has_version and has_achievement:
-                suggested_project = mentioned_projects[0] if mentioned_projects else None
+            # Non-achievement: flag if a known project is mentioned and the content
+            # doesn't read as an agent-wide insight.  Version numbers are no longer
+            # required — a plain architectural note about a specific project suffices.
+            if mentioned_projects and not has_agent_signals:
+                suggested_project = mentioned_projects[0]
                 return ScopeIssue(
                     memory_id=memory.id,
                     content=memory.content[:200] + ("..." if len(memory.content) > 200 else ""),
@@ -515,7 +530,7 @@ def _detect_scope_issue(memory: Memory, known_projects: set[str]) -> Optional[Sc
                     current_project_id=memory.project_id,
                     suggested_region="PROJECT",
                     suggested_project_id=suggested_project,
-                    reason=f"AGENT memory mentions project '{suggested_project}' with version number and achievement",
+                    reason=f"AGENT memory mentions project '{suggested_project}' without agent-wide learning signals",
                 )
             elif has_version and has_project_signals and not has_agent_signals:
                 return ScopeIssue(

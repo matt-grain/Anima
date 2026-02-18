@@ -837,7 +837,7 @@ _ibuddy_instance = None
 def _check_light_available() -> bool:
     """Check if hidapi is available for light control."""
     try:
-        import hid  # noqa: F401
+        import hid  # type: ignore[import-not-found]  # noqa: F401
 
         return True
     except ImportError:

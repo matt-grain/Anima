@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING
 from loguru import logger
 
 if TYPE_CHECKING:
-    import hid
+    import hid  # type: ignore[import-not-found]
 
 # i-Buddy VID:PID
 VID = 0x1130
@@ -75,7 +75,7 @@ class IBuddy:
     def open(self) -> bool:
         """Open connection to ALL i-Buddy devices on interface 1."""
         try:
-            import hid
+            import hid  # type: ignore[import-not-found]
         except ImportError:
             logger.error("hidapi not installed. Run: uv add hidapi")
             return False

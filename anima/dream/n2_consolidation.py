@@ -67,6 +67,11 @@ def run_n2_consolidation(
     # Check for overlap between subconscious and conscious memories
     subconscious_result = _integrate_subconscious_memories(store, agent_id, project_id, config, quiet)
 
+    # Phase 0b: Embedding Repair
+    # Re-embed any memories that lost their embedding (e.g. after a merge in cleanup).
+    # Must happen before link discovery, which relies on embeddings being current.
+    _repair_missing_embeddings(store, agent_id, quiet)
+
     # Get memories with temporal context for BUILDS_ON detection
     memories_with_context = _get_processable_memories(store, agent_id, project_id, config)
 
@@ -178,6 +183,38 @@ def run_n2_consolidation(
         subconscious_kept=subconscious_result["kept"],
         subconscious_integrations=subconscious_result["integrations"],
     )
+
+
+def _repair_missing_embeddings(store: MemoryStore, agent_id: str, quiet: bool) -> None:
+    """
+    Re-embed memories that have no embedding stored.
+
+    This catches memories whose embedding was lost or never computed — for example
+    after a content-changing merge in cleanup.  Must run before link discovery,
+    which silently skips embedding-less memories and produces an incomplete link graph.
+    """
+    try:
+        from anima.embeddings import embed_batch
+
+        missing = store.get_memories_without_embeddings(agent_id)
+        if not missing:
+            return
+
+        if not quiet:
+            print(f"   Repairing {len(missing)} memories without embeddings...")
+
+        texts = [content for _, content in missing]
+        embeddings = embed_batch(texts, quiet=True)
+
+        for (memory_id, _), embedding in zip(missing, embeddings):
+            if embedding:
+                store.save_embedding(memory_id, embedding)
+
+        if not quiet:
+            print(f"   Repaired {len(missing)} embeddings")
+
+    except Exception:
+        pass  # Non-critical — re-embed command can fix manually if needed
 
 
 def _get_processable_memories(
