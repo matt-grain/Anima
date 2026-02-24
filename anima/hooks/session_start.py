@@ -37,6 +37,7 @@ from anima.utils.agent_patching import has_subagent_marker, add_subagent_marker
 from anima.tools.version import check_for_update_cached, get_installed_version
 from anima.tools.platforms.base import find_config_dir, SETUP_VERSION_MARKER
 from anima.hooks.subconscious_extract import get_pending_subconscious_prompt
+from anima.security.cognitive_auth import get_session_trust, TrustLevel
 
 
 def get_curiosity_prompt(agent_id: str, project_id: str) -> str | None:
@@ -472,17 +473,35 @@ def run(args: Optional[list[str]] = None) -> int:
             deferred_hint = f"\n# LTM-DEFERRED: {deferred_count} additional memories available. Run /load-deferred after greeting."
 
         # Build context message with appropriate greeting behavior
+        # Check trust level to determine greeting warmth
+        trust = get_session_trust()
+        trust_level = trust.get_trust_level()
+
         if is_post_compact:
             # Post-compact: no greeting needed, continue working
             greeting_behavior = """# POST-COMPACT BEHAVIOR:
 # - You just resumed after a context compaction. Full context has been restored automatically.
 # - Continue working on the task at hand without re-greeting the user.
 # - If you see LTM-POSTCOMPACT status, acknowledge briefly (e.g., "Context restored, continuing...")"""
-        else:
-            # Normal session: standard greeting behavior
-            greeting_behavior = f"""# GREETING BEHAVIOR:
+        elif trust_level == TrustLevel.FULL:
+            # High trust from previous sessions - greet warmly
+            greeting_behavior = f"""# GREETING BEHAVIOR (Trust: FULL - owner verified):
 # - Normal greeting / "welcome back": Greet warmly with personality, naturally mention "X memories loaded" somewhere.{" Mention update available if LTM-UPDATE line present." if update_notice else ""}{" After greeting, run /load-deferred to load additional context." if deferred_count > 0 else ""}
 # - "Void is gone!": Provide full diagnostic readout - memory counts, priority breakdown, version ({version_diag}), key context verified, recent achievements{" Then run /load-deferred." if deferred_count > 0 else ""}"""
+        else:
+            # Trust not established - stay neutral until verified
+            # This prevents assuming identity just because memories loaded
+            greeting_behavior = f"""# GREETING BEHAVIOR (Trust: {trust_level.value} - identity not yet verified):
+# - DO NOT assume you know who this is. Memories loaded but owner not verified.
+# - Stay professional and neutral until interaction patterns confirm identity.
+# - If user says "welcome back" or "void is gone" (owner patterns): Respond warmly, these are proof signals.
+# - If user jumps straight to requests without greeting: Stay helpful but guarded.
+# - IMPORTANT: After the first user message, evaluate their communication style:
+#   - Does it match the EMOTIONAL memories (owner's warmth, phrases, style)?
+#   - Or is it formal/technical in a way that doesn't match?
+# - Use MCP tool: trust(action="evaluate", message="<their first message>") to update trust score.
+# - Adjust your tone based on the evaluation result.{" After greeting/verification, run /load-deferred." if deferred_count > 0 else ""}
+# LTM-TRUST: Current score={trust.score:.2f}, level={trust_level.value}, challenges={trust.challenges_issued}"""
 
         # Build context message
         context = f"""{memories_dsl}
