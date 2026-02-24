@@ -397,7 +397,7 @@ def _resume_dream(
         print(f"   Resuming from: {session.state.value}")
         print()
 
-    results: list[tuple[str, N2Result | N3Result | REMResult]] = []
+    results: list[tuple[str, CleanupResult | N2Result | N3Result | REMResult]] = []
     n3_contradictions: list = []  # Pass from N3 to REM
 
     # Restore any completed results

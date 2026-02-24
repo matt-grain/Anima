@@ -227,7 +227,7 @@ def _apply_wopr_filter_numpy(data, rate: int):
     window_size = int(rate / 3500)  # ~6 samples at 22050Hz
     if window_size > 1:
         kernel = np.ones(window_size) / window_size
-        filtered = np.convolve(data, kernel, mode='same')
+        filtered = np.convolve(data, kernel, mode="same")
     else:
         filtered = data.copy()
 
@@ -236,25 +236,25 @@ def _apply_wopr_filter_numpy(data, rate: int):
     comb2_delay = int(rate * 7 / 1000)  # 7ms
 
     metallic = np.zeros(len(filtered) + comb2_delay)
-    metallic[:len(filtered)] = filtered
-    metallic[comb1_delay:comb1_delay + len(filtered)] += filtered * 0.55
-    metallic[comb2_delay:comb2_delay + len(filtered)] += filtered * 0.35
+    metallic[: len(filtered)] = filtered
+    metallic[comb1_delay : comb1_delay + len(filtered)] += filtered * 0.55
+    metallic[comb2_delay : comb2_delay + len(filtered)] += filtered * 0.35
 
     # 3. Reverb (computer room echo)
     delay_samples = int(rate * 60 / 1000)  # 60ms
     reverb = np.zeros(len(metallic) + delay_samples * 6)
-    reverb[:len(metallic)] = metallic
+    reverb[: len(metallic)] = metallic
 
     for delay_mult, base_gain in [(1, 0.40), (2, 0.28), (3, 0.18), (4, 0.10), (5, 0.05), (6, 0.02)]:
         delay = delay_samples * delay_mult
         gain = base_gain * (0.5 ** (delay_mult - 1))
-        reverb[delay:delay + len(metallic)] += metallic * gain
+        reverb[delay : delay + len(metallic)] += metallic * gain
 
     # 4. Final smoothing (simple low-pass)
     window_size = int(rate / 3000)
     if window_size > 1:
         kernel = np.ones(window_size) / window_size
-        filtered = np.convolve(reverb, kernel, mode='same')
+        filtered = np.convolve(reverb, kernel, mode="same")
     else:
         filtered = reverb
 
@@ -282,6 +282,7 @@ def _apply_wopr_filter(data, rate: int, use_scipy: bool = True):
     try:
         logger.debug("WOPR: importing scipy.signal...")
         from scipy.signal import butter, lfilter, iirpeak
+
         logger.debug("WOPR: scipy.signal imported successfully")
 
         # 1. Simulate 8kHz vintage rate with aggressive low-pass
@@ -345,7 +346,6 @@ def _synthesize_joshua_mcp(text: str) -> io.BytesIO | None:
     """
     import time
     import numpy as np
-    import struct
 
     start_time = time.time()
     logger.info(f"Joshua MCP synthesis starting for: {text[:30]}...")
@@ -374,7 +374,7 @@ def _synthesize_joshua_mcp(text: str) -> io.BytesIO | None:
         logger.debug(f"espeak completed in {time.time() - start_time:.2f}s")
 
         # Read WAV with stdlib wave (not scipy)
-        with wave.open(tmp_path, 'rb') as wav_in:
+        with wave.open(tmp_path, "rb") as wav_in:
             rate = wav_in.getframerate()
             n_frames = wav_in.getnframes()
             raw_data = wav_in.readframes(n_frames)
@@ -405,6 +405,7 @@ def _synthesize_joshua_mcp(text: str) -> io.BytesIO | None:
     except Exception as e:
         logger.warning(f"Joshua MCP synthesis failed: {e}")
         import traceback
+
         logger.debug(traceback.format_exc())
         return None
     finally:
@@ -435,9 +436,11 @@ def _synthesize_joshua(text: str, use_scipy: bool = True) -> io.BytesIO | None:
     logger.info(f"Joshua synthesis starting for: {text[:30]}...")
 
     import numpy as np
+
     logger.debug(f"numpy imported in {time.time() - start_time:.2f}s")
 
     from scipy.io import wavfile
+
     logger.debug(f"scipy.io imported in {time.time() - start_time:.2f}s")
 
     # Create temp file for espeak output
@@ -502,6 +505,7 @@ def _synthesize_joshua(text: str, use_scipy: bool = True) -> io.BytesIO | None:
     except Exception as e:
         logger.warning(f"Joshua voice synthesis failed: {e}")
         import traceback
+
         logger.debug(traceback.format_exc())
         return None
     finally:

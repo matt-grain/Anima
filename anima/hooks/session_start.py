@@ -187,7 +187,7 @@ def check_setup_version(project_dir: Path) -> str | None:
                     installed_version = get_installed_version()
 
                     if setup_version and setup_version != installed_version:
-                        return f"# LTM-SETUP: Anima updated ({setup_version} → {installed_version}) but setup not re-run.\n" f"#   Run: uv run anima setup --hooks"
+                        return f"# LTM-SETUP: Anima updated ({setup_version} → {installed_version}) but setup not re-run.\n#   Run: uv run anima setup --hooks"
                 except (json.JSONDecodeError, OSError):
                     pass
                 break  # Only check first config dir found

@@ -54,7 +54,6 @@ class ClaudeSetup(BasePlatformSetup):
             safe_print(f"  {get_icon('', '[D]')} Monorepo detected: hooks will cd to {project_dir.name}/ first")
 
         # Check if user previously disabled startup hook (preserve their choice)
-        startup_was_disabled = False
         if settings_file.exists():
             try:
                 existing = json.loads(settings_file.read_text())
@@ -62,7 +61,6 @@ class ClaudeSetup(BasePlatformSetup):
                 if existing_session_start:  # Has SessionStart hooks
                     has_startup = any(m.get("matcher") == "startup" for m in existing_session_start)
                     if not has_startup:
-                        startup_was_disabled = True
                         safe_print(f"  {get_icon('', '[D]')} Detected: 'startup' hook was previously disabled in {settings_file}, preserving choice")
             except (json.JSONDecodeError, OSError):
                 pass

@@ -794,6 +794,7 @@ if _check_tts_available():
             try:
                 import os
                 import threading
+
                 logger.info(f"Voice speak: text='{text[:30]}...', voice={name or 'default'}")
                 logger.debug(f"OPENBLAS_NUM_THREADS={os.environ.get('OPENBLAS_NUM_THREADS', 'not set')}")
 
@@ -856,7 +857,6 @@ if _check_tts_available():
             # Test scipy import
             try:
                 start = time.time()
-                from scipy.signal import butter
                 results["scipy"] = f"OK ({time.time() - start:.2f}s)"
             except Exception as e:
                 results["scipy"] = f"FAILED: {e}"
@@ -864,18 +864,19 @@ if _check_tts_available():
             # Generate beep
             def gen_beep():
                 buf = io.BytesIO()
-                with wave.open(buf, 'wb') as w:
+                with wave.open(buf, "wb") as w:
                     w.setnchannels(1)
                     w.setsampwidth(2)
                     w.setframerate(22050)
                     for i in range(int(22050 * 0.5)):
                         v = int(32767 * 0.5 * math.sin(2 * math.pi * 440 * i / 22050))
-                        w.writeframes(struct.pack('<h', v))
+                        w.writeframes(struct.pack("<h", v))
                 return buf.getvalue()
 
             # Test pygame
             try:
                 import pygame
+
                 pygame.mixer.init(frequency=22050, size=-16, channels=1)
                 sound = pygame.mixer.Sound(buffer=gen_beep())
                 sound.play()
@@ -887,11 +888,13 @@ if _check_tts_available():
             # Test PowerShell
             try:
                 import tempfile
-                with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as f:
+
+                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
                     f.write(gen_beep())
                     tmp = f.name
                 ps = f'$p = New-Object System.Media.SoundPlayer("{tmp}"); $p.PlaySync(); Remove-Item "{tmp}" -EA 0'
                 import subprocess
+
                 r = subprocess.run(["powershell", "-Command", ps], capture_output=True, creationflags=0x08000000, timeout=5)
                 results["powershell"] = f"OK (rc={r.returncode})"
             except Exception as e:

@@ -277,6 +277,7 @@ class BasePlatformSetup(ABC):
         mode: str = "skill",
         eyes_enabled: bool = False,
         tts_enabled: bool = False,
+        light_enabled: bool = False,
     ) -> bool:
         """Run the complete setup for this platform.
 
@@ -285,10 +286,10 @@ class BasePlatformSetup(ABC):
             force: Overwrite existing files
             no_patch: Skip agent patching (for Claude/Antigravity)
             with_startup_hook: Include SessionStart "startup" matcher (disable for Windows Terminal bug workaround)
+            mode: Interaction mode - 'mcp', 'skill', or 'both'
             eyes_enabled: Enable eyes (visual expression window)
             tts_enabled: Enable TTS (text-to-speech)
-            mode: Interaction mode - 'mcp', 'skill', or 'both'
-            eyes_enabled: Whether to enable eyes/TTS features (for MCP mode)
+            light_enabled: Enable USB light (i-Buddy)
 
         Returns:
             True if all setup steps succeeded

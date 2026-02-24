@@ -369,7 +369,7 @@ def run(args: list[str]) -> int:
         # Extract the topic from social cue for search
         cue_topic = extract_recall_query(social_cue)
         if cue_topic:
-            safe_print(f"{get_icon('💬', '[SOC]')} Detected social cue: \"{social_cue.cue_type.name}\" → topic: \"{cue_topic}\"")
+            safe_print(f'{get_icon("💬", "[SOC]")} Detected social cue: "{social_cue.cue_type.name}" → topic: "{cue_topic}"')
             query = cue_topic  # Use extracted topic as the actual search query
             # Social cues imply wanting contextual search - auto-enable semantic
             if not use_semantic:

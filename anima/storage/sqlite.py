@@ -735,30 +735,61 @@ class MemoryStore(MemoryStoreProtocol):
         Get the embedding for a memory.
 
         Handles both legacy JSON format and new binary format for backwards
-        compatibility during migration.
+        compatibility. Automatically migrates JSON embeddings to binary on read.
         """
         with self._connect() as conn:
             row = conn.execute("SELECT embedding FROM memories WHERE id = ?", (memory_id,)).fetchone()
             if not row or not row["embedding"]:
                 return None
-            return self._decode_embedding(row["embedding"])
+
+            raw_data = row["embedding"]
+            embedding = self._decode_embedding(raw_data)
+
+            # TODO(v0.15.0): Remove JSON->binary migration after a few versions
+            # Auto-migrate JSON embeddings to binary format on read
+            if self._is_json_embedding(raw_data):
+                self.save_embedding(memory_id, embedding)
+
+            return embedding
+
+    def _is_json_embedding(self, data: bytes | str) -> bool:
+        """
+        Check if embedding data is in legacy JSON format.
+
+        TODO(v0.15.0): Remove after JSON->binary migration is complete.
+        """
+        if isinstance(data, str):
+            return True
+        if isinstance(data, bytes) and len(data) != 1536:
+            # Binary format is exactly 1536 bytes (384 floats × 4 bytes)
+            # Anything else is likely JSON
+            return True
+        return False
 
     def _decode_embedding(self, data: bytes | str) -> list[float]:
         """
         Decode an embedding from either binary or JSON format.
 
         Supports backwards compatibility with existing JSON-encoded embeddings.
+        Binary format: 384 floats × 4 bytes = 1536 bytes exactly.
         """
         if isinstance(data, str):
-            # Legacy JSON format
+            # Legacy JSON format (string)
             return json.loads(data)
         elif isinstance(data, bytes):
-            # Check if it looks like JSON (starts with '[')
-            if data.startswith(b"["):
-                return json.loads(data.decode("utf-8"))
-            # Binary format: unpack float32 array
-            num_floats = len(data) // 4
-            return list(struct.unpack(f"{num_floats}f", data))
+            # Binary format check: 384 floats × 4 bytes = 1536 bytes
+            # JSON format would be much larger (~7KB)
+            if len(data) == 1536:
+                # Binary format: unpack float32 array
+                return list(struct.unpack("384f", data))
+            else:
+                # Legacy JSON format (bytes) - try to decode
+                try:
+                    return json.loads(data.decode("utf-8"))
+                except (UnicodeDecodeError, json.JSONDecodeError):
+                    # Unknown binary size - try to unpack anyway
+                    num_floats = len(data) // 4
+                    return list(struct.unpack(f"{num_floats}f", data))
         else:
             raise ValueError(f"Unknown embedding format: {type(data)}")
 
@@ -804,7 +835,26 @@ class MemoryStore(MemoryStoreProtocol):
 
         with self._connect() as conn:
             rows = conn.execute(query, params).fetchall()
-            return [(row["id"], row["content"], self._decode_embedding(row["embedding"])) for row in rows]
+
+            # TODO(v0.15.0): Remove JSON->binary migration after a few versions
+            # Collect memories needing migration and batch update
+            results = []
+            to_migrate: list[tuple[str, list[float]]] = []
+
+            for row in rows:
+                raw_data = row["embedding"]
+                embedding = self._decode_embedding(raw_data)
+                results.append((row["id"], row["content"], embedding))
+
+                if self._is_json_embedding(raw_data):
+                    to_migrate.append((row["id"], embedding))
+
+            # Batch migrate JSON embeddings to binary
+            if to_migrate:
+                for memory_id, embedding in to_migrate:
+                    self.save_embedding(memory_id, embedding)
+
+            return results
 
     def get_memories_with_temporal_context(
         self,
@@ -835,9 +885,14 @@ class MemoryStore(MemoryStoreProtocol):
 
         with self._connect() as conn:
             rows = conn.execute(query, params).fetchall()
+
+            # TODO(v0.15.0): Remove JSON->binary migration after a few versions
             result = []
+            to_migrate: list[tuple[str, list[float]]] = []
+
             for row in rows:
-                embedding = self._decode_embedding(row["embedding"]) if row["embedding"] else None
+                raw_data = row["embedding"]
+                embedding = self._decode_embedding(raw_data) if raw_data else None
                 created_at = datetime.fromisoformat(row["created_at"])
                 session_id = row["session_id"] if "session_id" in row.keys() else None
                 result.append(
@@ -849,6 +904,15 @@ class MemoryStore(MemoryStoreProtocol):
                         session_id,
                     )
                 )
+
+                if raw_data and embedding and self._is_json_embedding(raw_data):
+                    to_migrate.append((row["id"], embedding))
+
+            # Batch migrate JSON embeddings to binary
+            if to_migrate:
+                for memory_id, emb in to_migrate:
+                    self.save_embedding(memory_id, emb)
+
             return result
 
     def get_memories_without_embeddings(
