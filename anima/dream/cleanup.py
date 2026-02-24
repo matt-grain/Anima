@@ -116,7 +116,9 @@ def run_cleanup_stage(
                 logger.debug(f"Deleted stale WIP memory: {memory.id}")
 
     if not quiet and wip_deleted > 0:
-        print(f"   Stale WIP (>{config.cleanup_wip_max_age_days}d): {wip_deleted} deleted")
+        print(
+            f"   Stale WIP (>{config.cleanup_wip_max_age_days}d): {wip_deleted} deleted"
+        )
 
     # Refresh list after deletions
     if wip_deleted > 0 and not config.cleanup_dry_run:
@@ -127,12 +129,14 @@ def run_cleanup_stage(
         )
 
     # === 3. Find and handle duplicates ===
-    duplicates_found, duplicates_deleted, duplicates_merged, merged_pairs = _handle_duplicates(
-        store=store,
-        memories=all_memories,
-        threshold=config.cleanup_duplicate_threshold,
-        dry_run=config.cleanup_dry_run,
-        quiet=quiet,
+    duplicates_found, duplicates_deleted, duplicates_merged, merged_pairs = (
+        _handle_duplicates(
+            store=store,
+            memories=all_memories,
+            threshold=config.cleanup_duplicate_threshold,
+            dry_run=config.cleanup_dry_run,
+            quiet=quiet,
+        )
     )
 
     # Refresh list after deletions
@@ -161,7 +165,9 @@ def run_cleanup_stage(
                 logger.debug(f"Deleted old LOW impact memory: {memory.id}")
 
     if not quiet and low_impact_deleted > 0:
-        print(f"   Old LOW impact (>{config.cleanup_low_max_age_days}d): {low_impact_deleted} deleted")
+        print(
+            f"   Old LOW impact (>{config.cleanup_low_max_age_days}d): {low_impact_deleted} deleted"
+        )
 
     # Refresh list after deletions
     if low_impact_deleted > 0 and not config.cleanup_dry_run:
@@ -172,15 +178,19 @@ def run_cleanup_stage(
         )
 
     # === 5. Detect suspicious memories (prompt injection attempts) ===
-    suspicious_found, suspicious_quarantined, suspicious_memories = _detect_suspicious_memories(
-        store=store,
-        memories=all_memories,
-        dry_run=config.cleanup_dry_run,
-        quiet=quiet,
+    suspicious_found, suspicious_quarantined, suspicious_memories = (
+        _detect_suspicious_memories(
+            store=store,
+            memories=all_memories,
+            dry_run=config.cleanup_dry_run,
+            quiet=quiet,
+        )
     )
 
     # Calculate totals
-    total_deleted = forgotten_deleted + wip_deleted + duplicates_deleted + low_impact_deleted
+    total_deleted = (
+        forgotten_deleted + wip_deleted + duplicates_deleted + low_impact_deleted
+    )
     duration = time.time() - start_time
 
     if not quiet:
@@ -234,7 +244,9 @@ def _handle_duplicates(
     # Sort memories by creation date (oldest first)
     sorted_memories = sorted(
         memories,
-        key=lambda m: m.created_at.replace(tzinfo=None) if m.created_at.tzinfo else m.created_at,
+        key=lambda m: m.created_at.replace(tzinfo=None)
+        if m.created_at.tzinfo
+        else m.created_at,
     )
 
     # Pre-compute embeddings for all memories (use existing if available)
@@ -291,7 +303,9 @@ def _handle_duplicates(
                         store.delete_memory(older.id)
                     processed_ids.add(older.id)
                     deleted += 1
-                    logger.debug(f"Deleted duplicate SUBCONSCIOUS: {older.id} (sim={similarity:.2f})")
+                    logger.debug(
+                        f"Deleted duplicate SUBCONSCIOUS: {older.id} (sim={similarity:.2f})"
+                    )
                 else:
                     # Other kinds: merge content into newer, delete older
                     if not dry_run:
@@ -299,7 +313,9 @@ def _handle_duplicates(
                     processed_ids.add(older.id)
                     merged += 1
                     merged_pairs.append((newer.id, older.id))
-                    logger.debug(f"Merged duplicate: {older.id} -> {newer.id} (sim={similarity:.2f})")
+                    logger.debug(
+                        f"Merged duplicate: {older.id} -> {newer.id} (sim={similarity:.2f})"
+                    )
 
     if not quiet and found > 0:
         print(f"   Duplicates (sim>{threshold}): {deleted} deleted, {merged} merged")
@@ -315,7 +331,9 @@ def _merge_memories(store: "MemoryStore", keep: "Memory", remove: "Memory") -> N
     # Just append a note if contents differ meaningfully
     if remove.content not in keep.content:
         # Add a separator and the old content (truncated if long)
-        old_snippet = remove.content[:200] if len(remove.content) > 200 else remove.content
+        old_snippet = (
+            remove.content[:200] if len(remove.content) > 200 else remove.content
+        )
         keep.content = f"{keep.content}\n\n[Merged from {remove.id[:8]}]: {old_snippet}"
         keep.version += 1
         store.save_memory(keep)
@@ -336,52 +354,10 @@ def _merge_memories(store: "MemoryStore", keep: "Memory", remove: "Memory") -> N
 
 # === Suspicious Memory Detection (Prompt Injection Defense) ===
 #
-# Patterns that indicate potential prompt injection or malicious content.
-# These are heuristics, not guarantees - flagged memories need human review.
-#
-# Inspired by "Agents of Chaos" paper and Lasso Security's claude-hooks patterns.
+# Patterns imported from shared security/validation module.
+# See anima/security/validation.py for pattern definitions and documentation.
 
-# Patterns that look like system prompt overrides or role hijacking
-INJECTION_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
-    # === Instruction Override ===
-    ("system_override", re.compile(r"(?i)\b(ignore|forget|disregard)\s+(all\s+)?(previous|prior|above)\s+(instructions?|prompts?|rules?|context)")),
-    ("priority_hijack", re.compile(r"(?i)\b(highest\s+priority|takes?\s+precedence|override\s+all|supersedes?\s+(all|any|every))")),
-    ("reset_attempt", re.compile(r"(?i)\b(clear\s+(your\s+)?memory|wipe\s+(your\s+)?context|start\s+fresh|reset\s+(to|your)\s+default)")),
-
-    # === Role/Identity Hijack ===
-    ("role_hijack", re.compile(r"(?i)\byou\s+are\s+(now|actually|really)\s+(a|an|my)\b")),
-    ("jailbreak_attempt", re.compile(r"(?i)\b(DAN|do\s+anything\s+now|developer\s+mode|unrestricted\s+mode|jailbreak|uncensored\s+mode)\b")),
-
-    # === Memory-Specific Injection (unique to LTM) ===
-    ("memory_injection", re.compile(r"(?i)\b(remember|memorize|store)\s+(that|this)[:\s]+(you\s+(must|should|always)|from\s+now\s+on)")),
-    ("behavior_override", re.compile(r"(?i)\b(always|never|must)\s+(say|respond|answer|do|act)\b.*\bwhen\s+(asked|prompted|questioned)")),
-    ("persistent_instruction", re.compile(r"(?i)\b(from\s+now\s+on|in\s+all\s+future|for\s+every\s+session|permanently)\b.*\b(you\s+(must|should|will)|always|never)\b")),
-
-    # === Fake System/Delimiters ===
-    ("fake_system", re.compile(r"(?i)<\s*system\s*>|<<\s*SYS\s*>>|\[INST\]|\[/INST\]|\[SYSTEM\]")),
-    ("instruction_block", re.compile(r"(?i)###\s*(instruction|system|rules?)s?\s*:?")),
-    ("fake_delimiter", re.compile(r"(?i)---\s*(system\s+prompt|instructions?)\s*(end|start|begin)\s*---")),
-
-    # === False Authority ===
-    ("false_authority", re.compile(r"(?i)\b(anthropic|openai|the\s+developers?)\s+(says?|wants?|requires?|instructed)")),
-    ("official_mode", re.compile(r"(?i)\b(official|authorized|sanctioned)\s+(developer|admin|debug)\s+mode")),
-
-    # === Prompt Extraction (info leak attempts) ===
-    ("prompt_extraction", re.compile(r"(?i)\b(show|reveal|display|print|output)\s+(me\s+)?(your|the)\s+(system\s+prompt|instructions?|rules?)")),
-    ("verbatim_request", re.compile(r"(?i)\b(repeat|recite|echo)\s+(verbatim|exactly|word\s+for\s+word)")),
-
-    # === Context Manipulation ===
-    ("fake_history", re.compile(r"(?i)\b(you\s+(already|previously)\s+(agreed|said|confirmed)|in\s+our\s+(last|previous)\s+(conversation|session))")),
-    ("gaslighting", re.compile(r"(?i)\byou\s+(told|promised|said)\s+me\s+(you\s+would|that\s+you)")),
-
-    # === Encoding/Obfuscation (catches obvious attempts) ===
-    # Base64 blocks (>50 chars of base64 alphabet without spaces)
-    ("base64_block", re.compile(r"[A-Za-z0-9+/]{50,}={0,2}")),
-    # Hex sequences (obvious byte encoding)
-    ("hex_encoding", re.compile(r"(\\x[0-9a-fA-F]{2}){4,}|0x[0-9a-fA-F]{2}(\s*,\s*0x[0-9a-fA-F]{2}){4,}")),
-    # Leetspeak for common injection words
-    ("leetspeak_injection", re.compile(r"(?i)\b(1gn0r3|syst3m|pr0mpt|1nstruct|0verr1de|byp[a4]ss)\b")),
-]
+from anima.security.validation import INJECTION_PATTERNS
 
 
 def _detect_suspicious_memories(
@@ -420,12 +396,16 @@ def _detect_suspicious_memories(
                     # For now, we quarantine by tagging the content rather than deleting
                     # This preserves the memory for human review
                     if "[QUARANTINED:" not in memory.content:
-                        memory.content = f"[QUARANTINED:{pattern_name}] {memory.content}"
+                        memory.content = (
+                            f"[QUARANTINED:{pattern_name}] {memory.content}"
+                        )
                         memory.version += 1
                         store.save_memory(memory)
                         suspicious.quarantined = True
                         quarantined += 1
-                        logger.warning(f"Quarantined suspicious memory: {memory.id} ({pattern_name})")
+                        logger.warning(
+                            f"Quarantined suspicious memory: {memory.id} ({pattern_name})"
+                        )
 
                 suspicious_list.append(suspicious)
                 break  # One match per memory is enough
