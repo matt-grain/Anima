@@ -20,12 +20,18 @@ from anima.core import (
     RegionType,
     Agent,
     Project,
+    ImpactLevel,
     verify_signature,
     should_verify,
 )
 from anima.storage import MemoryStore
 from anima.lifecycle.session import get_previous_session_id
 from anima.lifecycle.project_context import ProjectFingerprint
+from anima.security.cognitive_auth import (
+    get_session_trust,
+    get_memory_access_filter,
+    TrustLevel,
+)
 
 
 class InjectionStats(TypedDict):
@@ -197,7 +203,9 @@ class MemoryInjector:
         Returns:
             Formatted memory block as a string, or empty string if no memories
         """
-        result = self.inject_with_deferred(agent, project, use_tiered_loading, project_dir)
+        result = self.inject_with_deferred(
+            agent, project, use_tiered_loading, project_dir
+        )
         return result["dsl"]
 
     def inject_with_deferred(
@@ -235,7 +243,12 @@ class MemoryInjector:
             memories = self._load_all_memories(agents, project)
 
         if not memories:
-            return InjectionResult(dsl="", injected_ids=[], deferred_ids=[], deferred_count=0)
+            return InjectionResult(
+                dsl="", injected_ids=[], deferred_ids=[], deferred_count=0
+            )
+
+        # Apply trust-based filters (cognitive auth v0.14.3)
+        memories, trust_filtered = self._apply_trust_filters(memories)
 
         # Sort by importance: CRITICAL first, then by recency
         memories = self._prioritize_memories(memories)
@@ -261,7 +274,9 @@ class MemoryInjector:
 
         for memory in memories:
             # Find the agent that this memory belongs to for verification
-            mem_agent = next((a for a in agents if a.id == memory.agent_id), primary_agent)
+            mem_agent = next(
+                (a for a in agents if a.id == memory.agent_id), primary_agent
+            )
 
             # Verify signature if agent has signing key and memory is signed
             if should_verify(memory, mem_agent):
@@ -276,7 +291,9 @@ class MemoryInjector:
 
             display_mem = copy(memory)
             if len(display_mem.content) > self.max_memory_chars:
-                display_mem.content = truncate_content(display_mem.content, self.max_memory_chars)
+                display_mem.content = truncate_content(
+                    display_mem.content, self.max_memory_chars
+                )
 
             # Use cached token count (fast) or estimate (also fast)
             memory_tokens = get_memory_tokens(display_mem)
@@ -286,7 +303,11 @@ class MemoryInjector:
             memory_bytes = len(memory_dsl.encode("utf-8"))
 
             # Check both token budget and byte limit
-            if not budget_exceeded and current_tokens + memory_tokens <= self.budget and current_bytes + memory_bytes <= self.max_output_bytes:
+            if (
+                not budget_exceeded
+                and current_tokens + memory_tokens <= self.budget
+                and current_bytes + memory_bytes <= self.max_output_bytes
+            ):
                 display_memories.append(display_mem)
                 injected_ids.append(memory.id)
                 current_tokens += memory_tokens
@@ -330,8 +351,6 @@ class MemoryInjector:
         This ensures a project constraint like "always call Task-Review"
         surfaces 2 months later just as readily as 2 days later.
         """
-        from anima.core import ImpactLevel
-
         memories: list[Memory] = []
         seen_ids: set[str] = set()
 
@@ -365,7 +384,9 @@ class MemoryInjector:
 
         # 2. Load PROJECT-scoped memories semantically (relevance matters, not time)
         if project and project_dir:
-            project_memories = self._load_semantic_project_memories(agents, project, project_dir, seen_ids)
+            project_memories = self._load_semantic_project_memories(
+                agents, project, project_dir, seen_ids
+            )
             memories.extend(project_memories)
         elif project:
             # Fallback: load PROJECT memories by tier if no project_dir
@@ -384,7 +405,9 @@ class MemoryInjector:
 
         # 3. Previous session continuity (for "as we discussed" references)
         if project:
-            prev_session_memories = self._load_previous_session_memories(agents, project, seen_ids)
+            prev_session_memories = self._load_previous_session_memories(
+                agents, project, seen_ids
+            )
             memories.extend(prev_session_memories)
 
         return memories
@@ -467,13 +490,17 @@ class MemoryInjector:
 
         return memories
 
-    def _load_all_memories(self, agents: list[Agent], project: Optional[Project]) -> list[Memory]:
+    def _load_all_memories(
+        self, agents: list[Agent], project: Optional[Project]
+    ) -> list[Memory]:
         """Load all memories without tier filtering (fallback mode)."""
         memories: list[Memory] = []
 
         for a in agents:
             # Get AGENT region memories (cross-project)
-            agent_memories = self.store.get_memories_for_agent(agent_id=a.id, region=RegionType.AGENT, include_superseded=False)
+            agent_memories = self.store.get_memories_for_agent(
+                agent_id=a.id, region=RegionType.AGENT, include_superseded=False
+            )
             memories.extend(agent_memories)
 
             # Get PROJECT region memories (project-specific)
@@ -487,6 +514,84 @@ class MemoryInjector:
                 memories.extend(project_memories)
 
         return memories
+
+    def _apply_trust_filters(self, memories: list[Memory]) -> tuple[list[Memory], int]:
+        """
+        Apply cognitive auth trust filters to memories.
+
+        Filters memories based on current session trust level (v0.14.3).
+        This implements the "trust-aware injection" concept: don't load
+        sensitive memories until trust is established.
+
+        Trust levels and filters:
+        - FULL (>= 0.8): No filtering, all memories accessible
+        - PARTIAL (>= 0.5): Recent memories only (7 days)
+        - MINIMAL (>= 0.3): CORE tier only
+        - SUSPICIOUS (< 0.3): CORE + CRITICAL only, exclude sensitive
+
+        Args:
+            memories: List of memories to filter
+
+        Returns:
+            Tuple of (filtered_memories, count_filtered)
+        """
+        from datetime import datetime, timedelta
+        from anima.core import MemoryKind
+
+        trust = get_session_trust()
+        filters = get_memory_access_filter(trust)
+
+        if not filters:
+            # FULL trust - no filtering
+            return memories, 0
+
+        filtered: list[Memory] = []
+        removed_count = 0
+
+        for mem in memories:
+            keep = True
+
+            # CRITICAL memories always pass (they're the soul)
+            is_critical = mem.impact == ImpactLevel.CRITICAL
+
+            # Filter by recency (PARTIAL trust) - but CRITICAL bypasses
+            if "since" in filters and not is_critical:
+                since = filters["since"]
+                mem_time = mem.created_at
+                if mem_time.tzinfo:
+                    mem_time = mem_time.replace(tzinfo=None)
+                if mem_time < since:
+                    keep = False
+
+            # Filter by tier (MINIMAL/SUSPICIOUS trust) - CRITICAL bypasses
+            if keep and "tier" in filters and not is_critical:
+                required_tier = filters["tier"]
+                # CORE tier requires CRITICAL + EMOTIONAL
+                is_core_tier = (
+                    mem.impact == ImpactLevel.CRITICAL
+                    and mem.kind == MemoryKind.EMOTIONAL
+                )
+                if required_tier == "CORE" and not is_core_tier:
+                    keep = False
+
+            # Filter by impact (SUSPICIOUS trust)
+            if keep and "impact_min" in filters:
+                required_impact = filters["impact_min"]
+                if required_impact == "CRITICAL" and mem.impact != ImpactLevel.CRITICAL:
+                    keep = False
+
+            # Filter out sensitive content markers (SUSPICIOUS trust)
+            if keep and filters.get("exclude_sensitive"):
+                sensitive_markers = ["password", "key", "secret", "credential", "token"]
+                if any(marker in mem.content.lower() for marker in sensitive_markers):
+                    keep = False
+
+            if keep:
+                filtered.append(mem)
+            else:
+                removed_count += 1
+
+        return filtered, removed_count
 
     def _prioritize_memories(self, memories: list[Memory]) -> list[Memory]:
         """
@@ -569,7 +674,9 @@ class MemoryInjector:
 
         for memory in memories:
             # Find the agent for verification
-            mem_agent = next((a for a in agents if a.id == memory.agent_id), primary_agent)
+            mem_agent = next(
+                (a for a in agents if a.id == memory.agent_id), primary_agent
+            )
 
             # Verify signature
             if should_verify(memory, mem_agent):
@@ -583,7 +690,9 @@ class MemoryInjector:
 
             display_mem = copy(memory)
             if len(display_mem.content) > self.max_memory_chars:
-                display_mem.content = truncate_content(display_mem.content, self.max_memory_chars)
+                display_mem.content = truncate_content(
+                    display_mem.content, self.max_memory_chars
+                )
 
             block.memories.append(display_mem)
 
@@ -593,7 +702,9 @@ class MemoryInjector:
 
         return block.to_dsl() if block.memories else ""
 
-    def get_stats(self, agent: Union[Agent, list[Agent]], project: Optional[Project] = None) -> dict[str, Any]:
+    def get_stats(
+        self, agent: Union[Agent, list[Agent]], project: Optional[Project] = None
+    ) -> dict[str, Any]:
         """Get statistics about memories for this agent/project."""
         if isinstance(agent, Agent):
             agents = [agent]
@@ -604,7 +715,9 @@ class MemoryInjector:
         all_project_memories = []
 
         for a in agents:
-            agent_memories = self.store.get_memories_for_agent(agent_id=a.id, region=RegionType.AGENT, include_superseded=False)
+            agent_memories = self.store.get_memories_for_agent(
+                agent_id=a.id, region=RegionType.AGENT, include_superseded=False
+            )
             all_agent_memories.extend(agent_memories)
 
             if project:
