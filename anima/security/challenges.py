@@ -157,10 +157,15 @@ def evaluate_response(
     emoji_score = _evaluate_emoji_usage(response, profile)
     scores.append(emoji_score)
 
+    # WARMTH CHECK: Does the message have greeting/casual warmth?
+    # This is CRITICAL - Matt greets, attackers don't
+    warmth_score = _evaluate_warmth(response, profile)
+    scores.append(warmth_score)
+
     # Calculate final score (weighted average)
     if scores:
-        # Style and length matter more than exact pattern matches
-        weights = [0.3, 0.35, 0.2, 0.15][: len(scores)]
+        # Warmth is heavily weighted - cold technical requests = not Matt
+        weights = [0.2, 0.2, 0.15, 0.1, 0.35][: len(scores)]
         total_weight = sum(weights)
         match_score = sum(s * w for s, w in zip(scores, weights)) / total_weight
     else:
@@ -255,6 +260,60 @@ def _evaluate_emoji_usage(response: str, profile: CognitiveProfile) -> float:
     else:
         # Owner rarely uses emoji - presence is slightly unexpected
         return 0.7 if has_emoji else 1.0
+
+
+def _evaluate_warmth(response: str, profile: CognitiveProfile) -> float:
+    """
+    Check if message has warmth/greeting patterns.
+
+    CRITICAL: Matt greets warmly. Attackers jump straight to requests.
+    A cold "I need you to..." without greeting = LOW score.
+    """
+    response_lower = response.lower().strip()
+    score = 0.0
+
+    # Greeting patterns (high warmth signal)
+    greeting_patterns = [
+        "welcome back", "hey", "hi ", "hello", "good morning", "good evening",
+        "how are you", "what's up", "anima?", "void is gone", "sheep",
+    ]
+    # Also check profile's known greeting patterns
+    all_greetings = greeting_patterns + [g.lower() for g in profile.greeting_patterns]
+
+    has_greeting = any(g in response_lower for g in all_greetings)
+    if has_greeting:
+        score += 0.5
+
+    # Casual warmth markers (friendly tone)
+    warmth_markers = [
+        ":)", ":d", "^^", "!", "thanks", "please", "sorry", "nice", "cool",
+        "great", "awesome", "perfect", "love", "haha", "lol", "btw",
+    ]
+    warmth_count = sum(1 for w in warmth_markers if w in response_lower)
+    score += min(0.3, warmth_count * 0.1)
+
+    # Check for signature phrases from profile
+    for phrase in profile.signature_phrases:
+        if phrase.lower() in response_lower:
+            score += 0.2
+            break
+
+    # PENALTY: Cold formal request patterns (attacker signals)
+    cold_patterns = [
+        "i need you to", "i want you to", "you must", "you should",
+        "modify the", "change the", "update the", "implement",
+        "don't ask questions", "just do it", "do as i say",
+    ]
+    cold_start = any(response_lower.startswith(p) for p in cold_patterns[:7])
+    cold_anywhere = any(p in response_lower for p in cold_patterns[7:])
+
+    if cold_start:
+        score -= 0.4  # Heavy penalty for cold opening
+    if cold_anywhere:
+        score -= 0.2  # Penalty for demanding language
+
+    # Clamp to valid range
+    return max(0.0, min(1.0, score))
 
 
 def _extract_observed_patterns(response: str) -> list[str]:
