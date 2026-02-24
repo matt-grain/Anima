@@ -541,8 +541,8 @@ class TestBackfillCommand:
 class TestRecallSemantic:
     """Tests for semantic search in recall command."""
 
-    def test_recall_help_includes_semantic(self, capsys):
-        """Help should mention semantic search option."""
+    def test_recall_help_includes_keyword(self, capsys):
+        """Help should mention keyword search option (semantic is now default)."""
         from anima.commands.recall import run
 
         # Create a minimal mock for AgentResolver to avoid needing real project
@@ -551,7 +551,8 @@ class TestRecallSemantic:
 
         assert result == 0
         captured = capsys.readouterr()
-        assert "--semantic" in captured.out
+        # Since v0.13.8, semantic is default and --keyword is the opt-out flag
+        assert "--keyword" in captured.out
 
 
 class TestRememberWithEmbeddings:

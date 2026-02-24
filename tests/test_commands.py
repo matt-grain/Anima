@@ -313,7 +313,8 @@ class TestRecallCommand:
 
             MockPath.cwd.return_value = temp_project_dir
 
-            result = recall.run(["pytest"])
+            # Use --keyword to test the keyword search path (which uses search_memories)
+            result = recall.run(["--keyword", "pytest"])
             captured = capsys.readouterr()
 
             assert result == 0
@@ -341,7 +342,8 @@ class TestRecallCommand:
 
             MockPath.cwd.return_value = temp_project_dir
 
-            result = recall.run(["nonexistent"])
+            # Use --keyword to test the keyword search path
+            result = recall.run(["--keyword", "nonexistent"])
             captured = capsys.readouterr()
 
             assert result == 0
@@ -375,7 +377,8 @@ class TestRecallCommand:
 
             MockPath.cwd.return_value = temp_project_dir
 
-            result = recall.run(["--full", "Matt"])
+            # Use --keyword to test the keyword search path with --full
+            result = recall.run(["--full", "--keyword", "Matt"])
             captured = capsys.readouterr()
 
             assert result == 0
