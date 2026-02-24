@@ -530,8 +530,9 @@ def _print_summary(results: list[tuple[str, CleanupResult | N2Result | N3Result 
     print("Dream complete!")
     for stage_name, result in results:
         if stage_name == "CLEANUP" and isinstance(result, CleanupResult):
-            if result.total_deleted > 0:
-                print(f"   {stage_name}: {result.total_deleted} memories cleaned ({result.duration_seconds:.1f}s)")
+            if result.total_deleted > 0 or result.suspicious_quarantined > 0:
+                action_count = result.total_deleted + result.suspicious_quarantined
+                print(f"   {stage_name}: {action_count} memories cleaned/quarantined ({result.duration_seconds:.1f}s)")
                 details = []
                 if result.forgotten_deleted:
                     details.append(f"{result.forgotten_deleted} forgotten")
@@ -543,6 +544,8 @@ def _print_summary(results: list[tuple[str, CleanupResult | N2Result | N3Result 
                     details.append(f"{result.duplicates_merged} dup merged")
                 if result.low_impact_deleted:
                     details.append(f"{result.low_impact_deleted} old LOW")
+                if result.suspicious_quarantined:
+                    details.append(f"{result.suspicious_quarantined} quarantined")
                 if details:
                     print(f"            ({', '.join(details)})")
             else:
@@ -612,6 +615,14 @@ def _print_cleanup_verbose(result: CleanupResult) -> None:
 
     if result.low_impact_deleted:
         print(f"   Old LOW impact deleted: {result.low_impact_deleted}")
+
+    if result.suspicious_found:
+        print(f"   Suspicious patterns: {result.suspicious_found}")
+        print(f"      Quarantined: {result.suspicious_quarantined}")
+        for sm in result.suspicious_memories[:3]:
+            print(f"      [{sm.pattern_matched}] {sm.content_preview[:50]}...")
+        if len(result.suspicious_memories) > 3:
+            print(f"      ... and {len(result.suspicious_memories) - 3} more")
 
     if result.merged_pairs:
         print("\n   Merged pairs:")

@@ -78,6 +78,17 @@ class DreamConfig:
 
 
 @dataclass
+class SuspiciousMemory:
+    """A memory flagged as potentially malicious or injected."""
+
+    memory_id: str
+    content_preview: str  # First 100 chars
+    reason: str  # Why it was flagged
+    pattern_matched: str  # Which pattern triggered detection
+    quarantined: bool  # True if moved to quarantine, False if just flagged
+
+
+@dataclass
 class CleanupResult:
     """Results from cleanup stage."""
 
@@ -95,14 +106,19 @@ class CleanupResult:
     # LOW impact old memories deleted
     low_impact_deleted: int
 
+    # Suspicious memories (injection detection)
+    suspicious_found: int = 0
+    suspicious_quarantined: int = 0
+
     # Stats
-    duration_seconds: float
-    memories_scanned: int
-    total_deleted: int
+    duration_seconds: float = 0.0
+    memories_scanned: int = 0
+    total_deleted: int = 0
 
     # Details for verbose output
     deleted_ids: list[str] = field(default_factory=list)
     merged_pairs: list[tuple[str, str]] = field(default_factory=list)  # (kept_id, deleted_id)
+    suspicious_memories: list[SuspiciousMemory] = field(default_factory=list)
 
 
 @dataclass
