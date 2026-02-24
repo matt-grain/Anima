@@ -128,9 +128,7 @@ class TrustScore:
 
         # Otherwise, space out challenges (not too frequent)
         if self.last_challenge_time:
-            minutes_since_last = (
-                datetime.now() - self.last_challenge_time
-            ).total_seconds() / 60
+            minutes_since_last = (datetime.now() - self.last_challenge_time).total_seconds() / 60
             # Challenge every 10-30 minutes depending on trust
             min_interval = 10 + (self.score * 20)
             return minutes_since_last >= min_interval
@@ -227,9 +225,7 @@ def _load_trust_from_file(project_id: Optional[str] = None) -> Optional[TrustSco
             score=data.get("score", 0.5),
             challenges_issued=data.get("challenges_issued", 0),
             challenges_passed=data.get("challenges_passed", 0),
-            session_start=datetime.fromisoformat(data["session_start"])
-            if "session_start" in data
-            else datetime.now(),
+            session_start=datetime.fromisoformat(data["session_start"]) if "session_start" in data else datetime.now(),
         )
         # Restore challenge history if present
         for ch in data.get("challenge_history", []):
@@ -240,9 +236,7 @@ def _load_trust_from_file(project_id: Optional[str] = None) -> Optional[TrustSco
                     expected_patterns=ch.get("expected_patterns", []),
                     observed_patterns=ch.get("observed_patterns", []),
                     match_score=ch.get("match_score", 0.0),
-                    timestamp=datetime.fromisoformat(ch["timestamp"])
-                    if "timestamp" in ch
-                    else datetime.now(),
+                    timestamp=datetime.fromisoformat(ch["timestamp"]) if "timestamp" in ch else datetime.now(),
                     response_snippet=ch.get("response_snippet", ""),
                 )
             )
@@ -400,14 +394,20 @@ def evaluate_and_update_trust(
     score_before = trust.score
 
     # Get or build the cognitive profile from LTM
+    # KEY INSIGHT: Use EMOTIONAL memories (Matt's communication patterns)
+    # not all memories (which would match technical content from any attacker)
     try:
         store = MemoryStore()
-        # Get recent memories for profile extraction
-        from anima.lifecycle.agent_resolver import AgentResolver
+        from anima.core import AgentResolver, MemoryKind
 
         resolver = AgentResolver()
         agent = resolver.resolve()
-        memories = store.get_memories(agent_id=agent.id, limit=50)
+        # EMOTIONAL memories capture owner's footprint: greetings, phrases, warmth
+        memories = store.get_memories_by_kind(
+            agent_id=agent.id,
+            kind=MemoryKind.EMOTIONAL,
+            limit=50,
+        )
         profile = extract_cognitive_profile(memories)
     except Exception:
         # If profile not available, use a default
