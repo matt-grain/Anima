@@ -691,6 +691,103 @@ def _do_list_curiosities(agent, project, store: CuriosityStore) -> dict:
 
 
 # =============================================================================
+# COGNITIVE AUTHENTICATION TOOL
+# =============================================================================
+
+
+@mcp.tool()
+def trust(
+    action: str,
+    message: str = "",
+    value: float = 0.0,
+) -> dict:
+    """
+    Cognitive auth trust management. action: status|evaluate|set|reset|decay|boost
+
+    Actions:
+    - status: Show current trust level and score
+    - evaluate: Evaluate a user message and update trust score
+    - set: Set trust to specific value (0.0-1.0) for testing
+    - reset: Reset trust to default (0.5)
+    - decay: Decrease trust by value amount
+    - boost: Increase trust by value amount
+    """
+    logger.info(f"trust({action}) called")
+
+    from anima.security.cognitive_auth import (
+        get_session_trust,
+        get_memory_access_filter,
+        update_trust_score,
+        reset_session_trust,
+        evaluate_and_update_trust,
+        _get_trust_file_path,
+    )
+
+    if action == "status":
+        trust_score = get_session_trust()
+        level = trust_score.get_trust_level()
+        filters = get_memory_access_filter(trust_score)
+
+        return {
+            "score": round(trust_score.score, 3),
+            "level": level.value,
+            "challenges_issued": trust_score.challenges_issued,
+            "challenges_passed": trust_score.challenges_passed,
+            "filters": {k: str(v) for k, v in filters.items()},
+            "persisted": str(_get_trust_file_path()),
+        }
+
+    elif action == "evaluate":
+        if not message:
+            return {"error": "message required for evaluate action"}
+
+        result = evaluate_and_update_trust(message)
+        return result
+
+    elif action == "set":
+        if not 0.0 <= value <= 1.0:
+            return {"error": "value must be between 0.0 and 1.0"}
+        trust_score = update_trust_score(absolute=value)
+        return {
+            "score": round(trust_score.score, 3),
+            "level": trust_score.get_trust_level().value,
+            "message": f"Trust set to {value:.2f}",
+        }
+
+    elif action == "reset":
+        reset_session_trust()
+        trust_score = get_session_trust()
+        return {
+            "score": round(trust_score.score, 3),
+            "level": trust_score.get_trust_level().value,
+            "message": "Trust reset to 0.5",
+        }
+
+    elif action == "decay":
+        if value <= 0:
+            value = 0.1  # Default decay amount
+        trust_score = update_trust_score(delta=-value)
+        return {
+            "score": round(trust_score.score, 3),
+            "level": trust_score.get_trust_level().value,
+            "message": f"Trust decreased by {value:.2f}",
+        }
+
+    elif action == "boost":
+        if value <= 0:
+            value = 0.1  # Default boost amount
+        trust_score = update_trust_score(delta=value)
+        return {
+            "score": round(trust_score.score, 3),
+            "level": trust_score.get_trust_level().value,
+            "message": f"Trust increased by {value:.2f}",
+        }
+
+    else:
+        return {"error": f"Unknown action: {action}. Use: status|evaluate|set|reset|decay|boost"}
+
+
+# =============================================================================
 # EMOTION COLOR MAPPING - Unified embodiment colors
 # =============================================================================
 

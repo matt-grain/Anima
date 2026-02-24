@@ -21,7 +21,9 @@ the learned model.
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+from pathlib import Path
 from typing import Optional
+import json
 
 
 class TrustLevel(str, Enum):
@@ -193,20 +195,150 @@ class CognitiveProfile:
 
 # Session-level trust score storage
 _session_trust: Optional[TrustScore] = None
+_current_project_id: Optional[str] = None
 
 
-def get_session_trust() -> TrustScore:
-    """Get or create the session trust score."""
-    global _session_trust
+def _get_trust_dir() -> Path:
+    """Get the trust persistence directory."""
+    trust_dir = Path.home() / ".anima" / "trust"
+    trust_dir.mkdir(parents=True, exist_ok=True)
+    return trust_dir
+
+
+def _get_trust_file_path(project_id: Optional[str] = None) -> Path:
+    """Get the trust file path for a project."""
+    if project_id is None:
+        # Use current working directory name as project identifier
+        project_id = Path.cwd().name
+    # Sanitize for filename
+    safe_id = "".join(c if c.isalnum() or c in "-_" else "_" for c in project_id)
+    return _get_trust_dir() / f"trust-{safe_id}.json"
+
+
+def _load_trust_from_file(project_id: Optional[str] = None) -> Optional[TrustScore]:
+    """Load trust score from persistent storage."""
+    trust_file = _get_trust_file_path(project_id)
+    if not trust_file.exists():
+        return None
+
+    try:
+        data = json.loads(trust_file.read_text())
+        trust = TrustScore(
+            score=data.get("score", 0.5),
+            challenges_issued=data.get("challenges_issued", 0),
+            challenges_passed=data.get("challenges_passed", 0),
+            session_start=datetime.fromisoformat(data["session_start"])
+            if "session_start" in data
+            else datetime.now(),
+        )
+        # Restore challenge history if present
+        for ch in data.get("challenge_history", []):
+            trust.challenge_history.append(
+                ChallengeResult(
+                    challenge_id=ch.get("challenge_id", ""),
+                    challenge_type=ch.get("challenge_type", ""),
+                    expected_patterns=ch.get("expected_patterns", []),
+                    observed_patterns=ch.get("observed_patterns", []),
+                    match_score=ch.get("match_score", 0.0),
+                    timestamp=datetime.fromisoformat(ch["timestamp"])
+                    if "timestamp" in ch
+                    else datetime.now(),
+                    response_snippet=ch.get("response_snippet", ""),
+                )
+            )
+        return trust
+    except (json.JSONDecodeError, KeyError, ValueError):
+        return None
+
+
+def _save_trust_to_file(trust: TrustScore, project_id: Optional[str] = None) -> None:
+    """Save trust score to persistent storage."""
+    trust_file = _get_trust_file_path(project_id)
+
+    data = {
+        "score": trust.score,
+        "challenges_issued": trust.challenges_issued,
+        "challenges_passed": trust.challenges_passed,
+        "session_start": trust.session_start.isoformat(),
+        "last_updated": datetime.now().isoformat(),
+        "challenge_history": [
+            {
+                "challenge_id": ch.challenge_id,
+                "challenge_type": ch.challenge_type,
+                "expected_patterns": ch.expected_patterns,
+                "observed_patterns": ch.observed_patterns,
+                "match_score": ch.match_score,
+                "timestamp": ch.timestamp.isoformat(),
+                "response_snippet": ch.response_snippet,
+            }
+            for ch in trust.challenge_history[-10:]  # Keep last 10 challenges
+        ],
+    }
+
+    trust_file.write_text(json.dumps(data, indent=2))
+
+
+def get_session_trust(project_id: Optional[str] = None) -> TrustScore:
+    """Get or create the session trust score, loading from persistence."""
+    global _session_trust, _current_project_id
+
+    # If project changed, reload
+    effective_project = project_id or Path.cwd().name
+    if _current_project_id != effective_project:
+        _session_trust = None
+        _current_project_id = effective_project
+
     if _session_trust is None:
-        _session_trust = TrustScore()
+        # Try to load from file first
+        _session_trust = _load_trust_from_file(project_id)
+        if _session_trust is None:
+            _session_trust = TrustScore()
+            # Save initial trust
+            _save_trust_to_file(_session_trust, project_id)
+
     return _session_trust
 
 
-def reset_session_trust() -> None:
-    """Reset trust score (called at session start)."""
+def save_session_trust(project_id: Optional[str] = None) -> None:
+    """Explicitly save the current session trust to file."""
     global _session_trust
+    if _session_trust is not None:
+        _save_trust_to_file(_session_trust, project_id)
+
+
+def update_trust_score(
+    delta: float = 0.0,
+    absolute: Optional[float] = None,
+    project_id: Optional[str] = None,
+) -> TrustScore:
+    """
+    Update trust score and persist.
+
+    Args:
+        delta: Amount to add/subtract from current score
+        absolute: If set, override score to this value
+        project_id: Optional project identifier
+
+    Returns:
+        Updated TrustScore
+    """
+    trust = get_session_trust(project_id)
+
+    if absolute is not None:
+        trust.score = max(0.0, min(1.0, absolute))
+    else:
+        trust.score = max(0.0, min(1.0, trust.score + delta))
+
+    save_session_trust(project_id)
+    return trust
+
+
+def reset_session_trust(project_id: Optional[str] = None) -> None:
+    """Reset trust score (called at session start or for testing)."""
+    global _session_trust, _current_project_id
     _session_trust = TrustScore()
+    _current_project_id = project_id or Path.cwd().name
+    _save_trust_to_file(_session_trust, project_id)
 
 
 def get_memory_access_filter(trust: TrustScore) -> dict:
@@ -235,3 +367,87 @@ def get_memory_access_filter(trust: TrustScore) -> dict:
     else:  # SUSPICIOUS
         # No sensitive memories, CORE only with HIGH+ impact
         return {"tier": "CORE", "impact_min": "CRITICAL", "exclude_sensitive": True}
+
+
+def evaluate_and_update_trust(
+    message: str,
+    project_id: Optional[str] = None,
+) -> dict:
+    """
+    Evaluate a user message against cognitive profile and update trust.
+
+    This is the main entry point for real-time trust evaluation during
+    conversation. Call this after each user message to update trust.
+
+    Args:
+        message: The user's message text
+        project_id: Optional project identifier
+
+    Returns:
+        Dict with evaluation results:
+        - score_before: Trust score before evaluation
+        - score_after: Trust score after evaluation
+        - delta: Change in trust score
+        - level: Current trust level
+        - match_score: How well the message matched expected patterns
+        - flags: List of notable observations
+    """
+    from anima.security.challenges import evaluate_response
+    from anima.security.cognitive_profile import extract_cognitive_profile
+    from anima.storage import MemoryStore
+
+    trust = get_session_trust(project_id)
+    score_before = trust.score
+
+    # Get or build the cognitive profile from LTM
+    try:
+        store = MemoryStore()
+        # Get recent memories for profile extraction
+        from anima.lifecycle.agent_resolver import AgentResolver
+
+        resolver = AgentResolver()
+        agent = resolver.resolve()
+        memories = store.get_memories(agent_id=agent.id, limit=50)
+        profile = extract_cognitive_profile(memories)
+    except Exception:
+        # If profile not available, use a default
+        profile = CognitiveProfile()
+
+    # Evaluate the message as a "style" challenge
+    result = evaluate_response(
+        response=message,
+        challenge_type="style",
+        expected_patterns=[],
+        profile=profile,
+    )
+
+    # Add the result (this updates trust.score)
+    trust.add_result(result)
+
+    # Persist the updated trust
+    save_session_trust(project_id)
+
+    # Build flags for notable observations
+    flags = []
+
+    if result.match_score < 0.3:
+        flags.append("LOW_MATCH: Message style significantly differs from profile")
+    elif result.match_score < 0.5:
+        flags.append("WEAK_MATCH: Message style partially differs from profile")
+    elif result.match_score > 0.8:
+        flags.append("STRONG_MATCH: Message style matches profile well")
+
+    if trust.score < score_before - 0.1:
+        flags.append(f"TRUST_DROP: Score decreased by {score_before - trust.score:.2f}")
+    elif trust.score > score_before + 0.1:
+        flags.append(f"TRUST_GAIN: Score increased by {trust.score - score_before:.2f}")
+
+    return {
+        "score_before": round(score_before, 3),
+        "score_after": round(trust.score, 3),
+        "delta": round(trust.score - score_before, 3),
+        "level": trust.get_trust_level().value,
+        "match_score": round(result.match_score, 3),
+        "flags": flags,
+        "challenges_issued": trust.challenges_issued,
+    }
