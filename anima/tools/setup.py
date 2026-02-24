@@ -188,6 +188,7 @@ def run(args: list[str]) -> int:
         --mode <m>          Interaction mode: mcp, skill, or both (prompts if not specified)
         --eyes              Enable eyes (visual expression window)
         --tts               Enable TTS (text-to-speech with Piper)
+        --light             Enable i-Buddy USB light control
         --commands          Install slash commands only
         --hooks             Configure hooks only
         --no-patch          Skip patching existing agents as subagents
@@ -206,6 +207,7 @@ def run(args: list[str]) -> int:
     show_help = "--help" in args or "-h" in args
     eyes_enabled = "--eyes" in args
     tts_enabled = "--tts" in args
+    light_enabled = "--light" in args
 
     # Mode selection
     selected_mode = None
@@ -244,6 +246,7 @@ def run(args: list[str]) -> int:
         "--mode",
         "--eyes",
         "--tts",
+        "--light",
     }
     project_args = []
     skip_next = False
@@ -381,12 +384,15 @@ Examples:
         config["mode"] = selected_mode
         config["eyes_enabled"] = eyes_enabled
         config["tts_enabled"] = tts_enabled
+        config["light_enabled"] = light_enabled
         save_anima_config(config)
         safe_print(f"{get_icon('', '[OK]')} Saved mode '{selected_mode}' to ~/.anima/config.json")
         if eyes_enabled:
             safe_print(f"{get_icon('', '[OK]')} Eyes enabled (visual expression)")
         if tts_enabled:
             safe_print(f"{get_icon('', '[OK]')} TTS enabled (text-to-speech)")
+        if light_enabled:
+            safe_print(f"{get_icon('', '[OK]')} Light enabled (i-Buddy USB)")
         print()
 
         # Run full setup
@@ -398,6 +404,7 @@ Examples:
             mode=selected_mode,
             eyes_enabled=eyes_enabled,
             tts_enabled=tts_enabled,
+            light_enabled=light_enabled,
         )
 
     if success:

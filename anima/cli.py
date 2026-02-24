@@ -11,6 +11,7 @@ def _run_server(args: list[str]) -> int:
     # Parse server-specific arguments
     eyes_enabled = "--eyes" in args
     tts_enabled = "--tts" in args
+    light_enabled = "--light" in args
     eyes_config = None
 
     # Extract --eyes-config value if provided
@@ -20,7 +21,12 @@ def _run_server(args: list[str]) -> int:
 
     from anima.server import run_server
 
-    run_server(eyes_enabled=eyes_enabled, tts_enabled=tts_enabled, eyes_config_path=eyes_config)
+    run_server(
+        eyes_enabled=eyes_enabled,
+        tts_enabled=tts_enabled,
+        light_enabled=light_enabled,
+        eyes_config_path=eyes_config,
+    )
     return 0
 
 

@@ -4,12 +4,23 @@
 
 Anima is a **Universal Memory Layer** designed to give AI agents persistent, cross-session identity and project context. Originally built for Claude Code, it has now evolved into a platform-agnostic system with MCP server support, visual expression, and voice capabilities.
 
-## 🎉 v0.13.0 Highlights
+## 🎉 v0.13.7 Highlights
 
 - **MCP Server** - Memory and curiosity as native tool calls
 - **Eyes & Voice** - Visual expression + text-to-speech (optional)
 - **Auto-Permissions** - No more MCP authorization prompts
-- **10+ Voices** - Choose from Piper TTS voice options
+- **10+ Voices** - Including the special Joshua (WOPR) voice from WarGames 1983
+
+### 🎙️ Voice Setup
+
+Anima uses [Piper TTS](https://github.com/rhasspy/piper) for offline text-to-speech. Voices download automatically on first use.
+
+**Special: Joshua Voice (WOPR from WarGames)**
+
+To enable the Joshua voice, install [espeak-ng](https://github.com/espeak-ng/espeak-ng):
+- **Windows**: Download MSI from [espeak-ng releases](https://github.com/espeak-ng/espeak-ng/releases)
+- **macOS**: `brew install espeak-ng`
+- **Linux**: `apt install espeak-ng`
 
 ## 🚀 Choose Your Path
 

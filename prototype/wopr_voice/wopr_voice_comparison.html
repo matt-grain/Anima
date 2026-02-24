@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOPR Voice Lab - Joshua's Sound</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px #00ff00;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #00aa00;
+            margin-bottom: 30px;
+        }
+
+        /* Comparison Section */
+        .comparison-controls {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .selector-group {
+            text-align: center;
+        }
+        .selector-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #888;
+            font-size: 0.9em;
+        }
+        select {
+            background: #111;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            border-radius: 4px;
+            cursor: pointer;
+            min-width: 280px;
+        }
+        select:focus { outline: none; box-shadow: 0 0 10px rgba(0, 255, 0, 0.3); }
+        select option { background: #111; }
+
+        /* Side by side comparison */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 900px) {
+            .comparison-grid { grid-template-columns: 1fr; }
+        }
+
+        .voice-panel {
+            background: #111;
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 20px;
+            transition: border-color 0.3s;
+        }
+        .voice-panel.left { border-color: #ffaa00; }
+        .voice-panel.right { border-color: #00ffff; }
+
+        .voice-panel h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.1em;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        .voice-panel.left h3 { color: #ffaa00; }
+        .voice-panel.right h3 { color: #00ffff; }
+
+        audio {
+            width: 100%;
+            margin: 10px 0;
+            filter: sepia(20%) saturate(70%) hue-rotate(80deg);
+        }
+        .spectrogram {
+            width: 100%;
+            border-radius: 4px;
+            margin-top: 15px;
+            border: 1px solid #333;
+        }
+        .params {
+            background: #0a0a0a;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 10px;
+        }
+        .params code { color: #00ff00; }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+        .metric {
+            background: #0a0a0a;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .metric-value { font-size: 1.2em; color: #00ffff; }
+        .metric-label { font-size: 0.7em; color: #666; }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .badge.best { background: #004400; color: #00ff00; }
+        .badge.reference { background: #443300; color: #ffaa00; }
+
+        footer {
+            text-align: center;
+            color: #444;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #222;
+        }
+
+        .legend {
+            background: #111;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WOPR VOICE LAB</h1>
+        <p class="subtitle">SHALL WE PLAY A GAME OF AUDIO COMPARISON?</p>
+
+        <div class="legend">
+            <strong>How to use:</strong> Select two voices to compare side-by-side.
+            Spectrograms show frequency (vertical) over time (horizontal).
+            Brighter = more energy. Cyan line = 3kHz reference.
+        </div>
+
+        <div class="comparison-controls">
+            <div class="selector-group">
+                <label>LEFT PANEL (Reference)</label>
+                <select id="leftSelect" onchange="updateComparison()">
+                    <option value="original" selected>JOSHUA (Original 1983)</option>
+                    <option value="espeak-raw">espeak raw (-p60)</option>
+                    <option value="v1">v1: Low-pass + Light Reverb</option>
+                    <option value="v2">v2: + Comb Filter</option>
+                    <option value="v3">v3: + Double Comb</option>
+                    <option value="v4">v4: Stronger Low-pass</option>
+                    <option value="v5">v5: Reordered Chain</option>
+                    <option value="p40-v5">p40+v5: Lower Pitch</option>
+                    <option value="v6-nasal">v6: Pinched Nose</option>
+                    <option value="v7-lofi">v7: Lo-Fi 8kHz</option>
+                    <option value="v8-lofi-bright">v8: Lo-Fi + Bright (BEST)</option>
+                </select>
+            </div>
+            <div class="selector-group">
+                <label>RIGHT PANEL (Compare)</label>
+                <select id="rightSelect" onchange="updateComparison()">
+                    <option value="original">JOSHUA (Original 1983)</option>
+                    <option value="espeak-raw">espeak raw (-p60)</option>
+                    <option value="v1">v1: Low-pass + Light Reverb</option>
+                    <option value="v2">v2: + Comb Filter</option>
+                    <option value="v3">v3: + Double Comb</option>
+                    <option value="v4">v4: Stronger Low-pass</option>
+                    <option value="v5">v5: Reordered Chain</option>
+                    <option value="p40-v5">p40+v5: Lower Pitch</option>
+                    <option value="v6-nasal">v6: Pinched Nose</option>
+                    <option value="v7-lofi">v7: Lo-Fi 8kHz</option>
+                    <option value="v8-lofi-bright" selected>v8: Lo-Fi + Bright (BEST)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="comparison-grid">
+            <div class="voice-panel left" id="leftPanel"></div>
+            <div class="voice-panel right" id="rightPanel"></div>
+        </div>
+
+        <footer>
+            WOPR Voice Lab - Anima's Ears<br>
+            "A STRANGE GAME. THE ONLY WINNING MOVE IS TO PINCH YOUR NOSE."
+        </footer>
+    </div>
+
+    <script>
+        const voices = {
+            'original': {
+                name: 'JOSHUA (Original WarGames 1983)',
+                file: 'original-how-about-a-nice-game-of-chess.wav',
+                spectrogram: 'original-how-about-a-nice-game-of-chess_spectrogram.png',
+                params: 'Votrax SC-01 synthesizer (1983)',
+                badge: 'reference',
+                metrics: { f0: '76 Hz', centroid: '1184 Hz', highEnergy: '10.3%' }
+            },
+            'espeak-raw': {
+                name: 'espeak-ng Raw',
+                file: 'espeak-p60-s120-g1-how-about-a-nice-game-of-chess.wav',
+                spectrogram: 'espeak-p60-s120-g1-how-about-a-nice-game-of-chess_spectrogram.png',
+                params: '<code>espeak-ng -p 60 -s 120 -g 1</code>',
+                metrics: { f0: '106 Hz', centroid: '1988 Hz', highEnergy: '32.2%' }
+            },
+            'v1': {
+                name: 'v1: Low-pass + Reverb',
+                file: 'joshua-processed.wav',
+                spectrogram: 'joshua-processed_spectrogram.png',
+                params: 'Low-pass: <code>2800Hz</code> | Reverb: <code>40ms, 0.4 decay</code>',
+                metrics: { f0: '~106 Hz', centroid: '~1400 Hz', highEnergy: '~20%' }
+            },
+            'v2': {
+                name: 'v2: + Single Comb',
+                file: 'joshua-processed-v2.wav',
+                spectrogram: 'joshua-processed-v2_spectrogram.png',
+                params: 'Low-pass + Comb: <code>8ms, 0.4</code> + Reverb: <code>60ms</code>',
+                metrics: { f0: '~106 Hz', centroid: '~1300 Hz', highEnergy: '~18%' }
+            },
+            'v3': {
+                name: 'v3: + Double Comb',
+                file: 'joshua-processed-v3.wav',
+                spectrogram: 'joshua-processed-v3_spectrogram.png',
+                params: 'Double Comb: <code>5ms/7ms</code> | Reverb: <code>60ms, 0.5</code>',
+                metrics: { f0: '106 Hz', centroid: '1246 Hz', highEnergy: '17.3%' }
+            },
+            'v4': {
+                name: 'v4: Stronger Low-pass',
+                file: 'joshua-processed-v4.wav',
+                spectrogram: 'joshua-processed-v4_spectrogram.png',
+                params: 'Low-pass: <code>2000Hz, 6th order</code> | Double Comb + Reverb',
+                metrics: { f0: '~106 Hz', centroid: '~1100 Hz', highEnergy: '~10%' }
+            },
+            'v5': {
+                name: 'v5: Reordered Chain',
+                file: 'joshua-processed-v5.wav',
+                spectrogram: 'joshua-processed-v5_spectrogram.png',
+                params: 'Chain: Comb → Reverb → Low-pass <code>2200Hz</code>',
+                metrics: { f0: '~106 Hz', centroid: '~1150 Hz', highEnergy: '~12%' }
+            },
+            'p40-v5': {
+                name: 'p40+v5: Lower Pitch',
+                file: 'joshua-p40-v5.wav',
+                spectrogram: 'joshua-p40-v5_spectrogram.png',
+                params: '<code>espeak -p 40</code> + v5 chain',
+                metrics: { f0: '~80 Hz', centroid: '1045 Hz', highEnergy: '8.6%' }
+            },
+            'v6-nasal': {
+                name: 'v6: Pinched Nose',
+                file: 'joshua-p40-v6-nasal.wav',
+                spectrogram: 'joshua-p40-v6-nasal_spectrogram.png',
+                params: 'Nasal peak: <code>1500Hz Q=3</code> + Comb + Reverb + LP',
+                metrics: { f0: '~80 Hz', centroid: '1096 Hz', highEnergy: '8.1%' }
+            },
+            'v7-lofi': {
+                name: 'v7: Lo-Fi Vintage',
+                file: 'joshua-p40-v7-lofi.wav',
+                spectrogram: 'joshua-p40-v7-lofi_spectrogram.png',
+                params: 'Downsample: <code>8kHz</code> + Nasal + Comb + Reverb + LP <code>2200Hz</code>',
+                metrics: { f0: '~80 Hz', centroid: '1093 Hz', highEnergy: '8.1%' }
+            },
+            'v8-lofi-bright': {
+                name: 'v8: Lo-Fi + Bright',
+                file: 'joshua-p40-v8-lofi-bright.wav',
+                spectrogram: 'joshua-p40-v8-lofi-bright_spectrogram.png',
+                params: 'Downsample: <code>8kHz</code> + Nasal + Comb + Reverb + LP <code>3000Hz</code>',
+                badge: 'best',
+                metrics: { f0: '~80 Hz', centroid: '1255 Hz', highEnergy: '16%' }
+            }
+        };
+
+        function renderPanel(voice, panelId) {
+            const v = voices[voice];
+            const badgeHtml = v.badge ? `<span class="badge ${v.badge}">${v.badge === 'best' ? 'BEST MATCH' : 'REFERENCE'}</span>` : '';
+
+            document.getElementById(panelId).innerHTML = `
+                <h3>${v.name}${badgeHtml}</h3>
+                <audio controls>
+                    <source src="${v.file}" type="audio/wav">
+                </audio>
+                <div class="params">${v.params}</div>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value">${v.metrics.f0}</div>
+                        <div class="metric-label">F0 (Pitch)</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${v.metrics.centroid}</div>
+                        <div class="metric-label">Centroid</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${v.metrics.highEnergy}</div>
+                        <div class="metric-label">&gt;2kHz Energy</div>
+                    </div>
+                </div>
+                <img class="spectrogram" src="${v.spectrogram}" alt="Spectrogram">
+            `;
+        }
+
+        function updateComparison() {
+            const left = document.getElementById('leftSelect').value;
+            const right = document.getElementById('rightSelect').value;
+            renderPanel(left, 'leftPanel');
+            renderPanel(right, 'rightPanel');
+        }
+
+        // Initialize
+        updateComparison();
+    </script>
+</body>
+</html>

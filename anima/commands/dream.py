@@ -32,10 +32,12 @@ from anima.dream.types import (
     DreamStage,
     DreamState,
     DreamConfig,
+    CleanupResult,
     N2Result,
     N3Result,
     REMResult,
 )
+from anima.dream.cleanup import run_cleanup_stage
 from anima.dream.n2_consolidation import run_n2_consolidation
 from anima.dream.n3_processing import run_n3_processing
 from anima.dream.rem_dreaming import run_rem_dreaming
@@ -57,9 +59,9 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--stage",
         type=str,
-        choices=["n2", "n3", "rem", "all"],
+        choices=["cleanup", "n2", "n3", "rem", "all"],
         default="all",
-        help="Which dream stage to run (default: all available)",
+        help="Which dream stage to run (default: all including cleanup)",
     )
 
     parser.add_argument(
@@ -215,7 +217,7 @@ def run(args: list[str]) -> int:
 
     # Determine which stages to run
     if parsed.stage == "all":
-        stages = [DreamStage.N2, DreamStage.N3, DreamStage.REM]
+        stages = [DreamStage.CLEANUP, DreamStage.N2, DreamStage.N3, DreamStage.REM]
     else:
         stages = [DreamStage(parsed.stage.upper())]
 
@@ -236,17 +238,39 @@ def run(args: list[str]) -> int:
     if not parsed.dry_run:
         session = state_store.start_session(agent.id, project_id)
 
-    results: list[tuple[str, N2Result | N3Result | REMResult]] = []
+    results: list[tuple[str, CleanupResult | N2Result | N3Result | REMResult]] = []
     n3_contradictions: list = []  # Pass from N3 to REM
 
     try:
         for stage in stages:
             if parsed.dry_run:
                 print(f"[DRY RUN] Would run {stage.value} stage")
-                _print_dry_run_info(store, agent.id, project_id, config)
+                if stage != DreamStage.CLEANUP:
+                    _print_dry_run_info(store, agent.id, project_id, config)
                 continue
 
-            if stage == DreamStage.N2:
+            if stage == DreamStage.CLEANUP:
+                # Checkpoint: CLEANUP starting
+                if session:
+                    state_store.update_state(session.id, DreamState.CLEANUP_RUNNING)
+
+                result = run_cleanup_stage(
+                    store=store,
+                    agent_id=agent.id,
+                    project_id=project_id,
+                    config=config,
+                    quiet=parsed.quiet,
+                )
+                results.append(("CLEANUP", result))
+
+                # Checkpoint: CLEANUP complete
+                if session:
+                    state_store.update_state(session.id, DreamState.CLEANUP_COMPLETE)
+
+                if parsed.verbose:
+                    _print_cleanup_verbose(result)
+
+            elif stage == DreamStage.N2:
                 # Checkpoint: N2 starting
                 if session:
                     state_store.update_state(session.id, DreamState.N2_RUNNING)
@@ -393,7 +417,11 @@ def _resume_dream(
     state = session.state
     stages_to_run: list[DreamStage] = []
 
-    if state in (DreamState.N2_RUNNING, DreamState.IDLE):
+    if state in (DreamState.CLEANUP_RUNNING, DreamState.IDLE):
+        stages_to_run = [DreamStage.CLEANUP, DreamStage.N2, DreamStage.N3, DreamStage.REM]
+    elif state == DreamState.CLEANUP_COMPLETE:
+        stages_to_run = [DreamStage.N2, DreamStage.N3, DreamStage.REM]
+    elif state == DreamState.N2_RUNNING:
         stages_to_run = [DreamStage.N2, DreamStage.N3, DreamStage.REM]
     elif state == DreamState.N2_COMPLETE:
         stages_to_run = [DreamStage.N3, DreamStage.REM]
@@ -410,7 +438,24 @@ def _resume_dream(
 
     try:
         for stage in stages_to_run:
-            if stage == DreamStage.N2:
+            if stage == DreamStage.CLEANUP:
+                state_store.update_state(session.id, DreamState.CLEANUP_RUNNING)
+
+                result = run_cleanup_stage(
+                    store=store,
+                    agent_id=agent.id,
+                    project_id=project_id,
+                    config=config,
+                    quiet=parsed.quiet,
+                )
+                results.append(("CLEANUP", result))
+
+                state_store.update_state(session.id, DreamState.CLEANUP_COMPLETE)
+
+                if parsed.verbose:
+                    _print_cleanup_verbose(result)
+
+            elif stage == DreamStage.N2:
                 state_store.update_state(session.id, DreamState.N2_RUNNING)
 
                 result = run_n2_consolidation(
@@ -479,12 +524,30 @@ def _resume_dream(
     return 0
 
 
-def _print_summary(results: list[tuple[str, N2Result | N3Result | REMResult]]) -> None:
+def _print_summary(results: list[tuple[str, CleanupResult | N2Result | N3Result | REMResult]]) -> None:
     """Print dream completion summary."""
     print()
     print("Dream complete!")
     for stage_name, result in results:
-        if stage_name == "N2" and isinstance(result, N2Result):
+        if stage_name == "CLEANUP" and isinstance(result, CleanupResult):
+            if result.total_deleted > 0:
+                print(f"   {stage_name}: {result.total_deleted} memories cleaned ({result.duration_seconds:.1f}s)")
+                details = []
+                if result.forgotten_deleted:
+                    details.append(f"{result.forgotten_deleted} forgotten")
+                if result.wip_deleted:
+                    details.append(f"{result.wip_deleted} stale WIP")
+                if result.duplicates_deleted:
+                    details.append(f"{result.duplicates_deleted} dup deleted")
+                if result.duplicates_merged:
+                    details.append(f"{result.duplicates_merged} dup merged")
+                if result.low_impact_deleted:
+                    details.append(f"{result.low_impact_deleted} old LOW")
+                if details:
+                    print(f"            ({', '.join(details)})")
+            else:
+                print(f"   {stage_name}: Memory is clean ({result.duration_seconds:.1f}s)")
+        elif stage_name == "N2" and isinstance(result, N2Result):
             subconscious_str = ""
             if result.subconscious_merged + result.subconscious_linked + result.subconscious_kept > 0:
                 subconscious_str = f", subconscious: {result.subconscious_merged}⊕ {result.subconscious_linked}→ {result.subconscious_kept}○"
@@ -530,6 +593,32 @@ def _print_dry_run_info(
     print(f"   Would process {len(recent)} memories from last {config.project_lookback_days} days")
     print(f"   Similarity threshold: {config.n2_similarity_threshold}")
     print(f"   Max links per memory: {config.n2_max_links_per_memory}")
+
+
+def _print_cleanup_verbose(result: CleanupResult) -> None:
+    """Print detailed cleanup results."""
+    print(f"\n   Scanned {result.memories_scanned} memories")
+
+    if result.forgotten_deleted:
+        print(f"   [FORGOTTEN] deleted: {result.forgotten_deleted}")
+
+    if result.wip_deleted:
+        print(f"   Stale WIP deleted: {result.wip_deleted}")
+
+    if result.duplicates_found:
+        print(f"   Duplicates found: {result.duplicates_found}")
+        print(f"      Deleted (SUBCONSCIOUS): {result.duplicates_deleted}")
+        print(f"      Merged (other): {result.duplicates_merged}")
+
+    if result.low_impact_deleted:
+        print(f"   Old LOW impact deleted: {result.low_impact_deleted}")
+
+    if result.merged_pairs:
+        print("\n   Merged pairs:")
+        for kept, removed in result.merged_pairs[:5]:
+            print(f"      {removed[:8]}... -> {kept[:8]}...")
+        if len(result.merged_pairs) > 5:
+            print(f"      ... and {len(result.merged_pairs) - 5} more")
 
 
 def _print_n2_verbose(result: N2Result) -> None:

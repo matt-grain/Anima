@@ -63,13 +63,13 @@ class ClaudeSetup(BasePlatformSetup):
                     has_startup = any(m.get("matcher") == "startup" for m in existing_session_start)
                     if not has_startup:
                         startup_was_disabled = True
-                        safe_print(f"  {get_icon('', '[D]')} Detected: 'startup' hook was previously disabled, preserving choice")
+                        safe_print(f"  {get_icon('', '[D]')} Detected: 'startup' hook was previously disabled in {settings_file}, preserving choice")
             except (json.JSONDecodeError, OSError):
                 pass
 
         # Build SessionStart matchers - startup is optional (Windows Terminal bug workaround)
         session_start_matchers = []
-        if with_startup_hook and not startup_was_disabled:
+        if with_startup_hook:
             session_start_matchers.append(
                 {
                     "matcher": "startup",
@@ -362,12 +362,18 @@ class ClaudeSetup(BasePlatformSetup):
 
         return (patched, skipped)
 
-    def setup_mcp_server(self, eyes_enabled: bool = False, tts_enabled: bool = False) -> bool:
+    def setup_mcp_server(
+        self,
+        eyes_enabled: bool = False,
+        tts_enabled: bool = False,
+        light_enabled: bool = False,
+    ) -> bool:
         """Configure Anima MCP server in global Claude settings (~/.claude.json).
 
         Args:
             eyes_enabled: Whether to enable eyes (visual expression)
             tts_enabled: Whether to enable TTS (text-to-speech)
+            light_enabled: Whether to enable i-Buddy USB light
 
         Returns:
             True if successful
@@ -397,12 +403,19 @@ class ClaudeSetup(BasePlatformSetup):
             server_args.append("--eyes")
         if tts_enabled:
             server_args.append("--tts")
+        if light_enabled:
+            server_args.append("--light")
 
         # Configure Anima MCP server
+        # OPENBLAS_NUM_THREADS=1 fixes scipy hang on Windows with Python 3.13
+        # See: https://github.com/scipy/scipy/issues/20294
         settings["mcpServers"]["anima"] = {
             "type": "stdio",
             "command": uv_path,
             "args": server_args,
+            "env": {
+                "OPENBLAS_NUM_THREADS": "1",
+            },
         }
 
         # Add MCP tool permissions to avoid authorization prompts
@@ -425,6 +438,10 @@ class ClaudeSetup(BasePlatformSetup):
         # Voice tool (TTS)
         if tts_enabled:
             mcp_permissions.append("mcp__anima__voice")  # speak|set|list
+
+        # Light tool (i-Buddy USB)
+        if light_enabled:
+            mcp_permissions.append("mcp__anima__light")  # color|rgb|off|list
 
         added_permissions = []
         for perm in mcp_permissions:
@@ -455,6 +472,7 @@ class ClaudeSetup(BasePlatformSetup):
         mode: str = "skill",
         eyes_enabled: bool = False,
         tts_enabled: bool = False,
+        light_enabled: bool = False,
     ) -> bool:
         """Run the complete setup for Claude Code.
 
@@ -466,7 +484,7 @@ class ClaudeSetup(BasePlatformSetup):
         if mode in ("mcp", "both"):
             print("Configuring MCP server...")
             try:
-                if not self.setup_mcp_server(eyes_enabled, tts_enabled):
+                if not self.setup_mcp_server(eyes_enabled, tts_enabled, light_enabled):
                     success = False
                 print()
             except Exception as e:
