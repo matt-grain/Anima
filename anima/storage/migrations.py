@@ -48,13 +48,40 @@ def set_schema_version(conn: sqlite3.Connection, version: int) -> None:
     conn.execute(f"PRAGMA user_version = {version}")
 
 
-def backup_database(db_path: Path) -> Path:
-    """Create a timestamped backup of the database in ~/.anima/backups/."""
+def backup_database(db_path: Path, max_backups: int = 20) -> Path:
+    """
+    Create a timestamped backup of the database in ~/.anima/backups/.
+
+    Implements retention policy: keeps only the most recent `max_backups` files.
+    Old backups beyond the limit are automatically deleted.
+
+    Args:
+        db_path: Path to the database to backup
+        max_backups: Maximum number of backups to retain (default 20)
+
+    Returns:
+        Path to the created backup
+    """
     backup_dir = Path.home() / ".anima" / "backups"
     backup_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     backup_path = backup_dir / f"{db_path.stem}_backup_{timestamp}.db"
     shutil.copy2(db_path, backup_path)
+
+    # Apply retention policy: delete oldest backups beyond max_backups
+    existing_backups = sorted(
+        backup_dir.glob(f"{db_path.stem}_backup_*.db"),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,  # Newest first
+    )
+
+    # Keep only the most recent max_backups
+    for old_backup in existing_backups[max_backups:]:
+        try:
+            old_backup.unlink()
+        except OSError:
+            pass  # Ignore deletion errors (file in use, etc.)
+
     return backup_path
 
 

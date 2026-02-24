@@ -24,11 +24,13 @@ from anima.core import (
     sign_memory,
     should_sign,
 )
-from anima.embeddings import embed_text
-from anima.graph.linker import find_link_candidates, LinkType
 from anima.lifecycle.injection import ensure_token_count
 from anima.lifecycle.session import get_current_session_id
 from anima.storage import MemoryStore
+
+# Note: SUBCONSCIOUS memories don't get embeddings or semantic links.
+# They influence through presence, not active recall.
+# This saves ~7KB per memory in database storage.
 
 
 def cleanup_pending_dialogues() -> int:
@@ -113,7 +115,6 @@ def run(args: list[str]) -> int:
     now = datetime.now()
 
     total_saved = 0
-    total_linked = 0
 
     for json_file in files_to_process:
         if not json_file.exists():
@@ -178,53 +179,19 @@ def run(args: list[str]) -> int:
             # Calculate token count
             ensure_token_count(memory)
 
-            # Save memory
+            # Save memory (no embedding - SUBCONSCIOUS memories influence through
+            # presence, not active recall, saving ~7KB per memory)
             store.save_memory(memory)
 
-            # Generate embedding and find links
-            links_created = 0
-            try:
-                embedding = embed_text(content, quiet=True)
-                store.save_embedding(memory.id, embedding)
-
-                # Find similar memories to create RELATES_TO links
-                candidate_memories = store.get_memories_with_embeddings(
-                    agent_id=agent.id,
-                    project_id=project.id if region == RegionType.PROJECT else None,
-                )
-
-                if candidate_memories:
-                    candidates = find_link_candidates(
-                        source_embedding=embedding,
-                        candidate_memories=candidate_memories,
-                        threshold=0.5,
-                        max_links=5,
-                        exclude_ids={memory.id},
-                    )
-
-                    for candidate in candidates:
-                        store.save_link(
-                            source_id=memory.id,
-                            target_id=candidate.memory_id,
-                            link_type=LinkType.RELATES_TO,
-                            similarity=candidate.similarity,
-                        )
-                        links_created += 1
-
-            except Exception:
-                pass  # Embedding is optional
-
             region_str = "PROJECT" if region == RegionType.PROJECT else "AGENT"
-            link_str = f" [{links_created} links]" if links_created > 0 else ""
-            print(f"  + {memory.id[:8]} ({region_str}){link_str}: {content[:60]}...")
+            print(f"  + {memory.id[:8]} ({region_str}): {content[:60]}...")
             total_saved += 1
-            total_linked += links_created
 
         # Move processed file to done folder
         done_file = done_dir / json_file.name
         json_file.rename(done_file)
 
-    print(f"\nSaved {total_saved} subconscious memories with {total_linked} semantic links.")
+    print(f"\nSaved {total_saved} subconscious memories (no embeddings - influence not recall).")
 
     # Auto-cleanup pending dialogues (prevents reprocessing loop)
     moved = cleanup_pending_dialogues()

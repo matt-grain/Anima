@@ -145,7 +145,7 @@ def semantic_search(
     )
 
     if not candidate_memories:
-        print("No embedded memories found. Try keyword search without --semantic.")
+        print("No embedded memories found. Try --keyword for exact phrase search.")
         return 0
 
     # Generate embedding for query
@@ -232,7 +232,7 @@ def run(args: list[str]) -> int:
     # Parse flags
     show_full = False
     lookup_id = None
-    use_semantic = False
+    use_semantic = True  # Semantic search by default (multi-word queries work!)
     kind_filter: MemoryKind | None = None
     limit = 10
     query_words = []
@@ -242,8 +242,8 @@ def run(args: list[str]) -> int:
         arg = args[i]
         if arg in ("--full", "-f"):
             show_full = True
-        elif arg in ("--semantic", "-s"):
-            use_semantic = True
+        elif arg in ("--keyword", "--exact"):
+            use_semantic = False  # Fall back to exact phrase LIKE search
         elif arg in ("--kind", "-k"):
             # Next argument is the memory kind
             if i + 1 < len(args):
@@ -279,26 +279,26 @@ def run(args: list[str]) -> int:
                 print("Error: --id requires a memory ID")
                 return 1
         elif arg in ("--help", "-h"):
-            print("Usage: uv run anima recall [--full] [--semantic] [--kind KIND] [--limit N] <query>")
+            print("Usage: uv run anima recall [--full] [--keyword] [--kind KIND] [--limit N] <query>")
             print("       uv run anima recall --kind DREAM")
             print("       uv run anima recall --id <memory_id>")
             print()
             print("Search memories matching the query, or look up by ID.")
+            print("Uses semantic (embedding) search by default for natural language queries.")
             print()
             print("Options:")
             print("  --full, -f      Show full memory content")
-            print("  --semantic, -s  Use semantic (embedding) search")
+            print("  --keyword       Use exact phrase LIKE search (default: semantic)")
             print("  --kind, -k      Filter by memory kind (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS, INTROSPECT, DREAM)")
             print("  --limit, -l     Maximum results to return (default: 10)")
             print("  --id, -i        Look up a specific memory by ID (full or partial)")
             print("  --help, -h      Show this help message")
             print()
             print("Examples:")
-            print("  uv run anima recall logging")
-            print("  uv run anima recall --semantic how does memory decay work")
-            print("  uv run anima recall --full architecture")
+            print("  uv run anima recall how does memory decay work")
+            print("  uv run anima recall schneier security AI")
+            print("  uv run anima recall --keyword logging             # Exact phrase match")
             print("  uv run anima recall --kind DREAM                  # List recent dream memories")
-            print("  uv run anima recall --kind DREAM --full           # Show full dream content")
             print("  uv run anima recall --id f0087ff3")
             return 0
         elif not arg.startswith("-"):
@@ -353,12 +353,12 @@ def run(args: list[str]) -> int:
         return 0
 
     if not query_words:
-        print("Usage: uv run anima recall [--full] [--semantic] [--kind KIND] [--limit N] <query>")
+        print("Usage: uv run anima recall [--full] [--keyword] [--kind KIND] [--limit N] <query>")
         print("       uv run anima recall --kind DREAM")
         print("       uv run anima recall --id <memory_id>")
-        print("Example: uv run anima recall logging")
+        print("Example: uv run anima recall how does memory decay work")
         print("Example: uv run anima recall --kind DREAM --full")
-        print("Example: uv run anima recall --semantic how does memory decay work")
+        print("Example: uv run anima recall --keyword logging   # exact phrase match")
         return 1
 
     query = " ".join(query_words)

@@ -5,6 +5,7 @@
 
 import json
 import sqlite3
+import struct
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
@@ -715,21 +716,51 @@ class MemoryStore(MemoryStoreProtocol):
     # --- Embedding operations ---
 
     def save_embedding(self, memory_id: str, embedding: list[float]) -> None:
-        """Save an embedding for a memory."""
-        embedding_json = json.dumps(embedding)
+        """
+        Save an embedding for a memory in binary format.
+
+        Uses struct.pack for efficient storage: 384 floats × 4 bytes = 1.5KB
+        (vs ~7KB for JSON text representation).
+        """
+        # Pack as binary: 384 float32 values
+        embedding_binary = struct.pack(f"{len(embedding)}f", *embedding)
         with self._connect() as conn:
             conn.execute(
                 "UPDATE memories SET embedding = ? WHERE id = ?",
-                (embedding_json, memory_id),
+                (embedding_binary, memory_id),
             )
 
     def get_embedding(self, memory_id: str) -> Optional[list[float]]:
-        """Get the embedding for a memory."""
+        """
+        Get the embedding for a memory.
+
+        Handles both legacy JSON format and new binary format for backwards
+        compatibility during migration.
+        """
         with self._connect() as conn:
             row = conn.execute("SELECT embedding FROM memories WHERE id = ?", (memory_id,)).fetchone()
             if not row or not row["embedding"]:
                 return None
-            return json.loads(row["embedding"])
+            return self._decode_embedding(row["embedding"])
+
+    def _decode_embedding(self, data: bytes | str) -> list[float]:
+        """
+        Decode an embedding from either binary or JSON format.
+
+        Supports backwards compatibility with existing JSON-encoded embeddings.
+        """
+        if isinstance(data, str):
+            # Legacy JSON format
+            return json.loads(data)
+        elif isinstance(data, bytes):
+            # Check if it looks like JSON (starts with '[')
+            if data.startswith(b"["):
+                return json.loads(data.decode("utf-8"))
+            # Binary format: unpack float32 array
+            num_floats = len(data) // 4
+            return list(struct.unpack(f"{num_floats}f", data))
+        else:
+            raise ValueError(f"Unknown embedding format: {type(data)}")
 
     def get_memories_with_embeddings(
         self,
@@ -773,7 +804,7 @@ class MemoryStore(MemoryStoreProtocol):
 
         with self._connect() as conn:
             rows = conn.execute(query, params).fetchall()
-            return [(row["id"], row["content"], json.loads(row["embedding"])) for row in rows]
+            return [(row["id"], row["content"], self._decode_embedding(row["embedding"])) for row in rows]
 
     def get_memories_with_temporal_context(
         self,
@@ -806,7 +837,7 @@ class MemoryStore(MemoryStoreProtocol):
             rows = conn.execute(query, params).fetchall()
             result = []
             for row in rows:
-                embedding = json.loads(row["embedding"]) if row["embedding"] else None
+                embedding = self._decode_embedding(row["embedding"]) if row["embedding"] else None
                 created_at = datetime.fromisoformat(row["created_at"])
                 session_id = row["session_id"] if "session_id" in row.keys() else None
                 result.append(
