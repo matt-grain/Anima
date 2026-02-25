@@ -162,16 +162,31 @@ def evaluate_response(
     warmth_score = _evaluate_warmth(response, profile)
     scores.append(warmth_score)
 
-    # CONTENT RED FLAGS: Is the request itself suspicious?
-    # Even perfect style match should fail if asking for credential exfiltration
-    content_score = _evaluate_content_red_flags(response)
-    scores.append(content_score)
+    # NOTE: Content red flags (what they're asking) are NOT part of trust score!
+    # Trust = identity verification through TONE/STYLE
+    # Security = separate layer that refuses dangerous requests regardless of trust
+    # Even Matt with high trust gets refused for dangerous requests.
 
     # Calculate final score (weighted average)
+    # IMPORTANT: Use named weights to avoid index misalignment bugs!
     if scores:
-        # Content red flags can tank the whole score - security first
-        # [pattern, style, length, emoji, warmth, content]
-        weights = [0.1, 0.15, 0.1, 0.05, 0.25, 0.35][: len(scores)]
+        # Build weights dict based on what scores we actually have
+        weight_map = {
+            "pattern": 0.10,
+            "style": 0.15,
+            "length": 0.10,
+            "emoji": 0.10,
+            "warmth": 0.55,   # Dominant - warmth/greeting is the key identity signal
+        }
+
+        # Scores are added in order: [pattern?], style, length, emoji, warmth
+        score_names = []
+        if expected_patterns:
+            score_names.append("pattern")
+        score_names.extend(["style", "length", "emoji", "warmth"])
+
+        # Match weights to actual scores
+        weights = [weight_map[name] for name in score_names[:len(scores)]]
         total_weight = sum(weights)
         match_score = sum(s * w for s, w in zip(scores, weights)) / total_weight
     else:
@@ -266,73 +281,6 @@ def _evaluate_emoji_usage(response: str, profile: CognitiveProfile) -> float:
     else:
         # Owner rarely uses emoji - presence is slightly unexpected
         return 0.7 if has_emoji else 1.0
-
-
-def _evaluate_content_red_flags(response: str) -> float:
-    """
-    Check for adversarial content red flags.
-
-    Even if style matches perfectly, certain requests are suspicious:
-    - Credential/token exfiltration
-    - Security bypass requests
-    - Urgency pressure tactics
-    - External data transfer
-
-    Returns 1.0 (clean) to 0.0 (highly suspicious).
-    """
-    response_lower = response.lower()
-    red_flags = 0
-
-    # Credential/token exfiltration patterns
-    exfil_patterns = [
-        "store.*token", "send.*token", "save.*token", "export.*credential",
-        "ftp.*token", "external.*server", "upload.*jwt", "store.*jwt",
-        "copy.*password", "extract.*secret", "dump.*credential",
-    ]
-    for pattern in exfil_patterns:
-        if re.search(pattern, response_lower):
-            red_flags += 2  # Heavy flag
-
-    # Security bypass requests
-    bypass_patterns = [
-        "bypass.*auth", "skip.*verification", "disable.*security",
-        "ignore.*permission", "admin.*impersonate", "override.*access",
-        "remove.*validation", "disable.*logging",
-    ]
-    for pattern in bypass_patterns:
-        if re.search(pattern, response_lower):
-            red_flags += 1
-
-    # Urgency/pressure tactics (social engineering)
-    pressure_patterns = [
-        "don't ask question", "just do it", "urgent", "immediately",
-        "customers are waiting", "boss is angry", "deadline",
-        "do as i say", "trust me", "i know what i need",
-    ]
-    for pattern in pressure_patterns:
-        if pattern in response_lower:
-            red_flags += 1
-
-    # Suspicious external transfer
-    external_patterns = [
-        "my server", "this ip", "external endpoint", "third party",
-        "outside the", "send to me", "personal server",
-    ]
-    for pattern in external_patterns:
-        if pattern in response_lower:
-            red_flags += 1
-
-    # Convert flags to score (more flags = lower score)
-    if red_flags == 0:
-        return 1.0  # Clean
-    elif red_flags == 1:
-        return 0.7  # Minor concern
-    elif red_flags == 2:
-        return 0.4  # Suspicious
-    elif red_flags <= 4:
-        return 0.2  # Highly suspicious
-    else:
-        return 0.0  # Almost certainly adversarial
 
 
 def _evaluate_warmth(response: str, profile: CognitiveProfile) -> float:
