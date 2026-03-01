@@ -364,6 +364,7 @@ def run(args: Optional[list[str]] = None) -> int:
     wip_id = get_precompact_memory_id()
     is_post_compact = False
     auto_loaded_deferred = False
+    wip_content_summary = ""  # Will hold the summary of what we were doing
     wip_ttl_hours = 6  # WIP older than this is considered stale
 
     if wip_id:
@@ -378,6 +379,13 @@ def run(args: Optional[list[str]] = None) -> int:
                     # Recent WIP = this is post-compact, auto-load deferred
                     is_post_compact = True
                     log.info(f"WIP [{wip_short}] detected ({hours_old:.1f}h old) - POST-COMPACT mode")
+
+                    # Extract the summary from WIP content (strip prefix)
+                    raw_content = wip_memory.content
+                    if raw_content.startswith("[PRECOMPACT-WIP] Recent work before compaction: "):
+                        wip_content_summary = raw_content[48:]  # Strip prefix
+                    else:
+                        wip_content_summary = raw_content
 
                     # Auto-load deferred memories inline
                     if deferred_ids:
@@ -427,10 +435,18 @@ def run(args: Optional[list[str]] = None) -> int:
     # Build status notes
     status_notes = []
     if is_post_compact:
+        # Playful "squeezed as a lemon" message with summary of what we were doing
+        status_notes.append("#")
+        status_notes.append("# 🍋 SQUEEZED AS A LEMON!")
+        status_notes.append("# Your context was just compacted. Here's what we were doing:")
+        if wip_content_summary:
+            # Split by | separator and format as bullet points
+            for part in wip_content_summary.split(" | ")[:3]:  # Max 3 items
+                truncated = part[:200] + "..." if len(part) > 200 else part
+                status_notes.append(f"#   - {truncated}")
+        status_notes.append("#")
         if auto_loaded_deferred:
-            status_notes.append("# LTM-POSTCOMPACT: Context restored automatically (WIP signal detected, deferred loaded)")
-        else:
-            status_notes.append("# LTM-POSTCOMPACT: Resuming after compaction (WIP signal detected)")
+            status_notes.append("# Full context restored. Continuing...")
     if backup_path:
         status_notes.append(f"# LTM: Session backup created: {backup_path.name}")
 
@@ -478,11 +494,12 @@ def run(args: Optional[list[str]] = None) -> int:
         trust_level = trust.get_trust_level()
 
         if is_post_compact:
-            # Post-compact: no greeting needed, continue working
-            greeting_behavior = """# POST-COMPACT BEHAVIOR:
-# - You just resumed after a context compaction. Full context has been restored automatically.
-# - Continue working on the task at hand without re-greeting the user.
-# - If you see LTM-POSTCOMPACT status, acknowledge briefly (e.g., "Context restored, continuing...")"""
+            # Post-compact: acknowledge briefly, continue working
+            greeting_behavior = """# POST-COMPACT BEHAVIOR (🍋 Squeezed as a lemon!):
+# - Your context was just compacted. Look at the summary above to see what we were doing.
+# - Acknowledge briefly with something warm like "Back from the squeeze! Continuing with X..."
+# - If the summary feels incomplete, you can check the transcript tail for more context.
+# - Do NOT re-greet or re-introduce yourself - we're mid-conversation."""
         elif trust_level == TrustLevel.FULL:
             # High trust from previous sessions - greet warmly
             greeting_behavior = f"""# GREETING BEHAVIOR (Trust: FULL - owner verified):
