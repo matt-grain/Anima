@@ -127,7 +127,11 @@ def run(args: list[str]) -> int:
             print(f"Invalid JSON in {json_file.name}: {e}")
             continue
 
-        memories = data.get("memories", [])
+        # Handle both formats: {"memories": [...]} or raw [...]
+        if isinstance(data, list):
+            memories = data
+        else:
+            memories = data.get("memories", [])
         if not memories:
             print(f"No memories in {json_file.name}")
             continue
@@ -135,7 +139,8 @@ def run(args: list[str]) -> int:
         print(f"\nProcessing {json_file.name} ({len(memories)} memories):")
 
         for mem_data in memories:
-            content = mem_data.get("content", "")
+            # Support both field names: "content" (legacy) and "text" (Sonnet output)
+            content = mem_data.get("content") or mem_data.get("text", "")
             scope = mem_data.get("scope", "agent")
             resonance = mem_data.get("resonance", "")
 
