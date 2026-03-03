@@ -9,6 +9,13 @@ from anima.storage.curiosity import (
     get_last_research,
     set_last_research,
 )
+from anima.storage.subconscious import SubconsciousStore, FTS5NotSupportedError
+from anima.storage.subconscious_types import (
+    DialogueTurn,
+    SessionMeta,
+    SearchResult,
+    SubconsciousStats,
+)
 
 __all__ = [
     "MemoryStoreProtocol",
@@ -19,4 +26,10 @@ __all__ = [
     "CuriosityStore",
     "get_last_research",
     "set_last_research",
+    "SubconsciousStore",
+    "FTS5NotSupportedError",
+    "DialogueTurn",
+    "SessionMeta",
+    "SearchResult",
+    "SubconsciousStats",
 ]

@@ -273,9 +273,12 @@ class TestResponseEvaluation:
         """Response matching profile style scores well."""
         profile = CognitiveProfile()
         profile.style_markers = {"concise": 0.9, "technical": 0.8}
+        # Add greeting patterns to match warmth evaluation (55% weight)
+        profile.greeting_patterns = ["hey", "hi", "hello"]
 
-        # Short, technical response
-        response = "Fixed the bug in the API"
+        # Short, technical response WITH warmth (Matt's actual style)
+        # Warmth is the dominant identity signal - cold responses score low
+        response = "Hey! Fixed the bug in the API 🎉"
         result = evaluate_response(
             response=response,
             challenge_type="style",
@@ -304,9 +307,12 @@ class TestResponseEvaluation:
     def test_expected_pattern_match_boosts_score(self) -> None:
         """Matching expected patterns boosts score."""
         profile = CognitiveProfile()
+        # Add greeting patterns to match warmth evaluation (55% weight)
+        profile.greeting_patterns = ["yeah", "yes", "yep"]
 
+        # Include warmth marker - Matt's actual style
         result = evaluate_response(
-            response="Yes, I prefer Python for this",
+            response="Yeah! I prefer Python for this 😊",
             challenge_type="preference",
             expected_patterns=["python"],
             profile=profile,
