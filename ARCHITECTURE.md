@@ -331,4 +331,48 @@ Mark certain memories as non-compactable in Anima's context system.
 
 ---
 
-*Last updated: 2025-12-21*
+*Last updated: 2026-03-03*
+
+---
+
+## Subconscious Layer
+
+The subconscious layer provides searchable access to raw dialogue history without loading it into context.
+
+### Philosophy
+
+Unlike conscious memories (explicitly saved via `/remember`), subconscious memories are:
+- **Automatically indexed** at session end (no LLM processing)
+- **Not loaded** into context at session start
+- **Searchable** on demand via `/recall --subconscious`
+- **Separate** from the main LTM database
+
+This preserves the metaphor: I can't "see" my subconscious, but I can search it when prompted.
+
+### Storage
+
+Subconscious uses a separate SQLite database with FTS5 full-text search:
+
+```
+~/.anima/subconscious.db
+├── sessions (metadata: session_id, source, project, timestamp)
+└── messages (FTS5 virtual table: role, text)
+```
+
+### Search Ranking
+
+Results are ranked using:
+- **BM25** (80%): Term frequency / inverse document frequency
+- **Recency** (20%): 30-day half-life decay boost
+
+### Commands
+
+```bash
+/recall --subconscious "query"  # Search dialogues only
+/recall --both "query"          # Search both conscious + subconscious
+/recall "query"                 # Search conscious only (default)
+```
+
+### Auto-Triggering
+
+Social cues like "do you remember when we discussed X?" automatically trigger `--both` search.

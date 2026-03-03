@@ -11,10 +11,10 @@
 | Phase 1: Subconscious Storage Layer | ✅ Complete | 4/4 | 100% |
 | Phase 2: Session End Indexing | ✅ Complete | 2/2 | 100% |
 | Phase 3: Recall Command Enhancement | ✅ Complete | 3/3 | 100% |
-| Phase 4: Cleanup Old System | ⏳ Pending | 0/8 | 0% |
-| Phase 5: Tests & Documentation | ⏳ Pending | 0/5 | 0% |
+| Phase 4: Cleanup Old System | ✅ Complete | 8/8 | 100% |
+| Phase 5: Tests & Documentation | ✅ Complete | 5/5 | 100% |
 
-**Overall:** 9/22 tasks complete (41%)
+**Overall:** 22/22 tasks complete (100%)
 
 ---
 
@@ -30,23 +30,6 @@
 - ✅ `anima/storage/subconscious.py` — Full SubconsciousStore implementation with BM25 + recency ranking
 - ✅ `anima/storage/__init__.py` — Added 6 new exports
 
-### Files Created
-- `anima/storage/subconscious_types.py` (42 lines)
-- `anima/storage/schema_subconscious.sql` (25 lines)
-- `anima/storage/subconscious.py` (~180 lines)
-
-### Files Modified
-- `anima/storage/__init__.py` — Added SubconsciousStore and type exports
-
-### Verification Checklist
-| Item | Status |
-|------|--------|
-| All files created | ✅ |
-| Type check (pyright) | ✅ 0 errors |
-| Lint (ruff) | ✅ All passed |
-| Smoke test (import + init) | ✅ SubconsciousStats returned |
-| FTS5 working | ✅ Database created at ~/.anima/subconscious.db |
-
 ---
 
 ## Phase 2 — Session End Indexing
@@ -56,22 +39,8 @@
 **Tooling:** ✅ All pass (pyright 0 errors, ruff clean)
 
 ### Completed
-- ✅ `anima/hooks/dialogue_parser.py` — Dialogue parsing utilities (detect_format, parse_claude_session, parse_antigravity_session, parse_session, clean_content, extract_text_from_content)
-- ✅ `anima/hooks/session_end.py` — Added _get_transcript_path() + _index_current_session() + integration
-
-### Files Created
-- `anima/hooks/dialogue_parser.py` (234 lines)
-
-### Files Modified
-- `anima/hooks/session_end.py` — Added subconscious indexing after decay processing
-
-### Verification Checklist
-| Item | Status |
-|------|--------|
-| All files created | ✅ |
-| Type check (pyright) | ✅ 0 errors |
-| Lint (ruff) | ✅ All passed |
-| Integration point correct | ✅ After decay, before integrity check |
+- ✅ `anima/hooks/dialogue_parser.py` — Dialogue parsing + clean_content()
+- ✅ `anima/hooks/session_end.py` — Auto-indexes to subconscious.db
 
 ---
 
@@ -82,39 +51,77 @@
 **Tooling:** ✅ All pass (pyright 0 errors, ruff clean)
 
 ### Completed
-- ✅ `anima/commands/recall.py` — Added subconscious_search(), both_search(), --subconscious/-s, --conscious/-c, --both/-b flags
+- ✅ `anima/commands/recall.py` — --subconscious/-s, --conscious/-c, --both/-b flags
 - ✅ `anima/commands/specs/recall.yaml` — Added 3 new flag definitions
-- ✅ `anima/lifecycle/social_cues.py` — Added should_search_subconscious() + EXPLICIT_RECALL patterns
+- ✅ `anima/lifecycle/social_cues.py` — Auto-trigger for "do you remember when..."
 
-### Files Modified
-- `anima/commands/recall.py` — Added 4 new functions + flag parsing + social cue integration
-- `anima/commands/specs/recall.yaml` — Added subconscious/conscious/both flags
-- `anima/lifecycle/social_cues.py` — Added explicit recall patterns + should_search_subconscious()
+---
+
+## Phase 4 — Cleanup Old System
+
+**Implemented:** 2026-03-03
+**Agent:** python-mcp-expert
+**Tooling:** ✅ All pass (pyright 0 errors, ruff clean)
+
+### Deleted Files
+- ✅ `anima/hooks/subconscious_extract.py` — Old LLM extraction hook
+- ✅ `anima/commands/save_subconscious.py` — Manual save command
+- ✅ `anima/skills/process-subconscious/` — Skill directory
+- ✅ `prototype/subconscious/extract_subconscious.py` — Prototype code
+
+### Modified Files
+- ✅ `anima/cli.py` — Removed process-subconscious and save-subconscious commands
+- ✅ `anima/hooks/session_start.py` — Removed subconscious pending check
+- ✅ `anima/hooks/dialogue_parser.py` — Moved clean_content() inline
+- ✅ `.claude/skills/load-deferred/SKILL.md` — Updated for FTS5 approach
 
 ### Verification Checklist
 | Item | Status |
 |------|--------|
-| All flags working | ✅ --subconscious, --conscious, --both |
+| All old files deleted | ✅ |
+| CLI commands removed | ✅ |
+| No import errors | ✅ |
 | Type check (pyright) | ✅ 0 errors |
-| Lint (ruff) | ✅ All passed |
-| Social cue auto-trigger | ✅ "do you remember when..." triggers --both |
+| All tests passing | ✅ 722 passed |
 
 ---
 
-## Next Phase Preview
+## Phase 5 — Tests & Documentation
 
-**Phase 4: Cleanup Old System**
-- 8 tasks (delete old files, modify session_start, update skill docs)
-- Dependencies: Phases 2 & 3 ✅
-- Ready to start
+**Implemented:** 2026-03-03
+**Agent:** python-mcp-expert
+**Tooling:** ✅ All pass (pyright 0 errors, 755 tests passing)
 
-**Phase 5: Tests & Documentation**
-- 5 tasks (new test files, ARCHITECTURE.md, CHANGELOG.md)
-- Dependencies: All previous phases
-- Blocked by Phase 4
+### Completed
+- ✅ `tests/test_subconscious.py` — 16 tests for SubconsciousStore + clean_content()
+- ✅ `tests/test_recall_subconscious.py` — 7 tests for recall --subconscious/--both
+- ✅ `tests/test_session_end_indexing.py` — 10 tests for session end indexing + dialogue parser
+- ✅ `ARCHITECTURE.md` — Added Subconscious Layer documentation
+- ✅ `CHANGELOG.md` — Created v0.15.0 "True Subconscious" entry
+
+### Verification Checklist
+| Item | Status |
+|------|--------|
+| All test files created | ✅ |
+| Type check (pyright) | ✅ 0 errors |
+| New tests passing | ✅ 33/33 passed |
+| Full suite passing | ✅ 755 passed |
+| ARCHITECTURE.md updated | ✅ |
+| CHANGELOG.md created | ✅ |
+
+---
+
+## Implementation Complete
+
+**v0.15.0 "True Subconscious"** is fully implemented:
+- FTS5-indexed dialogue storage (no LLM required)
+- `/recall --subconscious` and `/recall --both` commands
+- Auto-trigger on "do you remember when..." social cues
+- All old subconscious code removed
+- 33 new tests, 755 total tests passing
 
 ---
 
 ## Gaps Requiring Attention
 
-None — Phases 1-3 complete with no gaps.
+None — All phases complete with no gaps.
