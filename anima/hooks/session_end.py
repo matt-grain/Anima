@@ -9,7 +9,6 @@ Optionally saves a spaceship journal (introspective memory) about the session.
 """
 
 import json
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -27,17 +26,18 @@ from anima.logging import log_hook_start, log_hook_end, get_logger
 
 def _get_transcript_path() -> Path | None:
     """
-    Resolve transcript path from CLAUDE_HOOK_INPUT environment variable.
+    Resolve transcript path from Claude Code hook input (stdin).
 
-    Claude Code sets CLAUDE_HOOK_INPUT to a JSON string containing
+    Claude Code sends hook input as JSON via stdin, containing
     transcript_path when invoking session-end hooks.
     """
-    raw = os.environ.get("CLAUDE_HOOK_INPUT")
-    if not raw:
-        return None
     try:
+        # Read from stdin (Claude Code sends hook input here)
+        raw = sys.stdin.read()
+        if not raw:
+            return None
         data: object = json.loads(raw)
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, OSError):
         return None
     if not isinstance(data, dict):
         return None
