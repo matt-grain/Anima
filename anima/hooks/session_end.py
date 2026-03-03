@@ -8,18 +8,71 @@ It processes memory decay and consolidation.
 Optionally saves a spaceship journal (introspective memory) about the session.
 """
 
+import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
-
 from typing import Optional
+
 from anima.core import AgentResolver, Memory, MemoryKind, ImpactLevel, RegionType
 from anima.core.signing import sign_memory, should_sign
+from anima.hooks.dialogue_parser import parse_session
 from anima.lifecycle.decay import MemoryDecay
 from anima.lifecycle.injection import ensure_token_count
 from anima.lifecycle.integrity import MemoryIntegrityChecker
-from anima.storage import MemoryStore
+from anima.storage import FTS5NotSupportedError, MemoryStore, SubconsciousStore
 from anima.logging import log_hook_start, log_hook_end, get_logger
+
+
+def _get_transcript_path() -> Path | None:
+    """
+    Resolve transcript path from CLAUDE_HOOK_INPUT environment variable.
+
+    Claude Code sets CLAUDE_HOOK_INPUT to a JSON string containing
+    transcript_path when invoking session-end hooks.
+    """
+    raw = os.environ.get("CLAUDE_HOOK_INPUT")
+    if not raw:
+        return None
+    try:
+        data: object = json.loads(raw)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(data, dict):
+        return None
+    tp = data.get("transcript_path")
+    if not isinstance(tp, str) or not tp:
+        return None
+    return Path(tp)
+
+
+def _index_current_session(transcript_path: Path | None) -> int | None:
+    """
+    Index current session dialogue to subconscious.db.
+
+    Returns number of messages indexed, or None if skipped.
+    Skips silently when: path missing, FTS5 unavailable, already indexed,
+    or session too short to parse.
+    """
+    if not transcript_path or not transcript_path.exists():
+        return None
+
+    try:
+        store = SubconsciousStore()
+    except FTS5NotSupportedError:
+        return None
+
+    mtime = transcript_path.stat().st_mtime
+    if store.is_session_indexed(str(transcript_path), mtime):
+        return None
+
+    result = parse_session(transcript_path)
+    if result is None:
+        return None
+
+    meta, dialogue = result
+    return store.index_session(meta, dialogue)
 
 
 def run(args: Optional[list[str]] = None) -> int:
@@ -65,7 +118,10 @@ def run(args: Optional[list[str]] = None) -> int:
     decay = MemoryDecay(store)
 
     # Clean up pre-compact WIP memory if it exists
-    from anima.hooks.pre_compact import get_precompact_memory_id, clear_precompact_memory_id
+    from anima.hooks.pre_compact import (
+        get_precompact_memory_id,
+        clear_precompact_memory_id,
+    )
 
     precompact_id = get_precompact_memory_id()
     if precompact_id:
@@ -142,6 +198,18 @@ def run(args: Optional[list[str]] = None) -> int:
         print(f"{len(compacted)} memories compacted, {deleted} deleted at end of session")
     else:
         print("0 memories compacted at end of session")
+
+    # Index current session dialogue to subconscious.db
+    transcript_path = _get_transcript_path()
+    try:
+        indexed = _index_current_session(transcript_path)
+        if indexed is not None:
+            log.info(f"Subconscious: indexed {indexed} turns from {transcript_path}")
+            print(f"Subconscious: {indexed} turns indexed")
+        else:
+            log.debug("Subconscious: skipped (FTS5 unavailable, already indexed, or session too short)")
+    except Exception as e:
+        log.warning(f"Subconscious indexing failed (non-fatal): {e}")
 
     # Check memory integrity
     checker = MemoryIntegrityChecker(store)

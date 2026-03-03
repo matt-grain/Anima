@@ -121,7 +121,22 @@ SOCIAL_PATTERNS: list[tuple[str, SocialCueType, int]] = [
         1,
     ),
     (
+        r"do\s+you\s+remember\s+when\s+(?:we\s+)?(.+?)[\?\.]?$",
+        SocialCueType.EXPLICIT_RECALL,
+        1,
+    ),
+    (
+        r"remember\s+when\s+(?:we\s+)?(.+?)[\?\.]?$",
+        SocialCueType.EXPLICIT_RECALL,
+        1,
+    ),
+    (
         r"do\s+you\s+recall\s+(.+?)(?:\?|$)",
+        SocialCueType.EXPLICIT_RECALL,
+        1,
+    ),
+    (
+        r"that\s+time\s+(?:we|you)\s+(.+?)[\?\.]?$",
         SocialCueType.EXPLICIT_RECALL,
         1,
     ),
@@ -232,6 +247,19 @@ def extract_recall_query(cue: SocialCue) -> Optional[str]:
     # If no specific topic, try to extract key concepts from the original text
     # This is a fallback - the topic extractor should catch most cases
     return None
+
+
+def should_search_subconscious(cue: SocialCue) -> bool:
+    """
+    Determine if a social cue should trigger a subconscious (raw dialogue) search.
+
+    Explicit recall and shared discussion cues reference specific past exchanges
+    that are more likely to surface in raw dialogue history than in distilled memories.
+    """
+    return cue.cue_type in (
+        SocialCueType.EXPLICIT_RECALL,
+        SocialCueType.SHARED_DISCUSSION,
+    )
 
 
 def requires_recall(text: str) -> bool:

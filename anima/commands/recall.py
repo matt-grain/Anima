@@ -10,15 +10,25 @@ temporal cue parsing ("last session", "yesterday") for natural queries.
 """
 
 import sys
+import time
 from pathlib import Path
 from typing import Any, Optional
 
 from anima.core import AgentResolver, MemoryKind, Memory
 from anima.embeddings import embed_text
 from anima.embeddings.similarity import find_similar
-from anima.lifecycle.social_cues import detect_social_cue, extract_recall_query
+from anima.lifecycle.social_cues import (
+    detect_social_cue,
+    extract_recall_query,
+    should_search_subconscious,
+)
 from anima.lifecycle.temporal import parse_temporal_cue, TemporalCoordinate
-from anima.storage import MemoryStore
+from anima.storage import (
+    MemoryStore,
+    SubconsciousStore,
+    FTS5NotSupportedError,
+    SearchResult,
+)
 from anima.utils.terminal import safe_print, get_icon
 
 
@@ -219,6 +229,90 @@ def semantic_search(
     return 0
 
 
+def _format_timestamp(ts_ms: int) -> str:
+    """Format a millisecond epoch timestamp to a YYYY-MM-DD date string."""
+    try:
+        return time.strftime("%Y-%m-%d", time.localtime(float(ts_ms) / 1000))
+    except (OSError, ValueError, TypeError):
+        return "unknown"
+
+
+def _resolve_project_path(project_id: str) -> str | None:
+    """Resolve a project ID to its filesystem path string via MemoryStore."""
+    mem_store = MemoryStore()
+    project = mem_store.get_project(project_id)
+    return str(project.path) if project else None
+
+
+def _print_subconscious_result(i: int, result: SearchResult, show_full: bool) -> None:
+    """Print a single subconscious search result."""
+    date_str = _format_timestamp(result.timestamp)
+    project_name = Path(result.project).name if result.project else "unknown"
+
+    print(f"{i}. [subconscious:{result.source}] {date_str} | {project_name}")
+    print(f"   Session: {result.session_id[:12]}...")
+
+    if show_full:
+        print("   Excerpt:")
+        for line in result.excerpt.split("\n"):
+            print(f"     {line}")
+    else:
+        excerpt_clean = result.excerpt.replace("\n", " ").strip()
+        if len(excerpt_clean) > 100:
+            excerpt_clean = excerpt_clean[:100] + "..."
+        print(f"   > {excerpt_clean}")
+    print()
+
+
+def subconscious_search(
+    query: str,
+    project_id: str | None,
+    show_full: bool,
+    limit: int = 10,
+    days: int | None = None,
+) -> int:
+    """Search the subconscious database (raw dialogue history)."""
+    try:
+        store = SubconsciousStore()
+    except FTS5NotSupportedError:
+        print("Subconscious search unavailable (FTS5 not supported)")
+        return 1
+
+    project_path = _resolve_project_path(project_id) if project_id else None
+    results: list[SearchResult] = store.search(query, project=project_path, days=days, limit=limit)
+
+    if not results:
+        print(f'No subconscious memories found for "{query}"')
+        return 0
+
+    print(f'Found {len(results)} subconscious memories for "{query}":\n')
+    for i, result in enumerate(results, 1):
+        _print_subconscious_result(i, result, show_full)
+
+    return 0
+
+
+def both_search(
+    query: str,
+    agent_id: str,
+    project_id: str | None,
+    show_full: bool,
+    limit: int = 10,
+) -> int:
+    """Search both conscious and subconscious stores and display merged results."""
+    print(f'Searching conscious and subconscious memories for "{query}":\n')
+
+    # --- Conscious section ---
+    print("=== Conscious Memories ===")
+    conscious_result = semantic_search(query, agent_id, project_id, show_full, limit)
+
+    # --- Subconscious section ---
+    print("=== Subconscious Memories ===")
+    subconscious_search(query, project_id, show_full, limit)
+
+    return conscious_result
+
+
 def run(args: list[str]) -> int:
     """
     Run the recall command.
@@ -235,6 +329,7 @@ def run(args: list[str]) -> int:
     use_semantic = True  # Semantic search by default (multi-word queries work!)
     kind_filter: MemoryKind | None = None
     limit = 10
+    search_mode = "conscious"  # Default: search explicit memories only
     query_words = []
 
     i = 0
@@ -278,6 +373,12 @@ def run(args: list[str]) -> int:
             else:
                 print("Error: --id requires a memory ID")
                 return 1
+        elif arg in ("--subconscious", "-s"):
+            search_mode = "subconscious"
+        elif arg in ("--conscious", "-c"):
+            search_mode = "conscious"
+        elif arg in ("--both", "-b"):
+            search_mode = "both"
         elif arg in ("--help", "-h"):
             print("Usage: uv run anima recall [--full] [--keyword] [--kind KIND] [--limit N] <query>")
             print("       uv run anima recall --kind DREAM")
@@ -287,12 +388,15 @@ def run(args: list[str]) -> int:
             print("Uses semantic (embedding) search by default for natural language queries.")
             print()
             print("Options:")
-            print("  --full, -f      Show full memory content")
-            print("  --keyword       Use exact phrase LIKE search (default: semantic)")
-            print("  --kind, -k      Filter by memory kind (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS, INTROSPECT, DREAM)")
-            print("  --limit, -l     Maximum results to return (default: 10)")
-            print("  --id, -i        Look up a specific memory by ID (full or partial)")
-            print("  --help, -h      Show this help message")
+            print("  --full, -f          Show full memory content")
+            print("  --keyword           Use exact phrase LIKE search (default: semantic)")
+            print("  --kind, -k          Filter by memory kind (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS, INTROSPECT, DREAM)")
+            print("  --limit, -l         Maximum results to return (default: 10)")
+            print("  --id, -i            Look up a specific memory by ID (full or partial)")
+            print("  --subconscious, -s  Search raw dialogue history (subconscious.db)")
+            print("  --conscious, -c     Search explicit memories only (default)")
+            print("  --both, -b          Search both, merge results")
+            print("  --help, -h          Show this help message")
             print()
             print("Examples:")
             print("  uv run anima recall how does memory decay work")
@@ -300,6 +404,8 @@ def run(args: list[str]) -> int:
             print("  uv run anima recall --keyword logging             # Exact phrase match")
             print("  uv run anima recall --kind DREAM                  # List recent dream memories")
             print("  uv run anima recall --id f0087ff3")
+            print("  uv run anima recall --subconscious warmth         # Search raw dialogue history")
+            print("  uv run anima recall --both cognitive auth          # Search conscious + subconscious")
             return 0
         elif not arg.startswith("-"):
             query_words.append(arg)
@@ -375,6 +481,15 @@ def run(args: list[str]) -> int:
             if not use_semantic:
                 safe_print(f"{get_icon('🔄', '[AUTO]')} Auto-enabling semantic search for natural language query")
                 use_semantic = True
+        # Explicit recall cues ("remember when", "do you recall") → also search subconscious
+        if search_mode == "conscious" and should_search_subconscious(social_cue):
+            search_mode = "both"
+
+    # Route based on search_mode before falling through to conscious search
+    if search_mode == "subconscious":
+        return subconscious_search(query, project.id if project else None, show_full, limit)
+    if search_mode == "both":
+        return both_search(query, agent.id, project.id if project else None, show_full, limit)
 
     # Parse temporal cues ("last session", "yesterday", "during the last commit")
     temporal_coord = parse_temporal_cue(query)

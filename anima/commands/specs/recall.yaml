@@ -26,6 +26,15 @@ options:
     short: i
     description: Look up a specific memory by ID (partial IDs work)
     value_name: "<id>"
+  - name: subconscious
+    short: s
+    description: Search raw dialogue history (subconscious.db)
+  - name: conscious
+    short: c
+    description: Search explicit memories only (default)
+  - name: both
+    short: b
+    description: Search both conscious and subconscious, merge results
   - name: help
     short: h
     description: Show help
