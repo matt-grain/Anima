@@ -51,14 +51,10 @@ def main() -> int:
         print("  refresh-memories       Re-inject ALL memories into context")
         print("")
         print("Dream:")
-        print(
-            "  dream                  Between-session memory processing (N2/N3/REM + reflection)"
-        )
+        print("  dream                  Between-session memory processing (N2/N3/REM + reflection)")
         print("")
         print("Curiosity:")
-        print(
-            "  curious <question>     Add question to research queue (shows queue summary)"
-        )
+        print("  curious <question>     Add question to research queue (shows queue summary)")
         print("  research               Process research queue (--list to view queue)")
         print("  diary [title]          Create/manage research diary entries")
         print("")
@@ -75,20 +71,14 @@ def main() -> int:
         print("System:")
         print("  setup                  Set up LTM in current project")
         print("  server                 Start MCP server (also: --server flag)")
-        print(
-            "  eyes-daemon            Manage the eyes display daemon (start/stop/status)"
-        )
+        print("  eyes-daemon            Manage the eyes display daemon (start/stop/status)")
         print("  version                Show installed version (includes update check)")
         print("  update                 Update to latest version from GitHub")
         print("")
         print("Internal (auto-triggered by hooks/agents):")
         print("  load-context, load-deferred, process-subconscious, save-subconscious,")
-        print(
-            "  dream-wake, end-session, detect-achievements, sign-memories, backfill,"
-        )
-        print(
-            "  keygen, generate-commands, check-update, import-seeds, curiosity-queue"
-        )
+        print("  dream-wake, end-session, detect-achievements, sign-memories, backfill,")
+        print("  keygen, generate-commands, check-update, import-seeds, curiosity-queue")
         return 0
 
     command = sys.argv[1]
@@ -147,20 +137,6 @@ def main() -> int:
             from anima.commands.load_deferred import run
 
             return run()
-        case "process-subconscious":
-            from anima.hooks.subconscious_extract import get_pending_dialogue_content
-
-            content = get_pending_dialogue_content()
-            if content:
-                print(content)
-                return 0
-            else:
-                print("No pending subconscious dialogues to process.")
-                return 0
-        case "save-subconscious":
-            from anima.commands.save_subconscious import run
-
-            return run(args)
         case "end-session":
             from anima.hooks.session_end import run
 

@@ -36,7 +36,6 @@ from anima.storage.dissonance import DissonanceStore
 from anima.utils.agent_patching import has_subagent_marker, add_subagent_marker
 from anima.tools.version import check_for_update_cached, get_installed_version
 from anima.tools.platforms.base import find_config_dir, SETUP_VERSION_MARKER
-from anima.hooks.subconscious_extract import get_pending_subconscious_prompt
 from anima.security.cognitive_auth import get_session_trust, TrustLevel
 
 
@@ -359,7 +358,10 @@ def run(args: Optional[list[str]] = None) -> int:
 
     # Check for WIP memory from PreCompact - signals post-compact state
     # If WIP is present and recent, this is a compact continuation, not a new session
-    from anima.hooks.pre_compact import get_precompact_memory_id, clear_precompact_memory_id
+    from anima.hooks.pre_compact import (
+        get_precompact_memory_id,
+        clear_precompact_memory_id,
+    )
 
     wip_id = get_precompact_memory_id()
     is_post_compact = False
@@ -558,11 +560,6 @@ def run(args: Optional[list[str]] = None) -> int:
         curiosity_prompt = get_curiosity_prompt(agent.id, project.id)
         if curiosity_prompt:
             context += "\n" + curiosity_prompt
-
-        # Add subconscious processing prompt if pending dialogues exist
-        subconscious_prompt = get_pending_subconscious_prompt()
-        if subconscious_prompt:
-            context += "\n" + subconscious_prompt
 
         if output_format == "json":
             # Output as JSON for Claude Code hook system

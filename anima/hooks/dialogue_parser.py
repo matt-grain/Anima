@@ -6,14 +6,46 @@
 from __future__ import annotations
 
 import json
+import re
 import time
 from pathlib import Path
 from typing import Literal
 
 from anima.storage.subconscious_types import DialogueTurn, SessionMeta
 
-# Re-use clean_content from the extraction module to avoid duplication.
-from anima.hooks.subconscious_extract import clean_content
+
+def clean_content(content: str) -> str:
+    """Remove tool calls, code blocks, and system noise from content."""
+    tag_patterns = [
+        ("command-message", ""),
+        ("command-name", ""),
+        ("system-reminder", ""),
+        ("function_results", "[tool results]"),
+        ("function_calls", "[tool calls]"),
+    ]
+
+    for tag, replacement in tag_patterns:
+        pattern = rf"<{tag}>.*?</{tag}>"
+        content = re.sub(pattern, replacement, content, flags=re.DOTALL)
+
+    # Remove LTM blocks
+    content = re.sub(r"\[LTM:.*?\[/LTM\]", "[LTM context loaded]", content, flags=re.DOTALL)
+
+    # Remove large code blocks (over 500 chars)
+    def replace_large_code(match: re.Match[str]) -> str:
+        code = match.group(2)
+        if len(code) > 500:
+            lang = match.group(1) or "code"
+            return f"[{lang} block - {len(code)} chars]"
+        return match.group(0)
+
+    content = re.sub(r"```(\w*)\n(.*?)```", replace_large_code, content, flags=re.DOTALL)
+
+    # Collapse multiple newlines
+    content = re.sub(r"\n{3,}", "\n\n", content)
+
+    return content.strip()
+
 
 _MIN_TURNS = 4
 _MAX_CONTENT_BYTES = 100_000
