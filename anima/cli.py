@@ -76,8 +76,8 @@ def main() -> int:
         print("  update                 Update to latest version from GitHub")
         print("")
         print("Internal (auto-triggered by hooks/agents):")
-        print("  load-context, load-deferred, process-subconscious, save-subconscious,")
-        print("  dream-wake, end-session, detect-achievements, sign-memories, backfill,")
+        print("  load-context, load-deferred, dream-wake, end-session,")
+        print("  detect-achievements, sign-memories, backfill,")
         print("  keygen, generate-commands, check-update, import-seeds, curiosity-queue")
         return 0
 

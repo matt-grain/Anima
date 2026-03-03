@@ -23,37 +23,13 @@ uv run anima load-deferred
 
 ## What It Does
 
-1. **Process pending subconscious dialogues** (if any exist - see below)
-2. Retrieves the list of memory IDs that were deferred during session start
-3. Loads and formats those memories
-4. Outputs them for context injection
-5. Clears the deferred list (so subsequent calls return nothing)
+1. Retrieves the list of memory IDs that were deferred during session start
+2. Loads and formats those memories
+3. Outputs them for context injection
+4. Clears the deferred list (so subsequent calls return nothing)
 
-## Subconscious Processing (First Step)
-
-Before loading deferred memories, check for pending subconscious dialogues:
-
-```bash
-uv run anima process-subconscious
-```
-
-If output contains dialogue content (not "No pending..."), spawn Sonnet to extract:
-
-```
-Task(
-  prompt="<full output from process-subconscious>",
-  model="sonnet",
-  subagent_type="general-purpose",
-  description="Extract subconscious memories"
-)
-```
-
-Then save Sonnet's JSON response to `~/.anima/subconscious/extracted/` and run:
-```bash
-uv run anima save-subconscious
-```
-
-This integrates subconscious memories from previous sessions before loading deferred context.
+Note: Subconscious memories are now indexed automatically at session end.
+Use `/recall --subconscious` to search past dialogues.
 
 ## Example Flow
 
