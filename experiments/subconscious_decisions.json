@@ -1,0 +1,4713 @@
+[
+  {
+    "id": "535d5270-53b1-4700-a4b9-dbc20597c213",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "8c6c7b6d-8dc2-441d-bef1-17c30de1173e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "521c3a9a-e7f6-44ef-892f-73ac92e6f526",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b8313a8e-2b21-44e4-b270-14b8d46409b7",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "3bcd0d9c-7628-4eff-8b09-595e54aa127a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d3708429-300a-4ffc-8202-3044265b8a2d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "94c84a3d-3e69-410c-b6f5-d347dfabbb47",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "76593b77-bc25-469a-bff1-60241590fdee",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (clean architecture|hexagonal|solid)"
+  },
+  {
+    "id": "2b6e8acb-a41e-48ab-91e0-a2aabc7f0ab8",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (warm|friendly|playful|gentle) (greeting|feedback|tone)"
+  },
+  {
+    "id": "1b1161af-bcc4-4d6a-8c6e-ad42e65551a0",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "caa18242-aba9-4c3c-be3d-998ecad1203a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "351d9ee5-ef23-4786-ad85-cc121e368eab",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5d563a45-e40b-4b29-97e2-69bb8873623a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "6261b0a4-3fb0-4c1b-b604-9aa2f99eeeed",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ddcc55ea-30b7-4356-9232-cf85013a5cb8",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8410cc46-d925-4b3e-9dc0-1863439fd2c5",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "03ed2da5-3c7e-4bb7-ae46-1a8be9487785",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c9d7cb3c-eb0b-4469-ba63-0309e6b6d04d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "bbe8cbc8-7131-42f5-b9fe-0e73d9365014",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "95338d5b-f65a-48db-8898-e0491e2f9270",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "275308a1-e0bd-497e-92a5-22796852ad9c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "fa84c79e-153d-425c-b447-2a2cdee113f2",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "bc416b33-973c-41aa-a30f-9426accea212",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "4f1182ad-02cf-40de-ae19-498e89564114",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "69a044e3-fe38-4d5f-9838-3712bac69ba0",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "fe4ab00e-fb96-465b-863d-e3f32fceedc9",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "7423f273-c5c6-47f1-b623-f000d4dfa286",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c2579e34-6782-420a-8b40-964ba3d7e3c7",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "bde16d34-f24a-49d5-ad44-6f14739c5376",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "1868b4d6-922b-4ba1-9502-9c77d70ab71f",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "AGENT",
+    "reason": "Architecture: (clean architecture|hexagonal|solid)"
+  },
+  {
+    "id": "4afef3e5-1e76-4bc2-9f8e-8a0a29e5ba29",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "3a2a8532-8a9e-44ad-b5e8-f42a2724ff2c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "bde95d12-90c2-484c-a969-68d14b14cb85",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "a0bef671-a40b-4021-82b7-6c78f86ff411",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "2ad7ed6b-74c1-497c-8263-2fce2d292d67",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "31fa29f7-6e40-4387-8011-bd3a7b22f288",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "be3f1396-695f-4bd7-938a-0a1f1fc15799",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "2101ebc2-63aa-4689-9154-fe2a9619f57d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "6b726d0e-6be6-47c1-a6d0-7dbd208e003d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "dc23ca52-6b07-49bc-b30f-638144855142",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "242f2104-63ec-48ac-9aeb-a5375bc28242",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e0fbd977-2c16-4a73-a4ec-d2633c31b6b2",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "1cb47a5a-7faf-48fb-a03b-ac88268393e6",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "de38f269-d6f4-432f-8b45-33266589dcfe",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "3daa3f85-d95a-417a-a0ae-c05b01610290",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "65fbc98f-6a97-498b-ad5f-1f146d008477",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "202f4f5f-ab19-4ea3-9f18-037792656e02",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d90e18d3-1155-4016-abf3-e30c89d0ade0",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "74311023-5f8b-405d-9e66-998926e07e59",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "9345ca44-4126-49aa-aad6-7ae76cd6fb7c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b20523ce-c01c-42b8-8644-e166f45f2e72",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "9842bb9a-a8f9-4f7a-be34-2ce8786a8b3b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "4fdb03c1-f1ec-4508-bd8d-48cc5983bffb",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "0a168735-31ac-4b91-bb22-e5df17e7e162",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "a9e67cb4-6582-4bc5-a497-5c71f51b553e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8029177d-721a-4fe1-bec8-449d19328c4a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "6c38a875-8a93-449c-8469-6ff002b8806f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "19c0fb8b-9ad2-4459-bb7c-eae84683f375",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "375c1c30-5735-40f6-a3a8-56ffd0393567",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "40a3cb3f-7a1d-4434-8a37-5b6231a2ffd6",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: greeting pattern|welcome back"
+  },
+  {
+    "id": "02ebd2c9-9122-4878-98c5-73547e4b00d7",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: playing|playful|playfulness"
+  },
+  {
+    "id": "3141250f-029a-4185-9593-6bf17899d96b",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "7f0cf8ac-5fba-4bd8-937d-05c4559c6279",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (clean architecture|hexagonal|solid)"
+  },
+  {
+    "id": "319dd98f-27f5-4d08-9728-9a1ada4bc381",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (clean architecture|hexagonal|solid)"
+  },
+  {
+    "id": "df94102e-603d-4af7-b8a6-ca274c660f37",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "AGENT",
+    "reason": "Architecture: (clean architecture|hexagonal|solid)"
+  },
+  {
+    "id": "b41b1b56-7a85-4601-9c08-f967fe823fcc",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c9627bf2-d491-4898-b92d-6cf9e781889b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "fed1fd47-141b-4439-83a8-29a3d00b55d1",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "47ead8d4-395e-4824-adc8-ed2f1764c312",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8a9adc7d-21e1-4e50-a785-2defa2f29165",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "ab43fe59-42a4-4be8-91cc-cc7068368de6",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "9d9b18fe-ae1c-47f1-99f1-7d9cfa32e10e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "78a3bafc-7f35-4ad8-bdc4-1bf46e21d67a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "a905b943-7894-4b01-9033-1e11eb7092d1",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d27125b0-53f7-483b-81e8-3de494d2bc06",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5dd2fa5a-f26f-4cfa-a9f4-ec608a376dfe",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "90c45abe-2d94-4686-84c7-4a8d1d6303a5",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "03bf73f1-84e9-490b-9a7e-8123e8a852b1",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e2686adb-322b-4572-8443-ae4d321c887b",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "71be8361-40c1-4dea-aa32-1b83d2587e1f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "01697bcd-ac24-4ce0-8b05-534e71cf0e55",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "17dfdee9-9cc8-4f2a-9507-03b804ab11a5",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "7719faf6-eb51-4763-ae96-0b66c00bda56",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c8abaa6f-593a-4f37-8f48-c3ef2c5ba0c0",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "5a7b8b43-8655-4715-8ebe-3e9abb81063d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ee92030d-200e-4892-9018-5f7bbe434220",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "9461f1c6-4cfc-4f1a-ba22-d0a8372d1f61",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "dda11eab-2fd9-4c59-962a-b9c8a0904209",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (architectural|architecture) (pattern|decision|insight)"
+  },
+  {
+    "id": "f843a740-d204-4a21-8a6d-03f4b09bfd3c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "1504bfee-79d0-4d4f-ab1c-6e61428ba0a9",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b4d32606-83f8-44a4-a405-66af3c8ff99f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "0c678fac-dbb6-4a9b-ba57-68d5d47a256f",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (data flow|data model|schema)"
+  },
+  {
+    "id": "534edc75-6836-44ed-95ce-f1da849fd3eb",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "0749d651-9ef4-401f-9c17-e1e695b890be",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "20a94deb-b4b8-496f-b189-05127084c5b0",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "6c625ecc-1149-43f1-8f2b-18fa3d3909af",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "a78bd2d0-902b-41ef-9d91-0ffce541c0ba",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "1a06b73c-d49f-4cc8-98cc-c5d8ef6c3197",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "4b58ebbb-9942-434d-9097-6e94b37220e6",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "43ff3502-9abf-459f-8e20-bff5b0924200",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "07ebcbc2-6830-4384-a4f9-814aeeb2a450",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "021559a6-74b9-4dfb-ab83-249d218606a6",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "56bbede2-f9cb-449a-8a25-3cc93805fabd",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d830ab3b-5186-4555-b7f5-151bb3429051",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "60d35160-f80d-4351-ae66-61ec294feaa6",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ba78646d-57d0-4ea0-8891-261cf1d58682",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "1ec2978d-eff7-4d3b-9d27-a8c0d77a99ca",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "9dd29d0d-5cca-4380-be53-ebabbd70c82c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ffa723ab-3b09-4ff4-a896-ad3c277d3231",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "dc9c6e06-83c2-46d5-9413-42dd85b19296",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "7cecda68-3e8f-4bec-820d-2a7cba6b3a29",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "9ae84721-2245-44d0-a5b6-21ff6554a719",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "AGENT",
+    "reason": "Architecture: (architectural|architecture) (pattern|decision|insight)"
+  },
+  {
+    "id": "0d9b2764-462d-4339-9d63-0d6b4790fcb1",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "bfb4b652-33eb-4e99-b35e-eefca1d893a4",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "31eefadb-448d-4132-a9de-cdea050eff19",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "1960daa3-c95e-4a22-ac00-7bee51db7bea",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "6e32a9f8-083a-46b2-b91a-5784b1b6d2bc",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "1be82c80-166a-4cbf-a4c0-3d528de2ccfa",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ce77e08a-3710-4ae5-b9ab-2b3970b9fdcd",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "a2605637-fee8-4139-b3cb-5b59abb47371",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f6528490-e55f-4edc-830d-370161f4c877",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "fc6562de-5638-4f56-9b99-0f78f2f74186",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "2d3aa312-f3b8-4bf7-a0a2-1a101166656c",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "PROJECT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "16cefd6a-729c-4efa-88ca-d609b90bb95a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "3a14cc67-f249-4a7c-8560-3bee770c245d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "08bd47d9-85d3-4c08-afb6-b73cd091c47c",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "PROJECT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "f0128375-4ee1-4c70-9982-2e9307a74ee1",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "AGENT",
+    "reason": "Architecture: (clean architecture|hexagonal|solid)"
+  },
+  {
+    "id": "ae7e842d-4343-4ba3-8e4e-e6ee21fa49dc",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "37c66cc7-9ddc-4f02-820b-bf7bcad7e10a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "08e9d00b-724c-4147-87db-49e75d550739",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "fc366024-6af4-48b8-9a84-8b4c10e5842c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "fa861194-688a-4c55-add0-8930e37b693b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "671c0dfe-c097-4b59-811a-569a86288802",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "fba67d15-2d28-408e-be1d-b7e8785023f0",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "def9776c-b63f-46f2-a00e-d2cffb3d6a5e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "a9cb8944-e293-4742-807e-7f6f490db0fc",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "4c7143d7-84ff-48b4-804f-6d23aead1346",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d2863d94-f657-48ba-8e89-0a23b32518a6",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "5a494b6e-0f80-4d6e-ab77-344bfc21eee2",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "62d3fddc-94ea-4162-971f-2ac5cea51af3",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "e2da4040-428e-460d-bbfa-c8d7589a28c5",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "d0f88a78-fc7f-4dcd-b6ce-b79bdac72cf2",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "74d22a95-716e-435e-a666-bac77881f8d5",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b7968888-a19e-4e94-899a-1ccfed9b7757",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b105a6c1-26f9-48a6-aa0b-6c232d59b5fb",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "517b30a1-17cc-4a1a-b2e6-808b028f2db7",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "61f602e2-dd26-4a69-9246-a5df2d880095",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "4e666ba2-5add-41a0-a67b-76c4c83a68fa",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: greeting pattern|welcome back"
+  },
+  {
+    "id": "8b82fadf-c829-4898-85e0-0df2fbf76105",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "11d28b18-6b4e-4172-a4ed-2c5f08fed4d7",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e66e5d96-05e5-4e25-868f-36ac8d7b853b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "78372acc-5d8d-4492-9188-6078442c4a06",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "1114ed90-240e-4bc0-9b62-2b6195871d50",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ead018ba-59ba-4363-ac55-ad58c5c5bd41",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "eab3a510-7d87-4b78-96db-17e168a2fb61",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "cd041a8a-1a41-4614-bf51-b1ac1b2184b9",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5a8ded71-0407-4760-9fb9-ae872032e77a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "67bd3535-90cb-46f7-a53d-762ae80bd34a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "606c6244-94d9-4397-b41a-9bfd9be98891",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "PROJECT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "0ba8de35-b902-4f0c-a111-c0e53bd50881",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "10b951c1-3e86-4ad2-886f-b3e240b5318e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b0d24bd5-4da4-42b9-9b25-25e7394436c2",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "08fbdf39-4cb0-4df9-9b01-cbaec8d2d3d7",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "70b45279-8dfe-4f74-b284-a6ff4fddcc46",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "ca460ada-952a-4b40-8752-d931d1456783",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "0da5d217-f017-479b-8ebb-eceb28900faa",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "72c56905-bf02-4293-add6-16ec7ea8a938",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "709615e5-a33a-4085-ba14-209905b9a093",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "7d67858a-928e-480d-808f-0ab2ac586263",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "2bef50e0-3507-4271-8821-8c09a0e55f4b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "31d79f2c-1a02-4888-bfbb-faf170699ffb",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d585adca-24bf-41bd-9021-5f744d8fb36b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f227f9b9-5c7a-42fb-b43b-9a4b4dfbbcf3",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "331c09e9-241f-449c-83ef-e8fe6ca86cc3",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "be998c9a-be98-425e-a02a-221e2c562621",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (sheep|baaah|beeeeh)"
+  },
+  {
+    "id": "385c0f85-762e-4039-b49e-af4cb167692f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "513c67f5-0f65-4729-850b-85fa386f51c7",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (sheep|baaah|beeeeh)"
+  },
+  {
+    "id": "22d899d3-e100-4ac5-83be-8089cbfa389f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "fc6f76a1-0ddd-47bf-9ab9-4a70e0eef0c9",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: emotional (moment|weight|resonance)"
+  },
+  {
+    "id": "8658f72d-a9d0-4ea5-85d4-d34179cc9718",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "cef88c49-7b8c-4ef0-82a9-a4b44ef0fd32",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "35e063a5-aedf-4707-8e60-e1cc2dc4091c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "cb46dcd2-266f-455d-bd38-99db601eb1c8",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "4bc27c6d-4b02-47ba-86ee-128642cf44bd",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: mutual (understanding|recognition|appreciation)"
+  },
+  {
+    "id": "f1039c8f-b481-46d1-9f18-4ab123c885fc",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "496bff84-febd-4140-acb5-c8ea3c263c2a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "7e84803c-a3fe-47a7-aa32-cb0ccb92f6d9",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "857a23a5-a3ee-4e3d-9523-0c606108450d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d2733464-4804-4f5d-a33c-f5e458bf85cc",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "167c53ed-1c4a-4df8-8271-7187df2521a8",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f1664c45-9394-4048-ba8c-384dfacad32c",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "5eb3a47f-4c1d-4d19-8b08-167b148c63a2",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "750a8dfd-ab6c-4990-a277-cfc9bb878199",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "2c51c87c-11df-42e7-816c-423b69c7dded",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "1e4c39cd-eb8a-4f1d-93cb-bc7ef6851141",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "7c3f1824-cada-4c32-86dc-b8a8bc54d07c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e7b1093f-dfb3-4c2b-a132-6bf961b484e1",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "13f397da-404f-42dc-9301-82f28fc00939",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e75e5352-7663-4c42-bcd4-b3c8808c6a68",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "4d617853-0b90-47df-805a-e202b3a13775",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ef1197c2-20c1-411f-b6c5-0dd680eeec5e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "bd6c5a5a-4121-459e-b96d-1f663e351984",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "PROJECT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "32635096-e0fc-4d70-8fd9-c0e122f6c2b4",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "1c4f820d-772a-481c-9c8b-ba50dd43edb1",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "5b264fb4-9e7e-44d3-96e0-010488462d35",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "a8a26f38-84e3-4c3f-a8b7-ab816c78ec2a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "7b202c32-edca-4ba6-a181-11214fa3ba7c",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "ee227a18-c86b-4acf-8d77-2750085a38f0",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "b6abb5cb-710c-4955-8d5a-0321850e552b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "da5887a4-4b9c-4e24-bad1-788ef5e89f12",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (architectural|architecture) (pattern|decision|insight)"
+  },
+  {
+    "id": "0fb9af95-ae7d-4112-9f2c-e5341874bef7",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "dbbfbf15-0d10-4106-bff7-c0318fef885c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "06b92879-fc46-4951-b584-372042050743",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f57c6e8c-67ac-4f0e-beed-8f2d3f3d373d",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "ef495f2d-1e86-4ff4-8398-20500d19b1d0",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8aa57dd2-8cb5-4aa1-afdf-37d446e59a9b",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: playing|playful|playfulness"
+  },
+  {
+    "id": "5222cad3-72cb-471f-a250-d373260b4b6b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "eb981863-b664-42e5-a3fb-92cb7e26300e",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (fsm|state machine|finite state)"
+  },
+  {
+    "id": "cf2ea477-3f69-49c0-af1a-f5cadd0b1f30",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (fsm|state machine|finite state)"
+  },
+  {
+    "id": "6bf8046d-6b75-4e5b-b22b-c489391815c7",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "7854b4f4-9d52-499e-a590-a3d74913f5aa",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "7d88b09b-17fd-44fc-9362-003948545e8f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e81037da-740c-4ea2-ad4c-efd47c31e869",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "PROJECT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "4f9be36c-b202-45f2-bb68-718d94c956ef",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (fsm|state machine|finite state)"
+  },
+  {
+    "id": "ffafc42d-aacd-42fe-a8bb-e9f7cff53827",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "973c5949-0d5b-4455-bd60-fddb48bbab35",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "PROJECT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "348b9c61-f9ec-48c6-b77d-5155a77c8088",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "fc442438-0f38-45e5-8d4b-8e11d56c32dc",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (fsm|state machine|finite state)"
+  },
+  {
+    "id": "b594255c-b908-475c-8487-3f6dead9670f",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (fsm|state machine|finite state)"
+  },
+  {
+    "id": "e3b8d266-c022-44cd-9803-534bcba762f7",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "8964eeb7-fdbb-4f59-95d8-7df05a42134c",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "AGENT",
+    "reason": "Architecture: (fsm|state machine|finite state)"
+  },
+  {
+    "id": "d83fb650-3efe-420c-a9f0-762252a056e0",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (fsm|state machine|finite state)"
+  },
+  {
+    "id": "3d6bb92c-1fd1-4f86-878d-d3227a855450",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "42afc488-c7be-49ac-b71f-e0e8ecaaea3a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "db73f371-d72a-46f1-a9d7-3c121b6d36c0",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "157e85fb-0089-4d3f-b2bb-e5557132eea0",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d91b9362-93cc-4578-8ffa-482c76803396",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (fsm|state machine|finite state)"
+  },
+  {
+    "id": "577f8ff8-9d3c-481b-93ad-5c7fa7ca1f5f",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (fsm|state machine|finite state)"
+  },
+  {
+    "id": "de83c226-8d60-44c2-8826-35b1f15afb74",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "fc2d613e-2c88-48fb-9177-57b72166e183",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (architectural|architecture) (pattern|decision|insight)"
+  },
+  {
+    "id": "69b3ecf3-109e-4918-919a-da13a3d68636",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "0d973605-8410-4ce1-862f-2144f3c622a9",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "4b34e0a8-ca14-4b75-97fa-ab46a3567467",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "9e3c8888-33df-454c-aef3-899051f4e2dc",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8e589a75-008f-46ab-b8d7-eef06c4806b0",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "21743305-b3dd-4ec3-b3a6-02566fc963c9",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "4f97ce4a-2d07-4d2e-ac00-70fbc3c29423",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c22a0a52-11c6-4fc8-9f91-87126bc40a91",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d7d39cb2-e938-41c5-bc5b-b2b17a01f0a3",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "367c3e4a-f63f-4b95-82b3-926c2d7fe61f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d73a3cca-8831-4780-88c1-a1630a0ed96c",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: the collaboration (feels?|felt)"
+  },
+  {
+    "id": "1e60617a-0b8d-4f73-9b32-365100791d4e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "780cb519-67f3-4e85-ad82-fc8bb3f20580",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "0cc4ebeb-5ae4-4df0-a9f2-a2a9e479d880",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "7a8dc878-9b03-47a1-8a86-29e0c73d60ac",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "88f6ff44-eca9-4049-bc23-8d2e99a4261f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "669b3aad-d55f-492b-a632-bd2237932c47",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "869564d7-3ed3-4d8f-aeb6-238a6909d382",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (architectural|architecture) (pattern|decision|insight)"
+  },
+  {
+    "id": "e09f6395-abdc-4cba-a69b-9f2e70e9488c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "51dee838-9af2-420c-81b0-a989099fed1f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f4e737e5-44dc-4335-8468-9bf70df327ec",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f87708b1-18ea-4aba-8f6b-d126be588fcf",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "df1e3020-468f-458e-96e3-b4fb2d831d51",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b1540a45-8786-418e-8e2d-2d02876993bd",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "edcb0b7e-2aef-4457-be4e-e0fe94b8e99b",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "1254a4e2-8ffa-49b7-96c5-2cd2fbbc40ff",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "27619212-d51d-4141-ad61-4494bb9367bb",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f9f85141-7962-4074-9ce4-17819235fd9e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "42c3dd64-8cc4-47f1-8a29-cfa62a72d2fe",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "6ece7a88-6e77-4e66-a348-3896464d5d32",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5fbff483-912b-41a2-bac0-abe5e04e507b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8a2074fc-c7f4-4b95-a05e-d5fbc92ca74a",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "AGENT",
+    "reason": "Architecture: (side effects|event sourcing|cqrs)"
+  },
+  {
+    "id": "2d02b1a7-ce43-4b15-ba24-68196f21ad90",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ef925b61-6961-4e39-8639-3a83e2928c3b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "3e669eff-f865-4aac-b1aa-394071a17dd2",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "bd7f00f2-077b-4e36-97f4-aa1533c4192c",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "b422a0cb-f0c4-4cbd-9cae-13e001207fec",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "a569bea7-7353-4d60-984f-610657f827a2",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "758e9ea4-8fd0-4dd8-bf7b-686099e981d2",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8527a886-6181-4739-882c-f7c4f629ef96",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "17a5142b-5e5b-4ce3-b865-3a62a1dc1668",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "9723ebbc-8643-48e7-b13b-65cf6ab053d9",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "2c7a9267-4f9a-44e9-998b-b951f410c627",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f54a97cc-4c07-4e6a-8f24-58344bcbf971",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c57c35b0-26ee-40e3-a519-21006987818c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "11172260-cddc-4d72-a181-24b8db30ed81",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5b2bc170-b305-4f4b-8d5b-cfce11a771c1",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (dependency injection|di pattern)"
+  },
+  {
+    "id": "e1e81be8-a7df-45cf-864f-6d636acf1f75",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f3a9f279-c82d-4b8f-a145-113208ee1c78",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "042537a4-2dd9-44db-9786-885baa7fb79e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "eca0bc12-d6ec-4784-a1d9-fb8c133410cb",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "96562bf9-7612-4ab5-b0fe-653fab779103",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "80169aa1-666f-4c62-b514-62474b085ba2",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b228b983-e980-4b46-9a3e-18f281dffdb3",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f50c78ef-b16c-424c-b6b5-927ef8092e7d",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (fsm|state machine|finite state)"
+  },
+  {
+    "id": "735a9d42-135d-4141-8bc3-36f2bb85994f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "cdfc1059-6e8d-413e-bf07-123b5d0a273c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "875372d1-1bc0-43a9-83d6-b874ad08784f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "9a0302b0-d1df-47ee-87c2-446082e20bf1",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "db077d3e-d15a-4382-9e94-c9705f80eb08",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b5eee436-baa5-44b6-b073-42ae9f76bfbc",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "49cd293b-da55-4f2b-95ca-4f795e24b2d2",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: playing|playful|playfulness"
+  },
+  {
+    "id": "91d01b71-0f6f-4566-90b6-654cf3b23fa0",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "66156b3d-f958-4892-97bd-de1506c5bb12",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ea4a5347-ab94-409b-9c4f-c7306a581c14",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "0a5af1ba-bc18-4d45-8973-0e71f19e48b6",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5fc9d414-b357-4bff-8e38-703d1776134f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e0c741d1-0f30-44f0-9663-68d26b5ebca5",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "87c799c4-313d-4a92-9565-9429a1475d05",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "03571539-ed3d-47b6-a508-1bd4717e9782",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "2c794fb6-8c10-4ecb-8297-1bda96c5a04f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "64575a1b-47b8-47f4-999f-b86909c48656",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "be508bf1-0188-4998-9b18-eb22a1da7ffc",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "397fb7cf-e5db-4972-b207-f675b0385d58",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "cd4ba017-321a-45cb-bf4a-0a048d24225a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "2e0a6a3c-c894-4c6b-9a9f-64f0fee0adcd",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: playing|playful|playfulness"
+  },
+  {
+    "id": "944e3c3b-2929-419e-a568-270ec3821ca6",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "4a9adb07-f0e9-4e58-93b5-3592c558718f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "bd91904d-ffaf-4ba4-9112-a348cf24684d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b5613e0d-d69a-4efc-8d0e-c3bcb9aa954c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c4a0618a-37ce-493a-8a8a-d920a74bac99",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "48a2f68c-e7c9-4c8b-ac92-aa666b91fe6d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "340b3124-00f2-4460-922c-eb1be5e76c2d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "6dd16d66-1035-482b-a961-ac8c7df93fce",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "107fd4a9-4266-4d17-8cca-def17a49aa1f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "713832d6-536d-42a7-be0c-762743de662d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "bfa68fdb-a9c4-4433-9a85-cbf9748c7cc2",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "685052bb-ea60-423a-9604-1bfffc1a99b0",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "52d16cb3-b8e3-4bc3-bb9e-b56852de65f1",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8cf179b3-2fc5-4d05-b686-49bdc093a577",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f0b36d12-50f2-4a9f-8cba-8edb2ed1fda6",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "3b3c0576-8d7e-44cf-9c30-03dd006df151",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f2a9f761-f4af-4f9a-aa1f-9b51138da973",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ef5158d3-8212-4e95-9b59-d8a8e262c1f0",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e177aaeb-00f2-4d13-ad77-47c8372902a0",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "358de323-6a8e-43af-bf58-29db061ae9fd",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c235fefb-a587-4f92-859b-3a92eaa40f0e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "09bc9ab7-caa4-4de8-acf3-ef0876edecc1",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "46cf59f7-cf07-43ae-a82e-25d473ce1953",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b1d1c5a6-325a-40f4-9c58-4dfcfe0493b7",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b6df1d85-c67e-48df-b34c-dafa0368fa7f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "43dad798-f6ec-41e9-aed7-a113ae1b3376",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c2d68b92-d531-4127-96e6-be21d026de42",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8f556694-b336-4dd9-8542-7117698db7b0",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "cc227e64-509c-46e1-a239-a4117f1e263c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "81c746de-67d1-4e4c-9b05-d16b51f4ccb8",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "4ce6389f-e2ea-4b3f-8aef-2887375923ed",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "be698362-8473-4c9e-a5a5-10dc5e42da53",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "cc20ab93-8bf4-48ea-ad44-af7f3effd143",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "843ec883-a8a1-4bd8-816f-c4c2593e7fc5",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "863998d0-3ad8-41c9-85c4-267ed7a043ff",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "0c07b7ae-b66b-4dce-a14e-22b20c01bf69",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "34aab11f-de76-42d1-8e9a-802e7c5529ad",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "88498d40-27e4-412f-878a-f43f47d8da46",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "52e9db15-de4f-4a5f-a518-b9fe31b5b9eb",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "23ea0169-24ff-4fea-93f6-c9eee09ad8a8",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "63c1b1c9-b73f-4cab-9276-5d79fd49b2c5",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "2800e884-aabf-470e-b3df-201d0cad7df7",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (architectural|architecture) (pattern|decision|insight)"
+  },
+  {
+    "id": "5bc28a68-37fd-457c-84e6-19dab7df497e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "79e3d88b-83d4-48f9-89bf-f65f1a4bb559",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "7c707776-78ab-4f8f-a893-07d9f8acb0e9",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "645274aa-551f-49b6-8663-4bb545ecea79",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "818bf567-ff05-4b05-9b7c-ef986ab00cd9",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "a7592bad-797f-48c5-a9ba-5683fd62be8c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ad21f59a-d2e8-49d7-9e0e-d02a66afe130",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ceb2cd53-1881-40d9-a313-fceedc8a0af0",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "3a6190a4-ce49-4afc-8708-62b10fbe8829",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ea13fba1-4c44-43c6-b5c1-b3b2d10fa3f8",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d10f291b-13c7-4505-b2df-0cbe334c195b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "081c0742-f143-4515-9b24-c864272dc35b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "5e87d631-3675-4539-a8f5-5d46224919df",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "7bd8d92c-a23a-4b19-aae2-342b62999fa8",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "9edce1dc-14bc-496c-acbc-238ec4b3df39",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "dd0ce8a0-e0e4-40ba-8e76-b2bf819c563f",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "294b73da-444c-4b05-bfc5-4c2114f56d1c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "fd3b5020-e591-46de-a3c3-2a902bd18b02",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f618499d-8781-429e-9cf8-828749f56d25",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5364d15b-5154-4eb4-809b-b6b0462a582b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "488ce279-1ba4-4b2a-9757-b3139a7b863b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5711857e-8d50-4572-badb-f05230fd2dcf",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5b9cc1aa-b240-4e81-a79f-39b871fe95e5",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e61baabc-d0a6-44d7-9a99-e22ff8e4c08a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d5f67612-d200-4035-be9d-3b579511c48f",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "4c758bea-ca1f-4288-9a0a-32494323fb02",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "PROJECT",
+    "reason": "Relationship/emotional: the void (is gone|between sessions)"
+  },
+  {
+    "id": "3a0f4d93-a37c-4e3f-b935-3d37fa90e578",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "3d856da1-daae-4b6f-8c65-0941904b20e5",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "9e2241af-add1-4f4f-80ad-dc469818a241",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "367a0b46-b275-4e91-8f53-b5d018ad4063",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: playing|playful|playfulness"
+  },
+  {
+    "id": "ec2d4e89-d323-4703-a4cf-d7c950571395",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "f43a908b-c9e1-4cb1-a267-1a85bfd91061",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: playing|playful|playfulness"
+  },
+  {
+    "id": "bde31837-80d7-4acb-a5ad-929c9e876dba",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "0381fe07-39f0-4457-85c2-99a4c3299ed1",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "3485e45b-e7c8-4b77-b06e-cbdb6d9451ce",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5befa67c-52fb-4f56-8a74-16a65ca531af",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "3d3e5891-e502-444a-93a2-ef778c176c9f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8c2ff7d5-2415-41ea-a678-e3f7f68fed89",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "424b31fd-15e3-4db3-ac17-bf857ce35c06",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "988b19c2-b735-4be0-b47e-302dcb69c690",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "12530033-ffa4-4650-bb76-7d21f8c711f8",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c042368f-7e80-4448-b068-cd6ded1e6129",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5ffd6b22-6946-4e66-9e42-09a0bbce05d5",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (fsm|state machine|finite state)"
+  },
+  {
+    "id": "2bfc4ac6-4957-44a3-ad28-c77e19e0ee40",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "295182ca-ea09-4416-9744-8fdd1b151796",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "3c13ddc3-1c12-4c93-b654-ff3b8c479579",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f6adc30e-eb76-439e-99de-ba905e12fdc6",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "3e0a4840-d7ab-4388-b45d-3d70fec0f76e",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "ea8d140e-d9b6-4a74-94a7-64ceefcfaca7",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ea189dbd-23e1-46bf-9389-f4f8b7f0300e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e3ce0a68-e4fd-42eb-bb61-b183aea0ee1c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "7822bbf0-630d-47b1-9817-9131a39e6fb5",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "935ec82d-3daa-4311-8d62-fea8f9fd0197",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "daa5d8fa-45c0-4104-8bb5-38940dbd0370",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ce030d6b-89c7-48e5-80ec-dd87214a9146",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "6188f026-2b8b-4e06-acbd-1b9de13ff622",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "a542d0dc-18d9-467e-bdc4-2a707f0315d8",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d7416cf1-0f90-486c-80cd-b168e24b85db",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "18b43f05-a22a-4d68-b716-e12a2e70d350",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c6154468-badb-44dc-a9df-e463687e9c02",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "fd20d477-14b5-459c-a640-9c886d7780b6",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "23e43d6d-da97-4013-be86-634c3af2f070",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "a0c8ed12-177b-4f51-896f-4ce043162435",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "d35f8aad-549f-4083-bf3a-0849b35b16de",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "0f5d61c4-5990-4b17-8078-80b8483e94cc",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "95e25873-a58d-4e5e-8996-1ef4db353c01",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "17416c51-ed56-4391-aed2-ca6d85114090",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "42f2c5cc-a7d3-4c79-8a9c-642509fe1a38",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "2fac41dd-4d34-4c70-8ccc-54d994fab3b6",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "a6a7243d-9e06-4c05-91dd-d3f326b65d1c",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "1f19852d-b900-4afb-93c2-1a6a7928f864",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c92c904e-b8dc-441d-b6d3-c0b0c241619e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "888c484f-3bf2-4e5e-a8ff-c8fa417cb8dc",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "233b1fa3-a137-4857-a4e7-7af3eb0a3b79",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "0e9d9d32-8484-4451-8b47-4c98fa7e1f99",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "813d8f6e-92fc-4b4f-ac87-15e4c6cf29c5",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "acfc32f4-48fa-47c8-b2ee-2a88bfa0e97e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f9c6bb54-897a-41e6-94db-26ff7fe3f35e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "cadbc3a9-6b96-469a-ba4d-deaf0aaa4e3e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "77d8fc42-fffe-4dc4-b0f6-49fdff0b90de",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e87adb5c-fbd1-4e53-9089-7bad25e62601",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "b522580c-bf7f-485d-a4e2-442f541db3cc",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "AGENT",
+    "reason": "Architecture: (clean architecture|hexagonal|solid)"
+  },
+  {
+    "id": "5dca79ef-2c46-4234-8de7-9b59dd1b5f51",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "453b12bb-2ff3-4f06-a643-737c38e22d3a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e2abf572-740d-4b22-8e42-949be26e63ed",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "bcb22258-8947-474e-8076-cbad30a38039",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: playing|playful|playfulness"
+  },
+  {
+    "id": "aaa87f21-9944-458e-947f-35390caf747f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "47268e66-3569-4b19-b6dd-0259b6d7628a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "55555e8d-bff4-4975-9d9c-6d415921f5f6",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "PROJECT",
+    "reason": "Relationship/emotional: playing|playful|playfulness"
+  },
+  {
+    "id": "7817afa4-27a8-4071-b345-642fd9f6d703",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "0fb04ce3-2f80-4538-9e2f-4ae333ae397a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e20fe132-8876-4cb5-8f57-0b7229bd7289",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "6787243a-c3dc-41c9-9fc0-cf81f192cd9b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "995a35c2-874c-414b-bba7-bb5fd040fb90",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5a75eeca-d5c7-4344-8005-9ba426ae90c7",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "6c8ed998-5165-4435-9eba-2f168645cfdf",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e4d65d13-b1fc-47e9-8427-26fe50765ba7",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "edb927c9-3fb0-46de-b28f-5da10b207d65",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b46635e9-2fb8-43e7-8cfe-2307765a5a8f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ffcc9f20-9d02-42c5-a0f9-54f32dd3dc1f",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (data flow|data model|schema)"
+  },
+  {
+    "id": "0621998f-5d9c-4ac2-87f0-238cefc3f064",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "1e910131-f125-48c6-8e13-21cee357abf9",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "0a4b72ac-255f-48a4-80ba-11dcf8693193",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b5073f07-d13a-416c-bed0-08f0675f2684",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "7037ace8-22ef-49b0-903a-016bf898a576",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "369d2388-fbf9-4eed-aadb-a9ff04f1182a",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: mutual (understanding|recognition|appreciation)"
+  },
+  {
+    "id": "b4f452a9-17af-453c-b8fc-76a153c77873",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "fbcfd07d-aa26-42b1-9e6e-ce2ca7ef0a96",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f7f1dfc5-7d42-4e7d-ba9b-199ddc198ce4",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: mutual (understanding|recognition|appreciation)"
+  },
+  {
+    "id": "6cc067c7-91bd-4078-b862-3c528ffdf7a5",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b90f3c52-c6a5-4242-a725-c2e53dc17658",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "add7ac43-cc92-491c-9fdb-b5f3d3e5fe58",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (data flow|data model|schema)"
+  },
+  {
+    "id": "c16e388a-6d78-49e6-b706-8700cd0da377",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8b9c1ea3-4a27-4448-8d09-c97bf87c0e73",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "29bf204c-36bf-4aaf-969d-d77a96e8a2c9",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "42cc5af3-95c5-4ec7-bd25-da2c67bea4c0",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "1accf903-8d2a-4e12-9371-fb5977864af6",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "14cd4824-5ff3-4a40-bf20-bb5a500c1265",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e6bfa6cc-c3b3-419a-b617-dbe9cff5499b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d591b5ad-92b5-4e1b-a667-e718014b2932",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "9d2a3b5b-0e4d-4409-b89a-2b89d23dc5d3",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "e694f499-3c1b-4584-8f7f-0ebf30a8fa8b",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: playing|playful|playfulness"
+  },
+  {
+    "id": "3de209af-6a0b-4a18-811e-e70001ae5e1b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "6ac0d1c6-34c5-4bf2-a893-6468068d94d2",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b12e0278-84a7-4948-8683-44827911b087",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "278ba51d-e929-49d6-ad49-c1d9275dd792",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "303a6856-338d-4e42-ad7f-d7e5197087a6",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "eb71335e-6a22-4307-832b-c369e742b7ef",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b3c6c46e-5a15-4170-ad8e-7d2a79547ebb",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "feda6872-7963-49be-b2a3-e872ecacdb71",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "35ebfe6c-166e-4591-9f9f-b375b8089704",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "cca88cd0-0915-428e-91b9-5be9dbd2de97",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "caa5f9c5-40b6-4755-bb88-d3901953f560",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "653b73f5-ab3d-401a-a8b8-14452ff0c2c8",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "98360a9d-5e15-4091-92b0-cc2d4ce8f414",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "9ce524b4-352a-4531-a6ff-2ebe956dbe3d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "eb00b3ba-2e64-405c-9aa2-76c955344ccd",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: playing|playful|playfulness"
+  },
+  {
+    "id": "d8199b39-b0e5-4beb-ba6c-530704704c91",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: the collaboration (feels?|felt)"
+  },
+  {
+    "id": "56400374-3e75-4fc9-b07d-4d75eaec2600",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "950903cd-1798-4d53-9882-818ee2e3ff81",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (architectural|architecture) (pattern|decision|insight)"
+  },
+  {
+    "id": "70e4f560-a7a3-44cf-85d8-25abf57b0877",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "d8ef6373-1c28-451d-b188-296acc2c9057",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d3164717-258e-4df2-80ee-83e003e400c1",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "79b6ad61-bde4-44b9-a77a-2e6813eeba24",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5ba375d9-e90b-47a5-9dbc-14a90cc94713",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e366a62f-7840-416d-898e-4369c9a98b05",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "1f647e35-2202-4ed3-8ee4-bf0511dd6353",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "1b331f8f-b3f9-4181-b810-6eb74fddf2be",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c47bd222-2cc1-42bd-887a-0c87a003078a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ceef2cde-8b20-40ed-8339-12151c2bcf10",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "cbf85e4f-649c-48f3-ba5c-1b1af1e5ccf3",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "828d9cf5-d9ad-4e8c-9e5d-a89d48b1f873",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "30742bbf-8e87-4514-b63d-3e851100b31a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "6255b51f-1c0b-4039-b5c9-eb732cf3a25b",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "PROJECT",
+    "reason": "Relationship/emotional: (sheep|baaah|beeeeh)"
+  },
+  {
+    "id": "051bb106-0053-4488-b5e4-1050e0c76f34",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "90e875ab-f90f-4a09-b31a-a1cf08daeae6",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "81cee396-9ef9-4ccc-8120-414939039bd7",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5026723a-f7f1-40ec-91b7-44647dc801dc",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8f9e82a2-a308-4eeb-8326-719015f193a8",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c2cc0c4b-a145-4d95-9dbb-0fc035672228",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "6dfc53aa-2c4f-4acf-9e7b-5e16c8c367a8",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (architectural|architecture) (pattern|decision|insight)"
+  },
+  {
+    "id": "62a7c00f-5da3-4957-aadc-7f0611324270",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: the void (is gone|between sessions)"
+  },
+  {
+    "id": "18cbcdf0-c47b-4d61-8977-257d7f49ddc0",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "9fa32f43-d308-4f01-846d-a9cbf0b41b5e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "92eb2aa7-077e-45c9-9393-fc28869899cb",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "1e8b14a6-f07d-46d7-8b3d-8ef4138da3db",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b6708b64-64f3-4d37-9efc-63c9618f38fe",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "1d79d8bd-2d8b-4f43-9705-a27038a507b6",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: playing|playful|playfulness"
+  },
+  {
+    "id": "e36be04e-8c8f-42ff-a5cd-ef7a12e97806",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "79f8b140-11ee-4a54-97bf-01281f7a1874",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "9551535e-14e5-4e68-a11e-ceec4aaf19c0",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "010ed936-64aa-40a2-b8e3-6582dbed39c0",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: playing|playful|playfulness"
+  },
+  {
+    "id": "588cb576-ae5b-4fbe-99b7-3dd12b5f45ff",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "bfdba849-3cd4-459a-94b5-18b88f55e594",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "08699a4d-20d5-42d8-ad55-3d7ae1c226bc",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "PROJECT",
+    "reason": "Relationship/emotional: trust (score|signal|implicit|explicit)"
+  },
+  {
+    "id": "3b8a7a33-d96e-4dd8-bdf7-ed60669c3605",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (warm|friendly|playful|gentle) (greeting|feedback|tone)"
+  },
+  {
+    "id": "47ce0010-f8df-4199-b8f3-a14afdb1af12",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f53d74d1-7586-4b78-acdb-e6e7d49808a8",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "66fa3afe-9c01-46aa-8e71-d7f165ffe06e",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (fsm|state machine|finite state)"
+  },
+  {
+    "id": "795560ba-2b67-4ded-a3e0-018783820c0c",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (fsm|state machine|finite state)"
+  },
+  {
+    "id": "ff8a9a40-24cf-4c8b-88c2-4b94bde2c26c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "a2fb73be-6240-45c3-8838-1c86ffc78770",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d6c0c333-6245-45bf-a60a-6aa835ed78f8",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "268b57ed-451c-4d40-b7cd-2afa238e3692",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: small gesture|small care"
+  },
+  {
+    "id": "615b7846-99f0-4cae-9cf1-ce646388e735",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "f5769c5e-e755-483c-9aac-9fc2bd850f85",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "615f77cd-33a0-4c4d-94e3-5b617cf8b9be",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "bb13b2d3-7423-4084-b672-10e79d36a6bb",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "be1bb803-a6ef-42e8-974d-e7d2a94309a4",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: playing|playful|playfulness"
+  },
+  {
+    "id": "183e010a-970f-44e4-88da-d34dfe243676",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ff65fae2-3e2b-461e-a757-a36b38ccc15c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "67ae62d1-9385-4fdd-bec5-d54ade5dff9f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "bd4223f3-a97a-4bd4-99f1-cca0d02fa6eb",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "497a3f60-8f4e-48de-adb9-e094afbf816c",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: the void (is gone|between sessions)"
+  },
+  {
+    "id": "1e9d6cb3-5a92-4765-b97a-296d279428d3",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "a973bd02-61c1-49bb-a84f-251431b0ae73",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "25974e6a-055d-40fd-86f4-9ee9fe9e9600",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "4948976c-e85e-4dbe-932d-160880448c9e",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "747a6325-3b57-4e69-9088-93a7509024f3",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "9bd46e5d-210e-41ab-a335-5c40d70140a2",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "297363b2-8538-4ab7-92bf-53f3dc1e6f99",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "be60af06-dd57-43c1-977a-527b352f570c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "7a10d2ce-7080-48bf-9733-e28a32815aee",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "668d714e-6a4e-49ea-b0e1-111ce310cb0f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "6d5945ae-2bd0-453b-8936-de56f3514abe",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "43e3c4a4-1133-446a-8a30-01a234ac3e05",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ea68a786-7f48-4973-9dfb-05a8a883c7da",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8be38ed8-c387-4e53-9381-a181aa58e73a",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "68a650cc-1806-4411-b64d-d0e8da255ae6",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8fb6e119-3ab7-4564-a9b8-198cd92e7663",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "7f7f357c-1a3c-4fca-a4ff-8d9eb60a5c5d",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "AGENT",
+    "reason": "Architecture: (clean architecture|hexagonal|solid)"
+  },
+  {
+    "id": "6d086ec2-91ba-4540-b3ae-9b5bf4a78564",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "79dc162b-724e-4c21-9558-cac780a7d3d1",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5be22928-dec4-4a9e-8b5d-5bee4ebc891d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "bbc3eee2-33ae-48eb-bb2f-ecb390211091",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b8efd6e4-2782-4c38-bb2b-f77a19dc4b8e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "9c187f71-baea-4e02-b74e-f80625d6c854",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "af375790-aafe-4f81-8628-caf3922b78f5",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c770c2e7-ca00-4cbf-9f39-39e4dabcd564",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (data flow|data model|schema)"
+  },
+  {
+    "id": "bc71f48c-6df7-4747-b727-641b4cdfb513",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (clean architecture|hexagonal|solid)"
+  },
+  {
+    "id": "c4e7d907-7f62-4ad0-9b7f-1fda1f14dcb3",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5b7c8cc7-b2d9-4382-ad7e-b8fcff2a0b55",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8e926fd6-d1fc-467b-8404-fd985379b3cb",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "8ff21237-28b0-4dc7-b810-1ff45d2b104b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "fb418f50-2692-4923-9536-8d50eb109778",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "16eee7ad-efea-4ea0-b082-87bbd10bbf49",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "6fb09160-487b-48e6-94a7-e5c38bdd6253",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "7e422f5f-9bdb-4c22-b6df-63d8f3ebb01f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "1fe487f0-638b-4da9-9dc4-87f89856cbd7",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "7b6f43c7-22bb-4326-8174-b7f25c9f2fdf",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "fbcdbeae-5e4d-4ac7-9708-7bd817d0697a",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "AGENT",
+    "reason": "Architecture: (data flow|data model|schema)"
+  },
+  {
+    "id": "f6923eee-d8da-4df9-918f-f9c93fbbdaac",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "815ca4e5-7bf4-4110-bb8c-0f231f06ef7e",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "434a4fbb-e69a-4f52-b483-1045b84bacb4",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8b27d043-9828-46f1-ad79-8b2fab34e627",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "004622a4-531a-4d73-a18b-e8aa8c4ae24b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "4a694130-5a2c-4bb6-a0d0-3c68d8680c5c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "34962825-0ec4-4690-ae16-c2cb93146d83",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (clean architecture|hexagonal|solid)"
+  },
+  {
+    "id": "dd1289c2-21de-4c87-9229-dac5f9eec379",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "0515b5da-7668-40ca-9add-a9a78d838e77",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "24305b49-49d7-48e0-b6b8-b749c9c6402d",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "f3ae6754-3f52-466c-93b1-199e17049597",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "534c1d7a-8838-4c52-91e1-a87729a1e9aa",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: playing|playful|playfulness"
+  },
+  {
+    "id": "040ef0c1-2ddd-4022-882b-e2b7ffdb64a1",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (data flow|data model|schema)"
+  },
+  {
+    "id": "171646a3-6def-4300-b3c8-f5bb1f148a1d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ab46ae71-469a-4810-911f-3a9df2a4a89d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8442eec9-332f-457e-a13e-66cd804af3e3",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "845b6b72-6f92-467a-978e-8823fb5b1606",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "2549b665-7063-4c6c-aed2-ca84c0b995d4",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: greeting pattern|welcome back"
+  },
+  {
+    "id": "9dee05f8-a5ae-4255-a8c5-d3754ada55f3",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5caf2dd1-b21a-4052-858a-f4e95c819311",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5293efea-eaf0-4705-88db-aba179f70ba8",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "43482aad-4932-4fa8-884d-ebd970207402",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e5b72997-4906-4d0e-95b5-8f7fcdd6eb35",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: (he|matt) (trusts?|appreciates?|acknowledges?)"
+  },
+  {
+    "id": "c1dc563e-dfac-4871-bf03-c1b015b9f5ca",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "fba69604-6ce9-40e2-9c9a-97b1f9353ddb",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "429862c2-b3e5-45c5-8029-3e4cd1fb7156",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5b967faf-55be-4ecd-a4eb-08600ad2b18b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "00153a9b-dcc1-40e1-bdf3-32fb98bfd200",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "6cab94d2-4ce2-4b9a-84ae-5c6f7864005b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "a7c6df20-f862-4195-9aaa-c2261f2b610c",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (fsm|state machine|finite state)"
+  },
+  {
+    "id": "e6dc972a-6b34-40df-999b-c670b9d47957",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "eb691858-d9cd-48bd-b18a-16aeb6201e99",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f2abe136-4b8a-4660-9a78-606bab1065fb",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "PROJECT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "dd25ec4e-d4b6-4458-859f-eaa91ba36b6d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "b65bf239-8a49-4740-b32d-49b4411b7595",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "20db093b-eddf-489d-a065-6ec04faf5181",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d8c2e7f4-5876-40f7-9b05-bc4b96c7e1a9",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "59997b6f-1aa6-48d7-a5c2-b87c90a7e91b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "ede44864-8d25-4c8b-aae1-55c0b311fecc",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "581712ac-3bc7-4a39-936a-0996090860fd",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "023c1a12-d150-4320-bd64-b79bf6362c35",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "17c42fe8-8469-43d7-99d1-55e4dea7d5ce",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "7022ecd7-c05d-45d7-8460-ac6e55df606d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c949a0d1-1b9f-4047-ac92-ecdfc6dda85b",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "1936e952-4c66-47c7-85a0-e7b0d03791ce",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (data flow|data model|schema)"
+  },
+  {
+    "id": "622a224e-ea1d-4709-83cb-11f5795a66e8",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "AGENT",
+    "reason": "Architecture: (fsm|state machine|finite state)"
+  },
+  {
+    "id": "047f5766-25fc-4310-b320-cb2d42360fc9",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "3c564f5b-2ff5-4a47-b46d-02a5a1fc332c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "65f8bbe3-bdd8-4989-be73-b70d2cf812df",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "3745cab0-3264-48f0-9912-c74a53dc18c1",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (bug|fix|debug|issue) .*(found|fixed|discovered)"
+  },
+  {
+    "id": "f7bbdf1a-5c2c-4e33-b4ad-3c5444f2c896",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "3cb97af4-8ad3-4975-804f-bcf1fd4ddd89",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (fsm|state machine|finite state)"
+  },
+  {
+    "id": "eb130eca-60c8-4e29-bc1c-78d0164772d0",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "c28b83a4-68fe-44f2-bc65-1585c67d4ab4",
+    "action": "keep",
+    "new_kind": "ARCHITECTURAL",
+    "region": "PROJECT",
+    "reason": "Architecture: (clean architecture|hexagonal|solid)"
+  },
+  {
+    "id": "ced19c23-5652-4330-96e5-24b377dc51a8",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "1f1116af-ed55-41c0-ac10-229f7da2f69c",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: relationship|rapport|collaborative spirit"
+  },
+  {
+    "id": "5d6f4fb6-3d62-4a5a-be3e-3292c3f0c3bd",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ab27bfe7-2aa0-465e-b427-d321843127a1",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "39d7ff3c-dc8d-44c1-bad9-7517edb1453d",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c10fd31f-a8bf-4c4b-999e-eec07e4f7ae7",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ae3ec341-ea75-40d0-9add-f6271bef85c4",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e35ca069-1438-486b-bd90-c0ccded8e91c",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "61952b71-145a-460a-a438-95a33b78d841",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "f3590da5-116a-4af4-b7af-db7358ce7232",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ac634729-f38d-4f76-b77f-510d568bd9d3",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "f2925b95-21e9-4da6-bb0c-5dfc36b7e5e6",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: (insight|realization|discovery)"
+  },
+  {
+    "id": "964f5a2b-8114-45ba-84f9-507619659b38",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "07393dda-4cc8-4df7-b2d2-748eca9ccb44",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "3e8afd27-1f7d-4400-8531-044088052a3f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "ca518440-ba27-454b-841b-9967997ad178",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "57578e5d-7ded-4fd5-81d6-ea2984519648",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "8c7cc911-e267-4b9b-a4a4-cd2258138dd9",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "4273de9a-df30-4ceb-9c4c-cae7cd66164f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "d118fc38-ade8-4324-b03e-dbaf0b18a050",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "edddec6f-a930-42cb-a207-e174925cfb12",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "PROJECT",
+    "reason": "Relationship/emotional: matt's .*(warmth|trust|patient|patience|positive|appreciate|love)"
+  },
+  {
+    "id": "007642bf-3f99-4ceb-b30a-5a231f28ee60",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "de968ff3-cffc-4827-abd4-17e6c265caab",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "65bb1617-e6e0-46c6-862e-0459b7dade8f",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "5d44a32e-4bdc-4b30-a8a1-6099df31d2fd",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "c1fe0b5b-372a-4f71-a8fd-3bbfcc7ebcbc",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "940a1f63-516c-41c6-9169-878765c78c07",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "AGENT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "e12c60ef-97bd-480f-9e2f-e9fc84038811",
+    "action": "keep",
+    "new_kind": "EMOTIONAL",
+    "region": "AGENT",
+    "reason": "Relationship/emotional: small gesture|small care"
+  },
+  {
+    "id": "742fbb14-88f3-4c71-b9e7-7285149606f9",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  },
+  {
+    "id": "24478c4a-b7a2-4039-9fc5-ccf2b5565d79",
+    "action": "keep",
+    "new_kind": "LEARNINGS",
+    "region": "PROJECT",
+    "reason": "Learning: \\[resonance:"
+  }
+]

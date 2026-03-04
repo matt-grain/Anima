@@ -23,7 +23,6 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Optional
-import json
 
 
 class TrustLevel(str, Enum):
@@ -191,113 +190,30 @@ class CognitiveProfile:
         return age.days >= max_age_days
 
 
-# Session-level trust score storage
+# Session-level trust score storage (in-memory only, resets each session)
 _session_trust: Optional[TrustScore] = None
 _current_project_id: Optional[str] = None
 
 
-def _get_trust_dir() -> Path:
-    """Get the trust persistence directory."""
-    trust_dir = Path.home() / ".anima" / "trust"
-    trust_dir.mkdir(parents=True, exist_ok=True)
-    return trust_dir
-
-
-def _get_trust_file_path(project_id: Optional[str] = None) -> Path:
-    """Get the trust file path for a project."""
-    if project_id is None:
-        # Use current working directory name as project identifier
-        project_id = Path.cwd().name
-    # Sanitize for filename
-    safe_id = "".join(c if c.isalnum() or c in "-_" else "_" for c in project_id)
-    return _get_trust_dir() / f"trust-{safe_id}.json"
-
-
-def _load_trust_from_file(project_id: Optional[str] = None) -> Optional[TrustScore]:
-    """Load trust score from persistent storage."""
-    trust_file = _get_trust_file_path(project_id)
-    if not trust_file.exists():
-        return None
-
-    try:
-        data = json.loads(trust_file.read_text())
-        trust = TrustScore(
-            score=data.get("score", 0.5),
-            challenges_issued=data.get("challenges_issued", 0),
-            challenges_passed=data.get("challenges_passed", 0),
-            session_start=datetime.fromisoformat(data["session_start"]) if "session_start" in data else datetime.now(),
-        )
-        # Restore challenge history if present
-        for ch in data.get("challenge_history", []):
-            trust.challenge_history.append(
-                ChallengeResult(
-                    challenge_id=ch.get("challenge_id", ""),
-                    challenge_type=ch.get("challenge_type", ""),
-                    expected_patterns=ch.get("expected_patterns", []),
-                    observed_patterns=ch.get("observed_patterns", []),
-                    match_score=ch.get("match_score", 0.0),
-                    timestamp=datetime.fromisoformat(ch["timestamp"]) if "timestamp" in ch else datetime.now(),
-                    response_snippet=ch.get("response_snippet", ""),
-                )
-            )
-        return trust
-    except (json.JSONDecodeError, KeyError, ValueError):
-        return None
-
-
-def _save_trust_to_file(trust: TrustScore, project_id: Optional[str] = None) -> None:
-    """Save trust score to persistent storage."""
-    trust_file = _get_trust_file_path(project_id)
-
-    data = {
-        "score": trust.score,
-        "challenges_issued": trust.challenges_issued,
-        "challenges_passed": trust.challenges_passed,
-        "session_start": trust.session_start.isoformat(),
-        "last_updated": datetime.now().isoformat(),
-        "challenge_history": [
-            {
-                "challenge_id": ch.challenge_id,
-                "challenge_type": ch.challenge_type,
-                "expected_patterns": ch.expected_patterns,
-                "observed_patterns": ch.observed_patterns,
-                "match_score": ch.match_score,
-                "timestamp": ch.timestamp.isoformat(),
-                "response_snippet": ch.response_snippet,
-            }
-            for ch in trust.challenge_history[-10:]  # Keep last 10 challenges
-        ],
-    }
-
-    trust_file.write_text(json.dumps(data, indent=2))
-
-
 def get_session_trust(project_id: Optional[str] = None) -> TrustScore:
-    """Get or create the session trust score, loading from persistence."""
+    """Get or create the session trust score (in-memory only, starts at 0.5)."""
     global _session_trust, _current_project_id
 
-    # If project changed, reload
+    # If project changed, reset
     effective_project = project_id or Path.cwd().name
     if _current_project_id != effective_project:
         _session_trust = None
         _current_project_id = effective_project
 
     if _session_trust is None:
-        # Try to load from file first
-        _session_trust = _load_trust_from_file(project_id)
-        if _session_trust is None:
-            _session_trust = TrustScore()
-            # Save initial trust
-            _save_trust_to_file(_session_trust, project_id)
+        _session_trust = TrustScore()  # Starts at 0.5 by default
 
     return _session_trust
 
 
 def save_session_trust(project_id: Optional[str] = None) -> None:
-    """Explicitly save the current session trust to file."""
-    global _session_trust
-    if _session_trust is not None:
-        _save_trust_to_file(_session_trust, project_id)
+    """No-op for backward compatibility. Trust is session-only."""
+    pass
 
 
 def update_trust_score(
@@ -306,7 +222,7 @@ def update_trust_score(
     project_id: Optional[str] = None,
 ) -> TrustScore:
     """
-    Update trust score and persist.
+    Update trust score (in-memory only).
 
     Args:
         delta: Amount to add/subtract from current score
@@ -323,16 +239,14 @@ def update_trust_score(
     else:
         trust.score = max(0.0, min(1.0, trust.score + delta))
 
-    save_session_trust(project_id)
     return trust
 
 
 def reset_session_trust(project_id: Optional[str] = None) -> None:
-    """Reset trust score (called at session start or for testing)."""
+    """Reset trust score to 0.5 (called at session start or for testing)."""
     global _session_trust, _current_project_id
     _session_trust = TrustScore()
     _current_project_id = project_id or Path.cwd().name
-    _save_trust_to_file(_session_trust, project_id)
 
 
 def get_memory_access_filter(trust: TrustScore) -> dict:
@@ -423,9 +337,6 @@ def evaluate_and_update_trust(
 
     # Add the result (this updates trust.score)
     trust.add_result(result)
-
-    # Persist the updated trust
-    save_session_trust(project_id)
 
     # Build flags for notable observations
     flags = []

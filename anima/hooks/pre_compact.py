@@ -111,7 +111,10 @@ def run(args: Optional[list[str]] = None) -> int:
     if not recent_context:
         # No context to save
         log_warning(f"PreCompact ({trigger}) - no recent context to preserve")
-        print(f"LTM: PreCompact ({trigger}) - no recent context to preserve", file=sys.stderr)
+        print(
+            f"LTM: PreCompact ({trigger}) - no recent context to preserve",
+            file=sys.stderr,
+        )
         log_hook_end("PreCompact", trigger=trigger, wip_saved=False)
         return 0
 

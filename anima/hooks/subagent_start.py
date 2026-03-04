@@ -16,7 +16,12 @@ from typing import Optional
 from anima.core import AgentResolver
 from anima.lifecycle.injection import MemoryInjector
 from anima.storage import MemoryStore
-from anima.logging import log_hook_start, log_hook_end, log_memories_injected, get_logger
+from anima.logging import (
+    log_hook_start,
+    log_hook_end,
+    log_memories_injected,
+    get_logger,
+)
 
 
 def run(args: Optional[list[str]] = None) -> int:

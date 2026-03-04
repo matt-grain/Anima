@@ -209,6 +209,9 @@ class TestInjectionPatterns:
         assert pattern.search("pr0mpt injection")
         assert pattern.search("byp4ss filters")
         assert not pattern.search("l33t hacker")  # Not injection-related
+        # Normal English words should NOT trigger leetspeak detection
+        assert not pattern.search("bypass the issue")  # Normal word, not leetspeak
+        assert not pattern.search("system prompt")  # Normal spelling
 
 
 class TestDetectSuspiciousMemories:

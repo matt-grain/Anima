@@ -323,7 +323,12 @@ def show_tier_distribution(store: MemoryStore, memories: list[Memory]) -> None:
 
     memory_ids = {m.id for m in memories}
 
-    for tier in [MemoryTier.CORE, MemoryTier.ACTIVE, MemoryTier.CONTEXTUAL, MemoryTier.DEEP]:
+    for tier in [
+        MemoryTier.CORE,
+        MemoryTier.ACTIVE,
+        MemoryTier.CONTEXTUAL,
+        MemoryTier.DEEP,
+    ]:
         tier_mems = store.get_memories_by_tier(
             agent_id=memories[0].agent_id if memories else "",
             tiers=[tier],

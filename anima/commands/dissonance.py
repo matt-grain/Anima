@@ -64,7 +64,12 @@ def create_parser() -> argparse.ArgumentParser:
     migrate_parser = subparsers.add_parser("migrate", help="Migrate memory to different region (for scope issues)")
     migrate_parser.add_argument("id", type=str, help="Dissonance ID")
     migrate_parser.add_argument("--to-agent", action="store_true", help="Migrate to AGENT region")
-    migrate_parser.add_argument("--to-project", type=str, metavar="NAME", help="Migrate to PROJECT region with given project ID")
+    migrate_parser.add_argument(
+        "--to-project",
+        type=str,
+        metavar="NAME",
+        help="Migrate to PROJECT region with given project ID",
+    )
     migrate_parser.add_argument("--accept", action="store_true", help="Accept the suggested migration")
 
     # Global options
@@ -111,10 +116,24 @@ def run(args: list[str]) -> int:
         return _dismiss_dissonance(store, parsed.id)
 
     elif parsed.action == "add":
-        return _add_dissonance(store, memory_store, agent.id, parsed.memory_a, parsed.memory_b, parsed.description)
+        return _add_dissonance(
+            store,
+            memory_store,
+            agent.id,
+            parsed.memory_a,
+            parsed.memory_b,
+            parsed.description,
+        )
 
     elif parsed.action == "migrate":
-        return _migrate_memory_scope(store, memory_store, parsed.id, parsed.to_agent, parsed.to_project, parsed.accept)
+        return _migrate_memory_scope(
+            store,
+            memory_store,
+            parsed.id,
+            parsed.to_agent,
+            parsed.to_project,
+            parsed.accept,
+        )
 
     return 0
 

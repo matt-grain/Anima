@@ -21,7 +21,6 @@ from anima.security.cognitive_auth import (
     get_memory_access_filter,
     update_trust_score,
     reset_session_trust,
-    _get_trust_file_path,
 )
 
 
@@ -91,10 +90,7 @@ def run(args: list[str]) -> int:
     print("#")
     print(f"# Trust Score: {trust.score:.2f} [{bar}]")
     print(f"# Trust Level: {level.value}")
-    print(
-        f"# Challenges: {trust.challenges_issued} issued, {trust.challenges_passed} passed"
-    )
-    print(f"# Persisted: {_get_trust_file_path()}")
+    print(f"# Challenges: {trust.challenges_issued} issued, {trust.challenges_passed} passed")
     print("#")
 
     # Show what filters would apply

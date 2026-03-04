@@ -720,7 +720,6 @@ def trust(
         update_trust_score,
         reset_session_trust,
         evaluate_and_update_trust,
-        _get_trust_file_path,
     )
 
     if action == "status":
@@ -734,7 +733,6 @@ def trust(
             "challenges_issued": trust_score.challenges_issued,
             "challenges_passed": trust_score.challenges_passed,
             "filters": {k: str(v) for k, v in filters.items()},
-            "persisted": str(_get_trust_file_path()),
         }
 
     elif action == "evaluate":

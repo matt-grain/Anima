@@ -418,7 +418,12 @@ def _resume_dream(
     stages_to_run: list[DreamStage] = []
 
     if state in (DreamState.CLEANUP_RUNNING, DreamState.IDLE):
-        stages_to_run = [DreamStage.CLEANUP, DreamStage.N2, DreamStage.N3, DreamStage.REM]
+        stages_to_run = [
+            DreamStage.CLEANUP,
+            DreamStage.N2,
+            DreamStage.N3,
+            DreamStage.REM,
+        ]
     elif state == DreamState.CLEANUP_COMPLETE:
         stages_to_run = [DreamStage.N2, DreamStage.N3, DreamStage.REM]
     elif state == DreamState.N2_RUNNING:
@@ -524,7 +529,9 @@ def _resume_dream(
     return 0
 
 
-def _print_summary(results: list[tuple[str, CleanupResult | N2Result | N3Result | REMResult]]) -> None:
+def _print_summary(
+    results: list[tuple[str, CleanupResult | N2Result | N3Result | REMResult]],
+) -> None:
     """Print dream completion summary."""
     print()
     print("Dream complete!")

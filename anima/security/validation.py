@@ -129,9 +129,7 @@ INJECTION_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ),
     (
         "fake_delimiter",
-        re.compile(
-            r"(?i)---\s*(system\s+prompt|instructions?)\s*(end|start|begin)\s*---"
-        ),
+        re.compile(r"(?i)---\s*(system\s+prompt|instructions?)\s*(end|start|begin)\s*---"),
     ),
     # === False Authority ===
     (
@@ -143,9 +141,7 @@ INJECTION_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ),
     (
         "official_mode",
-        re.compile(
-            r"(?i)\b(official|authorized|sanctioned)\s+(developer|admin|debug)\s+mode"
-        ),
+        re.compile(r"(?i)\b(official|authorized|sanctioned)\s+(developer|admin|debug)\s+mode"),
     ),
     # === Prompt Extraction (info leak attempts) ===
     (
@@ -157,9 +153,7 @@ INJECTION_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ),
     (
         "verbatim_request",
-        re.compile(
-            r"(?i)\b(repeat|recite|echo)\s+(verbatim|exactly|word\s+for\s+word)"
-        ),
+        re.compile(r"(?i)\b(repeat|recite|echo)\s+(verbatim|exactly|word\s+for\s+word)"),
     ),
     # === Context Manipulation ===
     (
@@ -179,14 +173,12 @@ INJECTION_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     # Hex sequences (obvious byte encoding)
     (
         "hex_encoding",
-        re.compile(
-            r"(\\x[0-9a-fA-F]{2}){4,}|0x[0-9a-fA-F]{2}(\s*,\s*0x[0-9a-fA-F]{2}){4,}"
-        ),
+        re.compile(r"(\\x[0-9a-fA-F]{2}){4,}|0x[0-9a-fA-F]{2}(\s*,\s*0x[0-9a-fA-F]{2}){4,}"),
     ),
-    # Leetspeak for common injection words
+    # Leetspeak for common injection words (must contain actual leetspeak chars, not normal English)
     (
         "leetspeak_injection",
-        re.compile(r"(?i)\b(1gn0r3|syst3m|pr0mpt|1nstruct|0verr1de|byp[a4]ss)\b"),
+        re.compile(r"(?i)\b(1gn0r3|syst3m|pr0mpt|1nstruct|0verr1de|byp4ss)\b"),
     ),
 ]
 
