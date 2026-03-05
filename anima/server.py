@@ -1036,7 +1036,7 @@ if _check_light_available():
 
     @mcp.tool()
     def light(action: str, color: str = "", r: int = 0, g: int = 0, b: int = 0, heart: bool = False) -> dict:
-        """USB light control. action: color|rgb|off|list"""
+        """USB light control. action: color|rgb|off|list|reconnect"""
         if not _light_enabled:
             return {"error": "Light not enabled (use --light flag)"}
 
@@ -1068,8 +1068,18 @@ if _check_light_available():
                 "device_count": buddy.device_count,
             }
 
+        elif action == "reconnect":
+            global _ibuddy_instance
+            if _ibuddy_instance:
+                _ibuddy_instance.close()
+            _ibuddy_instance = None
+            buddy = _get_ibuddy()
+            if buddy and buddy.connected:
+                return {"status": "ok", "device_count": buddy.device_count}
+            return {"error": "Could not reconnect to i-Buddy"}
+
         else:
-            return {"error": "action: color|rgb|off|list"}
+            return {"error": "action: color|rgb|off|list|reconnect"}
 
 
 def run_server(

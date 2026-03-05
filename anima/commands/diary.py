@@ -318,6 +318,8 @@ def run(args: list[str]) -> int:
         # Sanitize title for filename
         safe_title = "".join(c if c.isalnum() or c in " -_" else "" for c in title)
         safe_title = safe_title.replace(" ", "_").lower()
+        # Truncate to avoid filesystem path length limits
+        safe_title = safe_title[:50].rstrip("_")
         filename = f"{date_str}_{safe_title}.md"
     else:
         # Check if an entry already exists for today
