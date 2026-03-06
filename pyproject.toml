@@ -1,6 +1,6 @@
 [project]
 name = "anima"
-version = "0.15.2"
+version = "0.16.0"
 description = "Long Term Memory for Anima Agents - human-like persistent memory across sessions"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -19,6 +19,7 @@ dependencies = [
     "blynclight>=0.9.0",
     "pyusb>=1.3.1",
     "scipy>=1.17.1",
+    "uvicorn>=0.40.0",
 ]
 
 [project.optional-dependencies]

@@ -8,7 +8,7 @@ resolution-markers = [
 
 [[package]]
 name = "anima"
-version = "0.15.2"
+version = "0.16.0"
 source = { editable = "." }
 dependencies = [
     { name = "blynclight" },
@@ -21,6 +21,7 @@ dependencies = [
     { name = "pyyaml" },
     { name = "scipy" },
     { name = "tiktoken" },
+    { name = "uvicorn" },
 ]
 
 [package.optional-dependencies]
@@ -68,6 +69,7 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0.0" },
     { name = "scipy", specifier = ">=1.17.1" },
     { name = "tiktoken", specifier = ">=0.8.0" },
+    { name = "uvicorn", specifier = ">=0.40.0" },
 ]
 provides-extras = ["eyes", "tts", "all"]
 

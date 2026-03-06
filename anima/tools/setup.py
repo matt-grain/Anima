@@ -176,6 +176,101 @@ def prompt_platform_choice(found_configs: list[str]) -> str | None:
         return None
 
 
+def setup_global_hooks() -> bool:
+    """Set up global HTTP hooks for Claude Code.
+
+    Creates shim scripts in ~/.claude/hooks/ that forward to the HTTP server.
+    No per-project install needed - just run `anima serve` once.
+
+    Returns:
+        True if successful
+    """
+    from anima.utils.terminal import safe_print, get_icon
+
+    hooks_dir = Path.home() / ".claude" / "hooks"
+    settings_file = Path.home() / ".claude" / "settings.json"
+
+    # Create hooks directory
+    hooks_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create shim scripts
+    shims = {
+        "session-start.sh": """\
+#!/bin/bash
+# Anima SessionStart shim - forwards to centralized HTTP server
+curl -s -X POST http://127.0.0.1:3741/hooks/session-start \\
+  -H "Content-Type: application/json" \\
+  -d "$(cat)"
+""",
+        "session-end.sh": """\
+#!/bin/bash
+# Anima SessionEnd shim - forwards to centralized HTTP server
+curl -s -X POST http://127.0.0.1:3741/hooks/session-end \\
+  -H "Content-Type: application/json" \\
+  -d "$(cat)"
+""",
+        "pre-compact.sh": """\
+#!/bin/bash
+# Anima PreCompact shim - forwards to centralized HTTP server
+curl -s -X POST http://127.0.0.1:3741/hooks/pre-compact \\
+  -H "Content-Type: application/json" \\
+  -d "$(cat)"
+""",
+    }
+
+    for filename, content in shims.items():
+        shim_path = hooks_dir / filename
+        shim_path.write_text(content)
+        safe_print(f"  {get_icon('', '[+]')} Created {shim_path}")
+
+    # Update global settings.json
+    settings = {}
+    if settings_file.exists():
+        try:
+            settings = json.loads(settings_file.read_text())
+        except json.JSONDecodeError:
+            pass
+
+    if "hooks" not in settings:
+        settings["hooks"] = {}
+
+    # Add HTTP shim hooks
+    settings["hooks"]["SessionStart"] = [
+        {
+            "matcher": "startup",
+            "hooks": [{"type": "command", "command": "bash ~/.claude/hooks/session-start.sh", "timeout": 15000}],
+        },
+        {
+            "matcher": "resume",
+            "hooks": [{"type": "command", "command": "bash ~/.claude/hooks/session-start.sh", "timeout": 15000}],
+        },
+        {
+            "matcher": "compact",
+            "hooks": [{"type": "command", "command": "bash ~/.claude/hooks/session-start.sh", "timeout": 15000}],
+        },
+    ]
+    settings["hooks"]["SessionEnd"] = [
+        {
+            "hooks": [{"type": "command", "command": "bash ~/.claude/hooks/session-end.sh", "timeout": 30000}],
+        }
+    ]
+    settings["hooks"]["PreCompact"] = [
+        {
+            "hooks": [{"type": "command", "command": "bash ~/.claude/hooks/pre-compact.sh", "timeout": 10000}],
+        }
+    ]
+
+    settings_file.write_text(json.dumps(settings, indent=2) + "\n")
+    safe_print(f"  {get_icon('', '[+]')} Updated {settings_file}")
+
+    print()
+    safe_print(f"{get_icon('', '[!]')} Global setup complete!")
+    safe_print("    Start the HTTP server: anima serve")
+    safe_print("    Works with ANY project - no per-project install needed")
+
+    return True
+
+
 def run(args: list[str]) -> int:
     """
     Run the setup tool.
@@ -184,6 +279,7 @@ def run(args: list[str]) -> int:
         ltm setup [options] [project-dir]
 
     Options:
+        --global            Set up global HTTP hooks (no per-project install needed)
         --platform <p>      Target platform: claude, antigravity, opencode, copilot
         --mode <m>          Interaction mode: mcp, skill, or both (prompts if not specified)
         --eyes              Enable eyes (visual expression window)
@@ -208,6 +304,15 @@ def run(args: list[str]) -> int:
     eyes_enabled = "--eyes" in args
     tts_enabled = "--tts" in args
     light_enabled = "--light" in args
+    global_setup = "--global" in args
+
+    # Handle --global setup (HTTP hooks, no per-project install)
+    if global_setup:
+        print("Setting up global HTTP hooks for Claude Code...")
+        print()
+        if setup_global_hooks():
+            return 0
+        return 1
 
     # Mode selection
     selected_mode = None
@@ -247,6 +352,7 @@ def run(args: list[str]) -> int:
         "--eyes",
         "--tts",
         "--light",
+        "--global",
     }
     project_args = []
     skip_next = False

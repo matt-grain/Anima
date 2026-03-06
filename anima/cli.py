@@ -71,6 +71,7 @@ def main() -> int:
         print("System:")
         print("  setup                  Set up LTM in current project")
         print("  server                 Start MCP server (also: --server flag)")
+        print("  serve                  Start HTTP hooks server (for Claude Code HTTP hooks)")
         print("  eyes-daemon            Manage the eyes display daemon (start/stop/status)")
         print("  version                Show installed version (includes update check)")
         print("  update                 Update to latest version from GitHub")
@@ -151,6 +152,19 @@ def main() -> int:
             return run(args)
         case "server":
             return _run_server(args)
+        case "serve":
+            # HTTP hooks server (alternative to command hooks)
+            port = 3741  # Default port
+            host = "127.0.0.1"
+            for i, arg in enumerate(args):
+                if arg == "--port" and i + 1 < len(args):
+                    port = int(args[i + 1])
+                elif arg == "--host" and i + 1 < len(args):
+                    host = args[i + 1]
+            from anima.http_server import run_server as run_http_server
+
+            run_http_server(port=port, host=host)
+            return 0
         case "eyes-daemon":
             from anima.commands.eyes_daemon import run
 
