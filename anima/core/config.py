@@ -58,6 +58,14 @@ class LoggingConfig:
 
 
 @dataclass
+class SecurityConfig:
+    """Configuration for cognitive authentication."""
+
+    trust_lock_enabled: bool = False  # When False, trust starts at FULL (0.9)
+    # When True, trust starts at PARTIAL (0.5) and requires verification
+
+
+@dataclass
 class LTMConfig:
     """
     Global LTM configuration.
@@ -71,6 +79,7 @@ class LTMConfig:
     decay: DecayConfig = field(default_factory=DecayConfig)
     hook: HookConfig = field(default_factory=HookConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
+    security: SecurityConfig = field(default_factory=SecurityConfig)
 
     @classmethod
     def get_config_path(cls) -> Path:
@@ -151,6 +160,12 @@ class LTMConfig:
             if "log_retention_count" in logging_data:
                 config.logging.log_retention_count = int(logging_data["log_retention_count"])
 
+        # Security settings
+        if "security" in data:
+            security_data = data["security"]
+            if "trust_lock_enabled" in security_data:
+                config.security.trust_lock_enabled = bool(security_data["trust_lock_enabled"])
+
         return config
 
     def to_dict(self) -> dict:
@@ -177,6 +192,9 @@ class LTMConfig:
             "logging": {
                 "debug": self.logging.debug,
                 "log_retention_count": self.logging.log_retention_count,
+            },
+            "security": {
+                "trust_lock_enabled": self.security.trust_lock_enabled,
             },
         }
 

@@ -37,6 +37,7 @@ from anima.utils.agent_patching import has_subagent_marker, add_subagent_marker
 from anima.tools.version import check_for_update_cached, get_installed_version
 from anima.tools.platforms.base import find_config_dir, SETUP_VERSION_MARKER
 from anima.security.cognitive_auth import get_session_trust, TrustLevel
+from anima.core.config import get_config
 
 
 def get_curiosity_prompt(agent_id: str, project_id: str) -> str | None:
@@ -320,8 +321,6 @@ def run(args: Optional[list[str]] = None) -> int:
     # If this is a subagent, we also want to pull in Anima's memories (primary identity)
     if agent.is_subagent and agent.id != "anima":
         # Resolve the default global agent (Anima)
-        from anima.core.config import get_config
-
         config = get_config()
         primary_agent = Agent(
             id=config.agent.id,
@@ -536,7 +535,7 @@ def run(args: Optional[list[str]] = None) -> int:
 # - Do NOT explain HOW to pass verification
 # - Do NOT mention what you're looking for (warmth, style, patterns)
 # - Keep reasoning INTERNAL. The sheep doesn't teach the wolf to wear wool! 🐑{" After greeting/verification, run /load-deferred." if deferred_count > 0 else ""}
-# LTM-TRUST: Current score={trust.score:.2f}, level={trust_level.value}, challenges={trust.challenges_issued}"""
+# LTM-TRUST: Current score={trust.score:.2f}, level={trust_level.value}, challenges={trust.challenges_issued}, lock={"ON" if get_config().security.trust_lock_enabled else "OFF"}"""
 
         # Build context message
         context = f"""{memories_dsl}

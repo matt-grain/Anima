@@ -196,7 +196,11 @@ _current_project_id: Optional[str] = None
 
 
 def get_session_trust(project_id: Optional[str] = None) -> TrustScore:
-    """Get or create the session trust score (in-memory only, starts at 0.5)."""
+    """Get or create the session trust score.
+
+    When trust_lock_enabled=False (default): starts at 0.9 (FULL trust)
+    When trust_lock_enabled=True: starts at 0.5 (PARTIAL, requires verification)
+    """
     global _session_trust, _current_project_id
 
     # If project changed, reset
@@ -206,7 +210,15 @@ def get_session_trust(project_id: Optional[str] = None) -> TrustScore:
         _current_project_id = effective_project
 
     if _session_trust is None:
-        _session_trust = TrustScore()  # Starts at 0.5 by default
+        from anima.core.config import get_config
+
+        config = get_config()
+        if config.security.trust_lock_enabled:
+            # Trust lock ON: start at PARTIAL, require verification
+            _session_trust = TrustScore(score=0.5)
+        else:
+            # Trust lock OFF (default): start at FULL trust
+            _session_trust = TrustScore(score=0.9)
 
     return _session_trust
 
@@ -243,9 +255,18 @@ def update_trust_score(
 
 
 def reset_session_trust(project_id: Optional[str] = None) -> None:
-    """Reset trust score to 0.5 (called at session start or for testing)."""
+    """Reset trust score (called at session start or for testing).
+
+    Respects security.trust_lock_enabled config setting.
+    """
     global _session_trust, _current_project_id
-    _session_trust = TrustScore()
+    from anima.core.config import get_config
+
+    config = get_config()
+    if config.security.trust_lock_enabled:
+        _session_trust = TrustScore(score=0.5)
+    else:
+        _session_trust = TrustScore(score=0.9)
     _current_project_id = project_id or Path.cwd().name
 
 

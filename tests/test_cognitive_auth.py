@@ -364,19 +364,24 @@ class TestSessionTrust:
     """Test session-level trust management."""
 
     def test_get_creates_if_not_exists(self) -> None:
-        """get_session_trust creates a new score if none exists."""
+        """get_session_trust creates a new score if none exists.
+
+        Default: trust_lock_enabled=False → starts at 0.9 (FULL trust)
+        """
         reset_session_trust()
         trust = get_session_trust()
 
         assert trust is not None
-        assert trust.score == 0.5
+        # With trust_lock_enabled=False (default), trust starts at 0.9
+        assert trust.score == 0.9
 
     def test_reset_clears_trust(self) -> None:
-        """reset_session_trust clears accumulated trust."""
+        """reset_session_trust resets trust to config-based default."""
         trust = get_session_trust()
-        trust.score = 0.9
+        trust.score = 0.3  # Modify to non-default value
 
         reset_session_trust()
 
         new_trust = get_session_trust()
-        assert new_trust.score == 0.5
+        # With trust_lock_enabled=False (default), resets to 0.9
+        assert new_trust.score == 0.9
