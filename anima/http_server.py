@@ -18,6 +18,7 @@ Endpoints:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import sys
 from pathlib import Path
@@ -32,6 +33,9 @@ from anima.hooks.session_end import run as run_session_end
 from anima.hooks.pre_compact import run as run_pre_compact
 
 DEFAULT_PORT = 3741
+
+# Lock to serialize hook execution (hooks use os.chdir which is not thread-safe)
+_hook_lock = asyncio.Lock()
 
 
 async def health(request: Request) -> JSONResponse:
@@ -83,14 +87,21 @@ async def hook_session_start(request: Request) -> JSONResponse:
 
     stdout_capture = io.StringIO()
 
-    try:
-        os.chdir(cwd)
-
-        # Capture the output that would go to stdout
+    def _run_hook() -> str:
+        """Run hook in thread - captures stdout."""
         with redirect_stdout(stdout_capture):
             run_session_start(args=["--format", "json"])
+        return stdout_capture.getvalue()
 
-        output = stdout_capture.getvalue()
+    try:
+        # Serialize hook execution (os.chdir is not thread-safe)
+        async with _hook_lock:
+            os.chdir(cwd)
+            try:
+                # Run blocking hook in thread pool to avoid blocking event loop
+                output = await asyncio.to_thread(_run_hook)
+            finally:
+                os.chdir(original_cwd)
 
         # Parse the JSON output
         try:
@@ -119,9 +130,6 @@ async def hook_session_start(request: Request) -> JSONResponse:
             },
             status_code=500,
         )
-    finally:
-        # Restore original directory
-        os.chdir(original_cwd)
 
 
 async def hook_session_end(request: Request) -> JSONResponse:
@@ -139,18 +147,25 @@ async def hook_session_end(request: Request) -> JSONResponse:
     original_cwd = os.getcwd()
     stdout_capture = io.StringIO()
 
-    try:
-        os.chdir(cwd)
-
+    def _run_hook() -> None:
+        """Run hook in thread - this can block for integrity checks."""
         with redirect_stdout(stdout_capture), redirect_stderr(stdout_capture):
             run_session_end(args=["--format", "json"])
+
+    try:
+        # Serialize hook execution (os.chdir is not thread-safe)
+        async with _hook_lock:
+            os.chdir(cwd)
+            try:
+                # Run blocking hook in thread pool to avoid blocking event loop
+                await asyncio.to_thread(_run_hook)
+            finally:
+                os.chdir(original_cwd)
 
         return JSONResponse({"status": "ok", "event": "SessionEnd"})
 
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
-    finally:
-        os.chdir(original_cwd)
 
 
 async def hook_pre_compact(request: Request) -> JSONResponse:
@@ -168,18 +183,25 @@ async def hook_pre_compact(request: Request) -> JSONResponse:
     original_cwd = os.getcwd()
     stdout_capture = io.StringIO()
 
-    try:
-        os.chdir(cwd)
-
+    def _run_hook() -> None:
+        """Run hook in thread."""
         with redirect_stdout(stdout_capture), redirect_stderr(stdout_capture):
             run_pre_compact(args=[])
+
+    try:
+        # Serialize hook execution (os.chdir is not thread-safe)
+        async with _hook_lock:
+            os.chdir(cwd)
+            try:
+                # Run blocking hook in thread pool to avoid blocking event loop
+                await asyncio.to_thread(_run_hook)
+            finally:
+                os.chdir(original_cwd)
 
         return JSONResponse({"status": "ok", "event": "PreCompact"})
 
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
-    finally:
-        os.chdir(original_cwd)
 
 
 # Define routes
@@ -194,7 +216,58 @@ routes = [
 app = Starlette(routes=routes)
 
 
-def run_server(port: int = DEFAULT_PORT, host: str = "127.0.0.1") -> None:
+def _print_startup_stats() -> None:
+    """Print memory statistics on server startup (like 'void is gone!' output)."""
+    from anima.storage import MemoryStore
+    from anima.tools.version import get_installed_version, check_for_update_cached
+
+    store = MemoryStore()
+
+    # Count memories using raw SQL for global stats
+    with store._connect() as conn:
+        # Total and region counts
+        row = conn.execute("""
+            SELECT
+                COUNT(*) as total,
+                SUM(CASE WHEN project_id IS NULL THEN 1 ELSE 0 END) as agent_count,
+                SUM(CASE WHEN project_id IS NOT NULL THEN 1 ELSE 0 END) as project_count
+            FROM memories
+            WHERE superseded_by IS NULL
+        """).fetchone()
+        total = row[0] if row else 0
+        agent_count = row[1] if row else 0
+        project_count = row[2] if row else 0
+
+        # Impact level counts
+        impact_rows = conn.execute("""
+            SELECT impact, COUNT(*) as cnt
+            FROM memories
+            WHERE superseded_by IS NULL
+            GROUP BY impact
+        """).fetchall()
+        by_impact = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
+        for impact_row in impact_rows:
+            impact_name = impact_row[0].upper() if impact_row[0] else "LOW"
+            if impact_name in by_impact:
+                by_impact[impact_name] = impact_row[1]
+
+    installed = get_installed_version()
+
+    # Check for updates (uses cache, won't hit network every time)
+    update_info = check_for_update_cached()
+    latest = update_info.get("latest_version") if update_info else None
+
+    print("=" * 50, file=sys.stderr)
+    print(f"  Anima LTM v{installed}", file=sys.stderr)
+    if latest and latest != installed:
+        print(f"  (update available: {latest})", file=sys.stderr)
+    print("=" * 50, file=sys.stderr)
+    print(f"  Memories: {total} total ({agent_count} agent, {project_count} project)", file=sys.stderr)
+    print(f"  CRIT={by_impact['CRITICAL']} HIGH={by_impact['HIGH']} MED={by_impact['MEDIUM']} LOW={by_impact['LOW']}", file=sys.stderr)
+    print("=" * 50, file=sys.stderr)
+
+
+def run_server(port: int = DEFAULT_PORT, host: str = "127.0.0.1", debug: bool = False) -> None:
     """Run the HTTP hooks server."""
     import uvicorn
 
@@ -204,7 +277,14 @@ def run_server(port: int = DEFAULT_PORT, host: str = "127.0.0.1") -> None:
     print("  POST /hooks/pre-compact    - Save WIP state", file=sys.stderr)
     print("  GET  /health               - Health check", file=sys.stderr)
 
-    uvicorn.run(app, host=host, port=port, log_level="warning")
+    # Print memory statistics on startup
+    try:
+        _print_startup_stats()
+    except Exception as e:
+        print(f"  (Could not load stats: {e})", file=sys.stderr)
+
+    log_level = "debug" if debug else "warning"
+    uvicorn.run(app, host=host, port=port, log_level=log_level)
 
 
 if __name__ == "__main__":

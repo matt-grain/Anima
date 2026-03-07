@@ -156,14 +156,17 @@ def main() -> int:
             # HTTP hooks server (alternative to command hooks)
             port = 3741  # Default port
             host = "127.0.0.1"
+            debug = False
             for i, arg in enumerate(args):
                 if arg == "--port" and i + 1 < len(args):
                     port = int(args[i + 1])
                 elif arg == "--host" and i + 1 < len(args):
                     host = args[i + 1]
+                elif arg == "--debug":
+                    debug = True
             from anima.http_server import run_server as run_http_server
 
-            run_http_server(port=port, host=host)
+            run_http_server(port=port, host=host, debug=debug)
             return 0
         case "eyes-daemon":
             from anima.commands.eyes_daemon import run
