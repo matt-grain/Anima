@@ -338,6 +338,7 @@ def run(args: Optional[list[str]] = None) -> int:
     deferred_count = injection_result["deferred_count"]
     injected_ids = injection_result["injected_ids"]
     deferred_ids = injection_result["deferred_ids"]
+    bucket_stats = injection_result.get("bucket_stats", {})
 
     # If --all flag, load deferred memories immediately (no lazy loading)
     if load_all and deferred_ids:
@@ -351,6 +352,19 @@ def run(args: Optional[list[str]] = None) -> int:
     # Store deferred memory IDs for lazy loading via /load-deferred
     if deferred_ids:
         set_deferred_memories(deferred_ids)
+
+    # Log bucket stats (for debugging injection balance)
+    if bucket_stats:
+        ac = bucket_stats.get("agent_critical", 0)
+        ah = bucket_stats.get("agent_high", 0)
+        am = bucket_stats.get("agent_medium", 0)
+        al = bucket_stats.get("agent_low", 0)
+        pc = bucket_stats.get("project_critical", 0)
+        ph = bucket_stats.get("project_high", 0)
+        pm = bucket_stats.get("project_medium", 0)
+        pl = bucket_stats.get("project_low", 0)
+        ov = bucket_stats.get("overflow", 0)
+        log.info(f"Bucket stats: AGENT[C={ac} H={ah} M={am} L={al}] PROJECT[C={pc} H={ph} M={pm} L={pl}] overflow={ov}")
 
     # Log basic memory loading info (detailed stats logged after we compute them)
     log.info(f"Injected {len(injected_ids)} memories, deferred {deferred_count}")

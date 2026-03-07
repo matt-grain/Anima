@@ -43,6 +43,20 @@ class InjectionStats(TypedDict):
     priority_counts: dict[str, int]  # CRITICAL, HIGH, MEDIUM, LOW
 
 
+class BucketStats(TypedDict):
+    """Statistics about memory bucket usage."""
+
+    agent_critical: int
+    agent_high: int
+    agent_medium: int
+    agent_low: int
+    project_critical: int
+    project_high: int
+    project_medium: int
+    project_low: int
+    overflow: int
+
+
 class InjectionResult(TypedDict):
     """Result of memory injection including deferred memories."""
 
@@ -50,6 +64,7 @@ class InjectionResult(TypedDict):
     injected_ids: list[str]  # IDs of memories that were injected
     deferred_ids: list[str]  # IDs of memories that didn't fit (for lazy loading)
     deferred_count: int  # Count of deferred memories
+    bucket_stats: BucketStats  # Memory counts per bucket
 
 
 # Default values (can be overridden via ~/.anima/config.json)
@@ -73,6 +88,21 @@ def _get_hook_config() -> tuple[int, int]:
 
     config = get_config()
     return config.hook.max_output_bytes, config.hook.max_memory_chars
+
+
+def _get_bucket_config() -> dict[str, float]:
+    """Get injection bucket percentages from config."""
+    from anima.core.config import get_config
+
+    config = get_config()
+    return {
+        "agent_critical": config.injection_buckets.agent_critical,
+        "agent_high": config.injection_buckets.agent_high,
+        "agent_medium": config.injection_buckets.agent_medium,
+        "project_critical": config.injection_buckets.project_critical,
+        "project_high": config.injection_buckets.project_high,
+        "project_medium": config.injection_buckets.project_medium,
+    }
 
 
 def truncate_content(content: str, max_chars: int) -> str:
@@ -240,13 +270,23 @@ class MemoryInjector:
             memories = self._load_all_memories(agents, project)
 
         if not memories:
-            return InjectionResult(dsl="", injected_ids=[], deferred_ids=[], deferred_count=0)
+            return InjectionResult(
+                dsl="",
+                injected_ids=[],
+                deferred_ids=[],
+                deferred_count=0,
+                bucket_stats=BucketStats(
+                    agent_critical=0, agent_high=0, agent_medium=0, agent_low=0,
+                    project_critical=0, project_high=0, project_medium=0, project_low=0,
+                    overflow=0,
+                ),
+            )
 
         # Apply trust-based filters (cognitive auth v0.14.3)
         memories, trust_filtered = self._apply_trust_filters(memories)
 
-        # Sort by importance: CRITICAL first, then by recency
-        memories = self._prioritize_memories(memories)
+        # Prioritize using token buckets (sorts by bucket priority, then recency)
+        memories, bucket_counts = self._prioritize_memories(memories)
 
         # Build memory block within budget
         block = MemoryBlock(
@@ -316,6 +356,7 @@ class MemoryInjector:
             injected_ids=injected_ids,
             deferred_ids=deferred_ids,
             deferred_count=len(deferred_ids),
+            bucket_stats=BucketStats(**bucket_counts),
         )
 
     def _load_tiered_memories(
@@ -568,37 +609,153 @@ class MemoryInjector:
 
         return filtered, removed_count
 
-    def _prioritize_memories(self, memories: list[Memory]) -> list[Memory]:
+    def _prioritize_memories(self, memories: list[Memory]) -> tuple[list[Memory], dict[str, int]]:
         """
-        Prioritize memories for injection.
+        Prioritize memories for injection using token buckets.
 
-        Priority order:
-        1. Impact level (WIP > CRITICAL > HIGH > MEDIUM > LOW)
-        2. Recency (newer first within same impact)
-        3. Kind (EMOTIONAL first, as it shapes interaction style)
+        Each bucket (region + impact) gets a percentage of the total budget.
+        Within each bucket, memories are sorted by recency (newest first).
 
-        WIP memories are always injected first - they signal post-compact state
-        and trigger automatic deferred loading.
+        This ensures recent HIGH memories load even when there are many old CRITICAL.
+
+        Bucket order:
+        1. WIP (always first, no budget limit)
+        2. AGENT CRITICAL (newest first)
+        3. PROJECT CRITICAL (newest first)
+        4. AGENT HIGH (newest first)
+        5. PROJECT HIGH (newest first)
+        6. AGENT MEDIUM (newest first)
+        7. PROJECT MEDIUM (newest first)
+        8. LOW (any remaining budget)
         """
-        impact_order = {"WIP": -1, "CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+        bucket_config = _get_bucket_config()
+
+        # Separate memories into buckets
+        buckets: dict[str, list[Memory]] = {
+            "wip": [],
+            "agent_critical": [],
+            "agent_high": [],
+            "agent_medium": [],
+            "agent_low": [],
+            "project_critical": [],
+            "project_high": [],
+            "project_medium": [],
+            "project_low": [],
+        }
+
+        for mem in memories:
+            impact = mem.impact.value.lower()
+            is_project = mem.region == RegionType.PROJECT
+
+            if impact == "wip":
+                buckets["wip"].append(mem)
+            elif is_project:
+                buckets[f"project_{impact}"].append(mem)
+            else:
+                buckets[f"agent_{impact}"].append(mem)
+
+        # Sort each bucket by recency (newest first), then by kind
         kind_order = {
-            "EMOTIONAL": 0,  # Most important for interaction style
-            "INTROSPECT": 1,  # Self-observations (Phase 2)
-            "DREAM": 2,  # Dream insights linger
-            "SUBCONSCIOUS": 3,  # Hidden but influencing
+            "EMOTIONAL": 0,
+            "INTROSPECT": 1,
+            "DREAM": 2,
+            "SUBCONSCIOUS": 3,
             "ARCHITECTURAL": 4,
             "LEARNINGS": 5,
             "ACHIEVEMENTS": 6,
         }
 
-        def sort_key(m: Memory) -> tuple:
+        def recency_sort(m: Memory) -> tuple:
             return (
-                impact_order.get(m.impact.value, 99),
                 kind_order.get(m.kind.value, 99),
-                -m.created_at.timestamp(),  # Negative for descending (newer first)
+                -m.created_at.timestamp(),
             )
 
-        return sorted(memories, key=sort_key)
+        for bucket_name in buckets:
+            buckets[bucket_name].sort(key=recency_sort)
+
+        # Calculate token budgets for each bucket
+        total_budget = self.budget
+        bucket_budgets = {
+            "wip": total_budget,  # WIP always loads fully
+            "agent_critical": int(total_budget * bucket_config["agent_critical"]),
+            "agent_high": int(total_budget * bucket_config["agent_high"]),
+            "agent_medium": int(total_budget * bucket_config["agent_medium"]),
+            "project_critical": int(total_budget * bucket_config["project_critical"]),
+            "project_high": int(total_budget * bucket_config["project_high"]),
+            "project_medium": int(total_budget * bucket_config["project_medium"]),
+            "agent_low": 0,  # LOW gets remaining budget
+            "project_low": 0,
+        }
+
+        # Fill buckets in priority order, tracking total tokens used
+        result: list[Memory] = []
+        total_tokens_used = 0
+        overflow: list[Memory] = []  # Memories that didn't fit their bucket
+        bucket_counts: dict[str, int] = {
+            "agent_critical": 0,
+            "agent_high": 0,
+            "agent_medium": 0,
+            "agent_low": 0,
+            "project_critical": 0,
+            "project_high": 0,
+            "project_medium": 0,
+            "project_low": 0,
+            "overflow": 0,
+        }
+
+        bucket_order = [
+            "wip",
+            "agent_critical",
+            "project_critical",
+            "agent_high",
+            "project_high",
+            "agent_medium",
+            "project_medium",
+        ]
+
+        for bucket_name in bucket_order:
+            bucket_budget = bucket_budgets[bucket_name]
+            bucket_tokens = 0
+
+            for mem in buckets[bucket_name]:
+                mem_tokens = get_memory_tokens(mem)
+
+                # WIP bucket has no limit, others respect their budget
+                if bucket_name == "wip" or bucket_tokens + mem_tokens <= bucket_budget:
+                    result.append(mem)
+                    bucket_tokens += mem_tokens
+                    total_tokens_used += mem_tokens
+                    # Track count (WIP goes to agent_critical for stats)
+                    if bucket_name == "wip":
+                        bucket_counts["agent_critical"] += 1
+                    else:
+                        bucket_counts[bucket_name] += 1
+                else:
+                    # Didn't fit in bucket, add to overflow
+                    overflow.append(mem)
+
+        # Fill LOW buckets and overflow with remaining budget
+        remaining_budget = total_budget - total_tokens_used
+        low_and_overflow = buckets["agent_low"] + buckets["project_low"] + overflow
+
+        # Sort by recency
+        low_and_overflow.sort(key=recency_sort)
+
+        for mem in low_and_overflow:
+            mem_tokens = get_memory_tokens(mem)
+            if mem_tokens <= remaining_budget:
+                result.append(mem)
+                remaining_budget -= mem_tokens
+                # Track which bucket it came from
+                if mem in overflow:
+                    bucket_counts["overflow"] += 1
+                elif mem.region == RegionType.PROJECT:
+                    bucket_counts["project_low"] += 1
+                else:
+                    bucket_counts["agent_low"] += 1
+
+        return result, bucket_counts
 
     def load_deferred_memories(
         self,

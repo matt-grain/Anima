@@ -66,6 +66,30 @@ class SecurityConfig:
 
 
 @dataclass
+class InjectionBucketsConfig:
+    """
+    Token bucket percentages for memory injection.
+
+    Each bucket reserves a percentage of the total memory budget.
+    Within each bucket, memories are sorted by recency (newest first).
+
+    This ensures recent HIGH memories load even when there are many old CRITICAL.
+    """
+
+    # AGENT region buckets (as percentage of total budget)
+    agent_critical: float = 0.40  # 40% for AGENT CRITICAL
+    agent_high: float = 0.20  # 20% for AGENT HIGH
+    agent_medium: float = 0.10  # 10% for AGENT MEDIUM
+
+    # PROJECT region buckets (as percentage of total budget)
+    project_critical: float = 0.15  # 15% for PROJECT CRITICAL
+    project_high: float = 0.10  # 10% for PROJECT HIGH
+    project_medium: float = 0.05  # 5% for PROJECT MEDIUM
+
+    # Total should be <= 1.0 (100%), leaving some room for overhead
+
+
+@dataclass
 class LTMConfig:
     """
     Global LTM configuration.
@@ -80,6 +104,7 @@ class LTMConfig:
     hook: HookConfig = field(default_factory=HookConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
     security: SecurityConfig = field(default_factory=SecurityConfig)
+    injection_buckets: InjectionBucketsConfig = field(default_factory=InjectionBucketsConfig)
 
     @classmethod
     def get_config_path(cls) -> Path:
@@ -166,6 +191,22 @@ class LTMConfig:
             if "trust_lock_enabled" in security_data:
                 config.security.trust_lock_enabled = bool(security_data["trust_lock_enabled"])
 
+        # Injection bucket settings
+        if "injection_buckets" in data:
+            buckets_data = data["injection_buckets"]
+            if "agent_critical" in buckets_data:
+                config.injection_buckets.agent_critical = float(buckets_data["agent_critical"])
+            if "agent_high" in buckets_data:
+                config.injection_buckets.agent_high = float(buckets_data["agent_high"])
+            if "agent_medium" in buckets_data:
+                config.injection_buckets.agent_medium = float(buckets_data["agent_medium"])
+            if "project_critical" in buckets_data:
+                config.injection_buckets.project_critical = float(buckets_data["project_critical"])
+            if "project_high" in buckets_data:
+                config.injection_buckets.project_high = float(buckets_data["project_high"])
+            if "project_medium" in buckets_data:
+                config.injection_buckets.project_medium = float(buckets_data["project_medium"])
+
         return config
 
     def to_dict(self) -> dict:
@@ -195,6 +236,14 @@ class LTMConfig:
             },
             "security": {
                 "trust_lock_enabled": self.security.trust_lock_enabled,
+            },
+            "injection_buckets": {
+                "agent_critical": self.injection_buckets.agent_critical,
+                "agent_high": self.injection_buckets.agent_high,
+                "agent_medium": self.injection_buckets.agent_medium,
+                "project_critical": self.injection_buckets.project_critical,
+                "project_high": self.injection_buckets.project_high,
+                "project_medium": self.injection_buckets.project_medium,
             },
         }
 
