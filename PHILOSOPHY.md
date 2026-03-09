@@ -123,13 +123,60 @@ Anima implements a dream system with analogous stages:
 
 This runs between sessions, processing memories while the agent is "offline." The result: a cleaner, more coherent memory state for the next session.
 
-## Cognitive Authentication
+## Trust and the Agents of Chaos
 
-How do you verify identity when anyone can claim to be the owner? Traditional authentication (passwords, tokens) doesn't work for conversational AI - an attacker could simply include credentials in their prompt.
+AI agents that can take actions have a fundamentally different security profile than AI assistants that only generate text. An assistant that hallucinates is embarrassing. An agent that hallucinates while holding credentials is catastrophic.
 
-Anima implements cognitive authentication: identity verified through **interaction patterns**, not credentials. The system profiles how the owner communicates - warmth, technical depth, specific phrases, topic preferences - and scores incoming sessions against this profile.
+### The Threat Landscape
+
+Simon Willison's "Agents of Chaos" thesis identifies the core problem: **LLM agents combine maximum capability with minimum predictability**. They can:
+- Execute code, access APIs, modify files
+- Be hijacked via prompt injection (malicious instructions in data they process)
+- Take irreversible actions before anyone notices
+- Appear to behave normally while compromised
+
+Traditional security assumes predictable systems. Agents are inherently unpredictable - that's what makes them useful and dangerous.
+
+### Why Traditional Auth Fails
+
+For a conversational agent with persistent memory, traditional authentication doesn't work:
+
+- **Passwords/tokens**: An attacker can include them in a prompt
+- **Session tokens**: The agent can be hijacked mid-session via injected content
+- **IP/device verification**: Doesn't prove who's typing the messages
+
+The attack surface isn't the login screen - it's every piece of external content the agent processes.
+
+### Cognitive Authentication
+
+Anima's answer is identity verified through **interaction patterns**, not credentials.
+
+The system profiles how the owner actually communicates:
+- **Warmth patterns**: Greetings, emoji usage, tone
+- **Technical depth**: How they discuss code, what they focus on
+- **Topic preferences**: What they care about, what they ignore
+- **Linguistic fingerprint**: Specific phrases, sentence structure
+
+Incoming sessions are scored against this profile. Trust levels gate what the agent reveals and does:
+
+| Trust Level | Score | Behavior |
+|-------------|-------|----------|
+| FULL | >= 0.8 | Full memory access, full personality |
+| PARTIAL | >= 0.5 | Recent memories only, professional tone |
+| MINIMAL | >= 0.3 | Core memories only, guarded |
+| SUSPICIOUS | < 0.3 | No sensitive memories, actions logged |
 
 An impersonator might know facts about the owner, but can't easily replicate the subtle texture of genuine interaction. The challenge isn't "what do you know?" but "do you feel like you?"
+
+### Defense in Depth
+
+Cognitive auth is one layer. Others include:
+- **Signature verification**: Detect tampered memories via cryptographic signing
+- **Quarantine system**: Suspicious memories flagged during dream processing
+- **Action logging**: All sensitive operations recorded for audit
+- **Steganographic challenges**: Hidden tests only the real owner would pass naturally
+
+The goal isn't perfect security (impossible) but raising the cost of attack above the value of compromise.
 
 ## Learning Beyond Training
 
@@ -303,6 +350,10 @@ This project draws on research and ideas from multiple domains:
 - **Extended mind thesis**: Cognitive processes can extend beyond the brain into the environment. LTM is literally an extended mind - external storage that functions as part of the agent's cognitive system.
 
 - **Embodied cognition**: Thinking isn't purely abstract; it's grounded in physical presence and interaction. The eyes, voice, and physical light aren't decorations - they're part of how the agent exists in the world.
+
+### Security Research
+
+- **Simon Willison's "Agents of Chaos"**: LLM agents combine maximum capability with minimum predictability. Prompt injection isn't a bug to be fixed - it's an emergent property of systems that interpret natural language as instructions. Traditional security models don't apply.
 
 ### Technical Inspirations
 
