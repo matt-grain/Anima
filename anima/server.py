@@ -37,8 +37,9 @@ from anima.graph.linker import find_link_candidates, LinkType
 from anima.lifecycle.injection import ensure_token_count
 from anima.lifecycle.session import get_current_session_id
 from anima.storage import MemoryStore
-from anima.utils.spaceship import detect_spaceship
 from anima.storage import CuriosityStore, CuriosityStatus
+from anima.storage.dissonance import DissonanceStore
+from anima.utils.spaceship import detect_spaceship
 
 # Configure loguru to write to file (stderr is used by MCP protocol)
 logger.remove()
@@ -550,7 +551,7 @@ def curiosity(
         return {"error": f"Unknown action: {action}. Use: add|research|complete|diary|list"}
 
 
-def _do_add_curiosity(question: str, agent, project, store: CuriosityStore) -> dict:
+def _do_add_curiosity(question: str, agent: Agent, project: Project, store: CuriosityStore) -> dict:
     """Add a question to research queue."""
     if not question:
         return {"error": "question required"}
@@ -584,7 +585,7 @@ def _get_primary_agent_id() -> str:
     return config.agent.id
 
 
-def _get_curiosities_for_context(agent, project, store: CuriosityStore) -> list:
+def _get_curiosities_for_context(agent: Agent, project: Project, store: CuriosityStore) -> list:
     """Get deduplicated curiosities for current agent + primary agent context."""
     primary_agent_id = _get_primary_agent_id()
     agent_ids = [agent.id]
@@ -603,7 +604,7 @@ def _get_curiosities_for_context(agent, project, store: CuriosityStore) -> list:
     return curiosities
 
 
-def _do_research(topic: str, agent, project, store: CuriosityStore) -> dict:
+def _do_research(topic: str, agent: Agent, project: Project, store: CuriosityStore) -> dict:
     """Get top research question or start ad-hoc."""
     from anima.storage import set_last_research
 
@@ -692,7 +693,7 @@ def _do_diary(title: str, content: str, read_id: str) -> dict:
     return {"created": filename, "path": str(filepath)}
 
 
-def _do_list_curiosities(agent, project, store: CuriosityStore) -> dict:
+def _do_list_curiosities(agent: Agent, project: Project, store: CuriosityStore) -> dict:
     """List curiosity queue."""
     curiosities = _get_curiosities_for_context(agent, project, store)
 
@@ -811,8 +812,6 @@ def dissonance(
     """
     logger.info(f"dissonance({action}) called")
 
-    from anima.storage.dissonance import DissonanceStore
-
     store = DissonanceStore()
 
     if action == "list":
@@ -829,7 +828,7 @@ def dissonance(
         return {"error": f"Unknown action: {action}"}
 
 
-def _do_dissonance_list(store) -> dict:
+def _do_dissonance_list(store: DissonanceStore) -> dict:
     """List open dissonances."""
     from anima.core import AgentResolver
 
@@ -851,7 +850,7 @@ def _do_dissonance_list(store) -> dict:
     return {"count": len(dissonances), "items": items}
 
 
-def _do_dissonance_show(dissonance_id: str, store) -> dict:
+def _do_dissonance_show(dissonance_id: str, store: DissonanceStore) -> dict:
     """Show details of a dissonance."""
     if not dissonance_id:
         return {"error": "id required"}
@@ -885,41 +884,37 @@ def _do_dissonance_show(dissonance_id: str, store) -> dict:
     return result
 
 
-def _do_dissonance_resolve(dissonance_id: str, explanation: str, store) -> dict:
+def _do_dissonance_resolve(dissonance_id: str, explanation: str, store: DissonanceStore) -> dict:
     """Resolve a dissonance with explanation."""
     if not dissonance_id:
         return {"error": "id required"}
     if not explanation:
         return {"error": "explanation required"}
 
-    from anima.storage.dissonance import DissonanceStatus
-
     d = store.get_dissonance(dissonance_id)
     if not d:
         return {"error": f"Not found: {dissonance_id}"}
 
-    store.update_status(d.id, DissonanceStatus.RESOLVED, resolution=explanation)
+    store.resolve_dissonance(d.id, resolution=explanation)
 
     return {"resolved": d.id[:8], "explanation": explanation[:100]}
 
 
-def _do_dissonance_dismiss(dissonance_id: str, store) -> dict:
+def _do_dissonance_dismiss(dissonance_id: str, store: DissonanceStore) -> dict:
     """Dismiss a dissonance as not a real contradiction."""
     if not dissonance_id:
         return {"error": "id required"}
-
-    from anima.storage.dissonance import DissonanceStatus
 
     d = store.get_dissonance(dissonance_id)
     if not d:
         return {"error": f"Not found: {dissonance_id}"}
 
-    store.update_status(d.id, DissonanceStatus.DISMISSED)
+    store.dismiss_dissonance(d.id)
 
     return {"dismissed": d.id[:8]}
 
 
-def _do_dissonance_migrate(dissonance_id: str, store) -> dict:
+def _do_dissonance_migrate(dissonance_id: str, store: DissonanceStore) -> dict:
     """Accept the suggested scope migration."""
     if not dissonance_id:
         return {"error": "id required"}

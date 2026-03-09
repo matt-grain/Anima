@@ -8,8 +8,10 @@ Retrieves relevant memories and formats them for context injection.
 Respects the 10% context budget.
 """
 
+from __future__ import annotations
+
 from functools import lru_cache
-from typing import Optional, TypedDict, Union, Any, cast
+from typing import TypedDict, Any, cast
 
 import tiktoken
 
@@ -174,7 +176,7 @@ def ensure_token_count(memory: Memory) -> None:
         memory.token_count = calculate_token_count(memory)
 
 
-def get_memory_budget(context_size: Optional[int] = None) -> int:
+def get_memory_budget(context_size: int | None = None) -> int:
     """
     Calculate token budget for memories.
 
@@ -197,7 +199,7 @@ class MemoryInjector:
 
     def __init__(
         self,
-        store: Optional[MemoryStore] = None,
+        store: MemoryStore | None = None,
         context_size: int = DEFAULT_CONTEXT_SIZE,
     ):
         self.store = store or MemoryStore()
@@ -207,10 +209,10 @@ class MemoryInjector:
 
     def inject(
         self,
-        agent: Union[Agent, list[Agent]],
-        project: Optional[Project] = None,
+        agent: Agent | list[Agent],
+        project: Project | None = None,
         use_tiered_loading: bool = True,
-        project_dir: Optional[Any] = None,
+        project_dir: Any | None = None,
     ) -> str:
         """
         Get formatted memories for injection into context.
@@ -237,10 +239,10 @@ class MemoryInjector:
 
     def inject_with_deferred(
         self,
-        agent: Union[Agent, list[Agent]],
-        project: Optional[Project] = None,
+        agent: Agent | list[Agent],
+        project: Project | None = None,
         use_tiered_loading: bool = True,
-        project_dir: Optional[Any] = None,
+        project_dir: Any | None = None,
     ) -> InjectionResult:
         """
         Get formatted memories with tracking of deferred memories for lazy loading.
@@ -368,8 +370,8 @@ class MemoryInjector:
     def _load_tiered_memories(
         self,
         agents: list[Agent],
-        project: Optional[Project],
-        project_dir: Optional[Any] = None,
+        project: Project | None,
+        project_dir: Any | None = None,
     ) -> list[Memory]:
         """
         Load memories with AGENT/PROJECT distinction (Phase 3A).
@@ -522,7 +524,7 @@ class MemoryInjector:
 
         return memories
 
-    def _load_all_memories(self, agents: list[Agent], project: Optional[Project]) -> list[Memory]:
+    def _load_all_memories(self, agents: list[Agent], project: Project | None) -> list[Memory]:
         """Load all memories without tier filtering (fallback mode)."""
         memories: list[Memory] = []
 
@@ -768,8 +770,8 @@ class MemoryInjector:
     def load_deferred_memories(
         self,
         deferred_ids: list[str],
-        agent: Union[Agent, list[Agent]],
-        project: Optional[Project] = None,
+        agent: Agent | list[Agent],
+        project: Project | None = None,
     ) -> str:
         """
         Load deferred memories that didn't fit in the initial injection.
@@ -838,7 +840,7 @@ class MemoryInjector:
 
         return block.to_dsl() if block.memories else ""
 
-    def get_stats(self, agent: Union[Agent, list[Agent]], project: Optional[Project] = None) -> dict[str, Any]:
+    def get_stats(self, agent: Agent | list[Agent], project: Project | None = None) -> dict[str, Any]:
         """Get statistics about memories for this agent/project."""
         if isinstance(agent, Agent):
             agents = [agent]

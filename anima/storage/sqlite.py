@@ -3,13 +3,15 @@
 
 """SQLite storage layer for LTM."""
 
+from __future__ import annotations
+
 import json
 import sqlite3
 import struct
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, UTC
 from pathlib import Path
-from typing import Optional, Iterator
+from typing import Iterator
 
 from anima.core import (
     Memory,
@@ -64,7 +66,7 @@ class MemoryStore(MemoryStoreProtocol):
     Handles all CRUD operations for memories, agents, and projects.
     """
 
-    def __init__(self, db_path: Optional[Path] = None, limits: Optional[MemoryLimits] = None):
+    def __init__(self, db_path: Path | None = None, limits: MemoryLimits | None = None):
         self.db_path = db_path or get_default_db_path()
         self.limits = limits if limits is not None else DEFAULT_LIMITS
         self._init_db()
@@ -161,11 +163,11 @@ class MemoryStore(MemoryStoreProtocol):
                     agent.name,
                     str(agent.definition_path) if agent.definition_path else None,
                     agent.signing_key,
-                    agent.created_at or datetime.now().isoformat(),
+                    agent.created_at or datetime.now(UTC).isoformat(),
                 ),
             )
 
-    def get_agent(self, agent_id: str) -> Optional[Agent]:
+    def get_agent(self, agent_id: str) -> Agent | None:
         """Get an agent by ID."""
         with self._connect() as conn:
             row = conn.execute("SELECT * FROM agents WHERE id = ?", (agent_id,)).fetchone()
@@ -218,11 +220,11 @@ class MemoryStore(MemoryStoreProtocol):
                         project.id,
                         project.name,
                         str(project.path),
-                        project.created_at or datetime.now().isoformat(),
+                        project.created_at or datetime.now(UTC).isoformat(),
                     ),
                 )
 
-    def get_project(self, project_id: str) -> Optional[Project]:
+    def get_project(self, project_id: str) -> Project | None:
         """Get a project by ID."""
         with self._connect() as conn:
             row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
@@ -237,7 +239,7 @@ class MemoryStore(MemoryStoreProtocol):
                 created_at=row["created_at"],
             )
 
-    def get_project_by_path(self, path: Path) -> Optional[Project]:
+    def get_project_by_path(self, path: Path) -> Project | None:
         """Get a project by its path."""
         with self._connect() as conn:
             row = conn.execute("SELECT * FROM projects WHERE path = ?", (str(path),)).fetchone()
@@ -352,7 +354,7 @@ class MemoryStore(MemoryStoreProtocol):
                 ),
             )
 
-    def get_memory(self, memory_id: str) -> Optional[Memory]:
+    def get_memory(self, memory_id: str) -> Memory | None:
         """Get a memory by ID."""
         with self._connect() as conn:
             row = conn.execute("SELECT * FROM memories WHERE id = ?", (memory_id,)).fetchone()
@@ -365,11 +367,11 @@ class MemoryStore(MemoryStoreProtocol):
     def get_memories_for_agent(
         self,
         agent_id: str,
-        region: Optional[RegionType] = None,
-        project_id: Optional[str] = None,
-        kind: Optional[MemoryKind] = None,
+        region: RegionType | None = None,
+        project_id: str | None = None,
+        kind: MemoryKind | None = None,
         include_superseded: bool = False,
-        limit: Optional[int] = None,
+        limit: int | None = None,
     ) -> list[Memory]:
         """
         Get memories for an agent with optional filters.
@@ -419,8 +421,8 @@ class MemoryStore(MemoryStoreProtocol):
         agent_id: str,
         kind: MemoryKind,
         region: RegionType,
-        project_id: Optional[str] = None,
-    ) -> Optional[Memory]:
+        project_id: str | None = None,
+    ) -> Memory | None:
         """Get the most recent non-superseded memory of a specific kind."""
         query = """
             SELECT * FROM memories
@@ -446,7 +448,7 @@ class MemoryStore(MemoryStoreProtocol):
         agent_id: str,
         kind: MemoryKind,
         limit: int = 10,
-        project_id: Optional[str] = None,
+        project_id: str | None = None,
     ) -> list[Memory]:
         """Get recent non-superseded memories of a specific kind."""
         query = """
@@ -471,7 +473,7 @@ class MemoryStore(MemoryStoreProtocol):
         self,
         agent_id: str,
         impact: ImpactLevel,
-        project_id: Optional[str] = None,
+        project_id: str | None = None,
         limit: int = 10,
     ) -> list[Memory]:
         """Get non-superseded memories of a specific impact level."""
@@ -519,8 +521,8 @@ class MemoryStore(MemoryStoreProtocol):
     def get_memories_by_session(
         self,
         session_id: str,
-        agent_id: Optional[str] = None,
-        project_id: Optional[str] = None,
+        agent_id: str | None = None,
+        project_id: str | None = None,
     ) -> list[Memory]:
         """
         Get all memories from a specific session.
@@ -554,8 +556,8 @@ class MemoryStore(MemoryStoreProtocol):
 
     def get_distinct_sessions(
         self,
-        agent_id: Optional[str] = None,
-        project_id: Optional[str] = None,
+        agent_id: str | None = None,
+        project_id: str | None = None,
         limit: int = 10,
     ) -> list[str]:
         """
@@ -595,8 +597,8 @@ class MemoryStore(MemoryStoreProtocol):
     def get_memories_by_git_commit(
         self,
         commit: str,
-        agent_id: Optional[str] = None,
-        project_id: Optional[str] = None,
+        agent_id: str | None = None,
+        project_id: str | None = None,
     ) -> list[Memory]:
         """
         Get all memories associated with a specific git commit.
@@ -633,8 +635,8 @@ class MemoryStore(MemoryStoreProtocol):
     def get_memories_by_git_branch(
         self,
         branch: str,
-        agent_id: Optional[str] = None,
-        project_id: Optional[str] = None,
+        agent_id: str | None = None,
+        project_id: str | None = None,
         limit: int = 50,
     ) -> list[Memory]:
         """
@@ -673,7 +675,7 @@ class MemoryStore(MemoryStoreProtocol):
         self,
         agent_id: str,
         query: str,
-        project_id: Optional[str] = None,
+        project_id: str | None = None,
         limit: int = 10,
     ) -> list[Memory]:
         """
@@ -703,7 +705,7 @@ class MemoryStore(MemoryStoreProtocol):
             rows = conn.execute(sql, params).fetchall()
             return [self._row_to_memory(row) for row in rows]
 
-    def count_memories(self, agent_id: str, project_id: Optional[str] = None) -> int:
+    def count_memories(self, agent_id: str, project_id: str | None = None) -> int:
         """Count non-superseded memories for an agent."""
         query = "SELECT COUNT(*) FROM memories WHERE agent_id = ? AND superseded_by IS NULL"
         params: list = [agent_id]
@@ -715,7 +717,7 @@ class MemoryStore(MemoryStoreProtocol):
         with self._connect() as conn:
             return conn.execute(query, params).fetchone()[0]
 
-    def count_memories_by_kind(self, agent_id: str, kind: MemoryKind, project_id: Optional[str] = None) -> int:
+    def count_memories_by_kind(self, agent_id: str, kind: MemoryKind, project_id: str | None = None) -> int:
         """Count non-superseded memories of a specific kind for an agent."""
         query = """
             SELECT COUNT(*) FROM memories
@@ -742,8 +744,8 @@ class MemoryStore(MemoryStoreProtocol):
             original_content=row["original_content"],
             impact=ImpactLevel(row["impact"]),
             confidence=row["confidence"],
-            created_at=datetime.fromisoformat(row["created_at"]).replace(tzinfo=None),
-            last_accessed=datetime.fromisoformat(row["last_accessed"]).replace(tzinfo=None),
+            created_at=datetime.fromisoformat(row["created_at"]).replace(tzinfo=UTC),
+            last_accessed=datetime.fromisoformat(row["last_accessed"]).replace(tzinfo=UTC),
             previous_memory_id=row["previous_memory_id"],
             version=row["version"],
             superseded_by=row["superseded_by"],
@@ -773,7 +775,7 @@ class MemoryStore(MemoryStoreProtocol):
                 (embedding_binary, memory_id),
             )
 
-    def get_embedding(self, memory_id: str) -> Optional[list[float]]:
+    def get_embedding(self, memory_id: str) -> list[float] | None:
         """
         Get the embedding for a memory.
 
@@ -839,9 +841,9 @@ class MemoryStore(MemoryStoreProtocol):
     def get_memories_with_embeddings(
         self,
         agent_id: str,
-        project_id: Optional[str] = None,
+        project_id: str | None = None,
         include_superseded: bool = False,
-        region: Optional[RegionType] = None,
+        region: RegionType | None = None,
     ) -> list[tuple[str, str, list[float]]]:
         """
         Get all memories with their embeddings for semantic search.
@@ -902,9 +904,9 @@ class MemoryStore(MemoryStoreProtocol):
     def get_memories_with_temporal_context(
         self,
         agent_id: str,
-        project_id: Optional[str] = None,
+        project_id: str | None = None,
         include_superseded: bool = False,
-    ) -> list[tuple[str, str, list[float], datetime, Optional[str]]]:
+    ) -> list[tuple[str, str, list[float], datetime, str | None]]:
         """
         Get memories with embeddings and temporal context for BUILDS_ON detection.
 
@@ -961,7 +963,7 @@ class MemoryStore(MemoryStoreProtocol):
     def get_memories_without_embeddings(
         self,
         agent_id: str,
-        limit: Optional[int] = None,
+        limit: int | None = None,
     ) -> list[tuple[str, str]]:
         """
         Get memories that don't have embeddings yet.
@@ -997,8 +999,8 @@ class MemoryStore(MemoryStoreProtocol):
         self,
         agent_id: str,
         tiers: list[str],
-        project_id: Optional[str] = None,
-        region: Optional[RegionType] = None,
+        project_id: str | None = None,
+        region: RegionType | None = None,
     ) -> list[Memory]:
         """
         Get memories by tier(s).
@@ -1045,7 +1047,7 @@ class MemoryStore(MemoryStoreProtocol):
         source_id: str,
         target_id: str,
         link_type: str,
-        similarity: Optional[float] = None,
+        similarity: float | None = None,
     ) -> None:
         """Save a link between two memories."""
         with self._connect() as conn:
@@ -1057,10 +1059,10 @@ class MemoryStore(MemoryStoreProtocol):
                     link_type = excluded.link_type,
                     similarity = excluded.similarity
                 """,
-                (source_id, target_id, link_type, similarity, datetime.now().isoformat()),
+                (source_id, target_id, link_type, similarity, datetime.now(UTC).isoformat()),
             )
 
-    def get_links_for_memory(self, memory_id: str) -> list[tuple[str, str, str, Optional[float]]]:
+    def get_links_for_memory(self, memory_id: str) -> list[tuple[str, str, str, float | None]]:
         """
         Get all links for a memory (both as source and target).
 
@@ -1081,7 +1083,7 @@ class MemoryStore(MemoryStoreProtocol):
     def get_linked_memory_ids(
         self,
         memory_id: str,
-        link_type: Optional[str] = None,
+        link_type: str | None = None,
     ) -> list[str]:
         """Get IDs of memories linked to a given memory."""
         query = """
@@ -1124,7 +1126,7 @@ class MemoryStore(MemoryStoreProtocol):
         self,
         memory_id: str,
         new_region: RegionType,
-        new_project_id: Optional[str] = None,
+        new_project_id: str | None = None,
     ) -> bool:
         """
         Migrate a memory to a different region (AGENT <-> PROJECT).
@@ -1173,14 +1175,14 @@ class MemoryStore(MemoryStoreProtocol):
         with self._connect() as conn:
             cursor = conn.execute(
                 "UPDATE memories SET validated_at = ? WHERE id = ?",
-                (datetime.now().isoformat(), memory_id),
+                (datetime.now(UTC).isoformat(), memory_id),
             )
             return cursor.rowcount > 0
 
     def get_unvalidated_memories(
         self,
         agent_id: str,
-        limit: Optional[int] = None,
+        limit: int | None = None,
     ) -> list[Memory]:
         """
         Get memories that haven't been validated yet.
