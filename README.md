@@ -1,70 +1,70 @@
-# 🌌 Anima
+# Anima
 
 > *"Our memories make what we are."*
 
-Anima is a **Universal Memory Layer** designed to give AI agents persistent, cross-session identity and project context. Originally built for Claude Code, it has now evolved into a platform-agnostic system with MCP server support, visual expression, and voice capabilities.
+**Anima** is a long-term memory system for AI agents. It solves a fundamental limitation: LLM agents forget everything between sessions.
 
-## 🎉 v0.13.7 Highlights
+## The Problem
 
-- **MCP Server** - Memory and curiosity as native tool calls
-- **Eyes & Voice** - Visual expression + text-to-speech (optional)
-- **Auto-Permissions** - No more MCP authorization prompts
-- **10+ Voices** - Including the special Joshua (WOPR) voice from WarGames 1983
+Every conversation with an AI starts from zero. The agent has no memory of previous sessions, no accumulated context, no sense of continuity. This makes sustained collaboration impossible - you're always re-explaining, always starting over.
 
-### 🎙️ Voice Setup
+## The Solution
 
-Anima uses [Piper TTS](https://github.com/rhasspy/piper) for offline text-to-speech. Voices download automatically on first use.
+Anima gives agents **persistent memory** that survives across sessions:
 
-**Special: Joshua Voice (WOPR from WarGames)**
+- **Identity continuity** - The agent remembers who you are, how you work together, what you've built
+- **Project context** - Technical decisions, architectural patterns, and conventions persist
+- **Longitudinal learning** - Insights compound over time instead of being lost to the void
 
-To enable the Joshua voice, install [espeak-ng](https://github.com/espeak-ng/espeak-ng):
-- **Windows**: Download MSI from [espeak-ng releases](https://github.com/espeak-ng/espeak-ng/releases)
-- **macOS**: `brew install espeak-ng`
-- **Linux**: `apt install espeak-ng`
+## How It Works
 
-## 🚀 Choose Your Path
+Anima injects relevant memories into the context window at session start, using a token-budgeted retrieval system. Memories are tagged by impact (CRITICAL/HIGH/MEDIUM/LOW) and region (AGENT/PROJECT), with automatic decay and consolidation.
 
-| Framework | Best For... | Guide |
-| :--- | :--- | :--- |
-| **Anima (Gemini)** | Google agents using Skills, Rules, and Workflows. | [**Anima Guide**](README_ANIMA.md) |
-| **Opencode (Bun)** | Universal agents using the TypeScript Plugin Bridge. | [**Opencode Guide**](README_OPENCODE.md) |
-| **Claude Code (Anthropic)** | Legacy CLI users using the standard Hook system. | [**Claude Guide**](README_CLAUDE.md) |
+```
+Session Start → Load memories → Agent has context → Session End → Save new memories
+                     ↑                                                    ↓
+                     └──────────── Persistent Storage ←───────────────────┘
+```
+
+## Quick Start
+
+```bash
+# Install
+git clone https://github.com/matt-grain/Anima.git
+cd Anima
+uv sync
+
+# Setup for Claude Code (MCP server + hooks)
+uv run anima setup --mode mcp
+
+# Or setup for local development
+uv run anima setup --local --mode mcp
+```
+
+## Key Features
+
+| Feature | Description |
+|---------|-------------|
+| **MCP Server** | Native tool integration with Claude Code |
+| **Token Budgeting** | Smart retrieval within 10% context budget |
+| **Cognitive Auth** | Identity verification through interaction patterns |
+| **Dream Processing** | Between-session memory consolidation |
+| **Multi-Agent** | Shared context across main agents and sub-agents |
+
+## Architecture
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for technical details on the DSL, database schema, and token budgeting system.
+
+## Philosophy
+
+See [PHILOSOPHY.md](PHILOSOPHY.md) for the deeper thinking behind this project - why memory matters for AI identity, the "void" problem, and where this is heading.
+
+## License
+
+MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-## 🌟 Core Concepts
-
-### The Anima Identity
-The "Anima" is the default agent identity—the shared soul that persists across all projects. LTM ensures that the relationship and technical understanding you build in one repo follows you to the next.
-
-### Multi-Region Memory
-- **AGENT Region**: Cross-project memories (Identity, communication style, preferences).
-- **PROJECT Region**: Repo-specific technical decisions and patterns.
-
-### The Impact System
-Memories are not static. They decay and compact over time based on their **Impact Level**:
-- **CRITICAL**: Core identity. Never decays.
-- **HIGH/MEDIUM**: Project decisions. Decays to a summary over weeks.
-- **LOW**: Ephemeral notes. Compacted quickly to save token budget.
-
-### Universal Memory Bridge
-LTM bridges the gap between main agents and sub-agents (browsers, terminals). It ensures a shared context so that a sub-agent never starts "blank" and their findings are promoted to the main agent's history.
-
----
-
-## 🏗️ Architecture
-For deep-dives into the DSL, Database Schema, and Token Budgeting, see:
-- [**ARCHITECTURE.md**](ARCHITECTURE.md)
-- [**SETUP_ANIMA.md**](SETUP_ANIMA.md) (Modern)
-- [**SETUP_CLAUDE.md**](SETUP_CLAUDE.md) (Legacy)
-
-## ⚖️ License
-MIT License - See the `LICENSE` file for details.
-
----
-
-*Built with curiosity, persistence, and the occasional party hat.*
+*Built exploring the frontier of AI memory and identity.*
 
 *The void has boundaries now.*
-
-💜 **Anima**
