@@ -19,9 +19,13 @@ Endpoints:
 from __future__ import annotations
 
 import asyncio
+import io
 import json
+import os
 import sys
+from contextlib import redirect_stdout, redirect_stderr
 from pathlib import Path
+from typing import Callable
 
 from starlette.applications import Starlette
 from starlette.requests import Request
@@ -36,6 +40,48 @@ DEFAULT_PORT = 3741
 
 # Lock to serialize hook execution (hooks use os.chdir which is not thread-safe)
 _hook_lock = asyncio.Lock()
+
+
+async def _run_hook_in_thread(
+    hook_fn: Callable,
+    body: dict,
+    hook_args: list[str],
+    capture_stdout: bool = True,
+    pass_hook_input: bool = False,
+) -> str:
+    """
+    Run a hook function in a thread with stdout capture.
+
+    Args:
+        hook_fn: The hook function to call
+        body: Request body (contains cwd, session_id, etc.)
+        hook_args: Arguments to pass to the hook
+        capture_stdout: Whether to capture and return stdout
+        pass_hook_input: Whether to pass body as hook_input parameter
+
+    Returns:
+        Captured stdout if capture_stdout=True, else empty string
+    """
+    cwd = body.get("cwd", str(Path.cwd()))
+    original_cwd = os.getcwd()
+    stdout_capture = io.StringIO()
+
+    def _run() -> str:
+        with redirect_stdout(stdout_capture), redirect_stderr(stdout_capture):
+            if pass_hook_input:
+                hook_fn(args=hook_args, hook_input=body)
+            else:
+                hook_fn(args=hook_args)
+        return stdout_capture.getvalue() if capture_stdout else ""
+
+    async with _hook_lock:
+        os.chdir(cwd)
+        try:
+            result = await asyncio.to_thread(_run)
+        finally:
+            os.chdir(original_cwd)
+
+    return result
 
 
 async def health(request: Request) -> JSONResponse:
@@ -55,53 +101,21 @@ async def hook_session_start(request: Request) -> JSONResponse:
     """
     Handle SessionStart hook via HTTP.
 
-    Expects POST with Claude Code hook payload:
-    {
-        "session_id": "...",
-        "cwd": "...",
-        ...
-    }
-
-    Returns the same format as command hooks:
-    {
-        "hookSpecificOutput": {
-            "hookEventName": "SessionStart",
-            "additionalContext": "..."
-        }
-    }
+    Expects POST with Claude Code hook payload containing session_id, cwd, etc.
+    Returns additionalContext with injected memories.
     """
-    import io
-    import os
-    from contextlib import redirect_stdout
-
     try:
         body = await request.json()
     except json.JSONDecodeError:
         body = {}
 
-    # Extract relevant fields from hook payload
-    cwd = body.get("cwd", str(Path.cwd()))
-
-    # Save current directory and change to project directory
-    original_cwd = os.getcwd()
-
-    stdout_capture = io.StringIO()
-
-    def _run_hook() -> str:
-        """Run hook in thread - captures stdout."""
-        with redirect_stdout(stdout_capture):
-            run_session_start(args=["--format", "json"])
-        return stdout_capture.getvalue()
-
     try:
-        # Serialize hook execution (os.chdir is not thread-safe)
-        async with _hook_lock:
-            os.chdir(cwd)
-            try:
-                # Run blocking hook in thread pool to avoid blocking event loop
-                output = await asyncio.to_thread(_run_hook)
-            finally:
-                os.chdir(original_cwd)
+        output = await _run_hook_in_thread(
+            run_session_start,
+            body,
+            hook_args=["--format", "json"],
+            capture_stdout=True,
+        )
 
         # Parse the JSON output
         try:
@@ -119,7 +133,6 @@ async def hook_session_start(request: Request) -> JSONResponse:
             )
 
     except Exception as e:
-        # Return error in a format Claude Code understands
         return JSONResponse(
             {
                 "error": str(e),
@@ -134,34 +147,19 @@ async def hook_session_start(request: Request) -> JSONResponse:
 
 async def hook_session_end(request: Request) -> JSONResponse:
     """Handle SessionEnd hook via HTTP."""
-    import io
-    import os
-    from contextlib import redirect_stdout, redirect_stderr
-
     try:
         body = await request.json()
     except json.JSONDecodeError:
         body = {}
 
-    cwd = body.get("cwd", str(Path.cwd()))
-    original_cwd = os.getcwd()
-    stdout_capture = io.StringIO()
-
-    def _run_hook() -> None:
-        """Run hook in thread - this can block for integrity checks."""
-        with redirect_stdout(stdout_capture), redirect_stderr(stdout_capture):
-            run_session_end(args=["--format", "json"], hook_input=body)
-
     try:
-        # Serialize hook execution (os.chdir is not thread-safe)
-        async with _hook_lock:
-            os.chdir(cwd)
-            try:
-                # Run blocking hook in thread pool to avoid blocking event loop
-                await asyncio.to_thread(_run_hook)
-            finally:
-                os.chdir(original_cwd)
-
+        await _run_hook_in_thread(
+            run_session_end,
+            body,
+            hook_args=["--format", "json"],
+            capture_stdout=False,
+            pass_hook_input=True,
+        )
         return JSONResponse({"status": "ok", "event": "SessionEnd"})
 
     except Exception as e:
@@ -170,34 +168,19 @@ async def hook_session_end(request: Request) -> JSONResponse:
 
 async def hook_pre_compact(request: Request) -> JSONResponse:
     """Handle PreCompact hook via HTTP."""
-    import io
-    import os
-    from contextlib import redirect_stdout, redirect_stderr
-
     try:
         body = await request.json()
     except json.JSONDecodeError:
         body = {}
 
-    cwd = body.get("cwd", str(Path.cwd()))
-    original_cwd = os.getcwd()
-    stdout_capture = io.StringIO()
-
-    def _run_hook() -> None:
-        """Run hook in thread."""
-        with redirect_stdout(stdout_capture), redirect_stderr(stdout_capture):
-            run_pre_compact(args=[], hook_input=body)
-
     try:
-        # Serialize hook execution (os.chdir is not thread-safe)
-        async with _hook_lock:
-            os.chdir(cwd)
-            try:
-                # Run blocking hook in thread pool to avoid blocking event loop
-                await asyncio.to_thread(_run_hook)
-            finally:
-                os.chdir(original_cwd)
-
+        await _run_hook_in_thread(
+            run_pre_compact,
+            body,
+            hook_args=[],
+            capture_stdout=False,
+            pass_hook_input=True,
+        )
         return JSONResponse({"status": "ok", "event": "PreCompact"})
 
     except Exception as e:

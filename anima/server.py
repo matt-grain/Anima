@@ -16,6 +16,7 @@ Usage:
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
+from typing import Literal
 
 from loguru import logger
 from mcp.server.fastmcp import FastMCP
@@ -229,13 +230,22 @@ logger.info("FastMCP server instance created")
 
 @mcp.tool()
 def memory(
-    action: str,
+    action: Literal["remember", "recall", "forget", "list", "refresh"],
     text: str = "",
     query: str = "",
-    id: str = "",
+    memory_id: str = "",
     limit: int = 10,
 ) -> dict:
-    """LTM operations. action: remember|recall|forget|list|refresh"""
+    """
+    Long-term memory operations.
+
+    Actions:
+    - remember: Save a memory (requires: text)
+    - recall: Search memories (requires: query or text; optional: limit)
+    - forget: Delete a memory (requires: memory_id)
+    - list: List all memories (optional: limit)
+    - refresh: Re-inject memories into current context
+    """
     logger.info(f"memory({action}) called")
 
     resolver = AgentResolver()
@@ -250,13 +260,13 @@ def memory(
     elif action == "recall":
         return _do_recall(query or text, limit, agent, project, store)
     elif action == "forget":
-        return _do_forget(id, agent, store)
+        return _do_forget(memory_id, agent, store)
     elif action == "list":
         return _do_list(limit, agent, project, store)
     elif action == "refresh":
         return _do_refresh(agent, project, store)
     else:
-        return {"error": f"Unknown action: {action}. Use: remember|recall|forget|list|refresh"}
+        return {"error": f"Unknown action: {action}"}
 
 
 def _do_remember(text: str, agent, project, store: MemoryStore) -> dict:
@@ -495,14 +505,23 @@ def _do_refresh(agent, project, store: MemoryStore) -> dict:
 
 @mcp.tool()
 def curiosity(
-    action: str,
+    action: Literal["add", "research", "complete", "diary", "list"],
     question: str = "",
     topic: str = "",
-    id: str = "",
+    curiosity_id: str = "",
     title: str = "",
     content: str = "",
 ) -> dict:
-    """Curiosity operations. action: add|research|complete|diary|list"""
+    """
+    Curiosity queue for autonomous learning.
+
+    Actions:
+    - add: Add a question to the research queue (requires: question)
+    - research: Get the top question to explore (optional: topic filter)
+    - complete: Mark a question as researched (requires: curiosity_id)
+    - diary: Create a research diary entry (requires: title, content)
+    - list: List pending questions in the queue
+    """
     logger.info(f"curiosity({action}) called")
 
     resolver = AgentResolver()
@@ -520,9 +539,9 @@ def curiosity(
     elif action == "research":
         return _do_research(topic, agent, project, curiosity_store)
     elif action == "complete":
-        return _do_complete_research(id, curiosity_store)
+        return _do_complete_research(curiosity_id, curiosity_store)
     elif action == "diary":
-        return _do_diary(title, content, id)
+        return _do_diary(title, content, curiosity_id)
     elif action == "list":
         return _do_list_curiosities(agent, project, curiosity_store)
     else:
@@ -563,6 +582,25 @@ def _get_primary_agent_id() -> str:
     return config.agent.id
 
 
+def _get_curiosities_for_context(agent, project, store: CuriosityStore) -> list:
+    """Get deduplicated curiosities for current agent + primary agent context."""
+    primary_agent_id = _get_primary_agent_id()
+    agent_ids = [agent.id]
+    if agent.id != primary_agent_id:
+        agent_ids.append(primary_agent_id)
+
+    curiosities = []
+    seen_ids: set[str] = set()
+    for aid in agent_ids:
+        for c in store.get_curiosities(agent_id=aid, project_id=project.id, status=CuriosityStatus.OPEN):
+            if c.id not in seen_ids:
+                curiosities.append(c)
+                seen_ids.add(c.id)
+
+    curiosities.sort(key=lambda c: c.priority_score, reverse=True)
+    return curiosities
+
+
 def _do_research(topic: str, agent, project, store: CuriosityStore) -> dict:
     """Get top research question or start ad-hoc."""
     from anima.storage import set_last_research
@@ -573,21 +611,7 @@ def _do_research(topic: str, agent, project, store: CuriosityStore) -> dict:
             _set_eyes_emotion("focused")
         return {"mode": "ad-hoc", "topic": topic}
 
-    # Get curiosities for current context
-    primary_agent_id = _get_primary_agent_id()
-    agent_ids = [agent.id]
-    if agent.id != primary_agent_id:
-        agent_ids.append(primary_agent_id)
-
-    curiosities = []
-    seen_ids = set()
-    for aid in agent_ids:
-        for c in store.get_curiosities(agent_id=aid, project_id=project.id, status=CuriosityStatus.OPEN):
-            if c.id not in seen_ids:
-                curiosities.append(c)
-                seen_ids.add(c.id)
-
-    curiosities.sort(key=lambda c: c.priority_score, reverse=True)
+    curiosities = _get_curiosities_for_context(agent, project, store)
 
     if not curiosities:
         return {"queue": 0, "message": "No open questions"}
@@ -668,20 +692,7 @@ def _do_diary(title: str, content: str, read_id: str) -> dict:
 
 def _do_list_curiosities(agent, project, store: CuriosityStore) -> dict:
     """List curiosity queue."""
-    primary_agent_id = _get_primary_agent_id()
-    agent_ids = [agent.id]
-    if agent.id != primary_agent_id:
-        agent_ids.append(primary_agent_id)
-
-    curiosities = []
-    seen_ids = set()
-    for aid in agent_ids:
-        for c in store.get_curiosities(agent_id=aid, project_id=project.id, status=CuriosityStatus.OPEN):
-            if c.id not in seen_ids:
-                curiosities.append(c)
-                seen_ids.add(c.id)
-
-    curiosities.sort(key=lambda c: c.priority_score, reverse=True)
+    curiosities = _get_curiosities_for_context(agent, project, store)
 
     items = []
     for c in curiosities[:15]:
@@ -697,13 +708,12 @@ def _do_list_curiosities(agent, project, store: CuriosityStore) -> dict:
 
 @mcp.tool()
 def dream(
-    action: str,
+    action: Literal["run", "status", "wake"],
     stage: str = "all",
     lookback_days: int = 7,
 ) -> dict:
     """
     Dream processing for memory consolidation.
-    action: run|status|wake
 
     Actions:
     - run: Run dream stages (n2, n3, rem, or all)
@@ -719,7 +729,7 @@ def dream(
     elif action == "wake":
         return _do_dream_wake()
     else:
-        return {"error": f"Unknown action: {action}. Use: run|status|wake"}
+        return {"error": f"Unknown action: {action}"}
 
 
 def _do_dream_run(stage: str, lookback_days: int) -> dict:
@@ -783,20 +793,19 @@ def _do_dream_wake() -> dict:
 
 @mcp.tool()
 def dissonance(
-    action: str,
-    id: str = "",
+    action: Literal["list", "show", "resolve", "dismiss", "migrate"],
+    dissonance_id: str = "",
     explanation: str = "",
 ) -> dict:
     """
     Cognitive dissonance management.
-    action: list|show|resolve|dismiss|migrate
 
     Actions:
     - list: Show all open dissonances
-    - show: Show details of a specific dissonance
-    - resolve: Mark as resolved with explanation
-    - dismiss: Dismiss as not a real contradiction
-    - migrate: Accept the suggested scope migration
+    - show: Show details of a specific dissonance (requires: dissonance_id)
+    - resolve: Mark as resolved with explanation (requires: dissonance_id, explanation)
+    - dismiss: Dismiss as not a real contradiction (requires: dissonance_id)
+    - migrate: Accept the suggested scope migration (requires: dissonance_id)
     """
     logger.info(f"dissonance({action}) called")
 
@@ -807,15 +816,15 @@ def dissonance(
     if action == "list":
         return _do_dissonance_list(store)
     elif action == "show":
-        return _do_dissonance_show(id, store)
+        return _do_dissonance_show(dissonance_id, store)
     elif action == "resolve":
-        return _do_dissonance_resolve(id, explanation, store)
+        return _do_dissonance_resolve(dissonance_id, explanation, store)
     elif action == "dismiss":
-        return _do_dissonance_dismiss(id, store)
+        return _do_dissonance_dismiss(dissonance_id, store)
     elif action == "migrate":
-        return _do_dissonance_migrate(id, store)
+        return _do_dissonance_migrate(dissonance_id, store)
     else:
-        return {"error": f"Unknown action: {action}. Use: list|show|resolve|dismiss|migrate"}
+        return {"error": f"Unknown action: {action}"}
 
 
 def _do_dissonance_list(store) -> dict:
@@ -1009,21 +1018,21 @@ def _get_ibuddy():
 
 @mcp.tool()
 def doctor(
-    action: str,
+    action: Literal["trust", "trust-eval", "trust-set", "trust-reset", "stats", "graph"],
     message: str = "",
     value: float = 0.0,
     memory_id: str = "",
 ) -> dict:
     """
-    System diagnostics. action: trust|trust-eval|trust-set|trust-reset|stats|graph
+    System diagnostics and trust management.
 
     Actions:
     - trust: Show current trust level and score
-    - trust-eval: Evaluate a user message and update trust score
-    - trust-set: Set trust to specific value (0.0-1.0)
+    - trust-eval: Evaluate a user message and update trust score (requires: message)
+    - trust-set: Set trust to specific value (requires: value, range 0.0-1.0)
     - trust-reset: Reset trust to default (0.5)
     - stats: Show memory statistics
-    - graph: Show memory graph info (optional memory_id for specific memory)
+    - graph: Show memory graph info (optional: memory_id for specific memory)
     """
     logger.info(f"doctor({action}) called")
 
@@ -1203,7 +1212,7 @@ def _do_doctor_graph(memory_id: str) -> dict:
 
 @mcp.tool()
 def body(
-    action: str,
+    action: Literal["emotion", "look", "blink", "speak", "voice-set", "voice-list", "light", "light-off"],
     emotion: str = "",
     text: str = "",
     voice: str = "",
@@ -1215,17 +1224,17 @@ def body(
     b: int = 0,
 ) -> dict:
     """
-    Embodiment control. action: emotion|look|blink|speak|voice-set|voice-list|light|light-off
+    Embodiment control for eyes, voice, and light.
 
     Actions:
-    - emotion: Set eye emotion (requires emotion param)
-    - look: Set look direction (requires x, y params, range -1 to 1)
-    - blink: Trigger blink
-    - speak: Speak text (requires text param, optional voice param)
-    - voice-set: Set default voice (requires voice param)
+    - emotion: Set eye emotion (requires: emotion)
+    - look: Set look direction (requires: x, y in range -1 to 1)
+    - blink: Trigger blink animation
+    - speak: Speak text aloud (requires: text; optional: voice)
+    - voice-set: Set default voice (requires: voice)
     - voice-list: List available voices
-    - light: Set light color (requires color name OR r,g,b params)
-    - light-off: Turn off light
+    - light: Set i-Buddy light color (requires: color name OR r,g,b values)
+    - light-off: Turn off i-Buddy light
     """
     logger.info(f"body({action}) called")
 
@@ -1237,7 +1246,7 @@ def body(
     elif action in ("light", "light-off"):
         return _do_body_light(action, color, r, g, b)
     else:
-        return {"error": f"Unknown action: {action}. Use: emotion|look|blink|speak|voice-set|voice-list|light|light-off"}
+        return {"error": f"Unknown action: {action}"}
 
 
 def _do_body_eyes(action: str, emotion: str, x: float, y: float) -> dict:
