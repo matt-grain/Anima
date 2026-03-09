@@ -6,6 +6,78 @@
 
 LTM (Long-Term Memory) provides persistent memory across Anima sessions. When a session starts, relevant memories are injected into context via workspace rules or hooks. Memories decay over time based on impact level - just like human memory, where vivid important moments persist while mundane details fade.
 
+## System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              Claude Code                                     │
+│                         (AI Coding Assistant)                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+                    │                                    │
+                    │ Lifecycle Events                   │ Tool Calls
+                    │ (session_start,                    │ (remember, recall,
+                    │  session_end,                      │  doctor, body,
+                    │  pre_compact)                      │  dream, dissonance)
+                    ▼                                    ▼
+┌─────────────────────────────┐         ┌─────────────────────────────────────┐
+│      HTTP Hooks Server      │         │           MCP Server                 │
+│   (localhost:7432/hooks)    │         │    (Model Context Protocol)          │
+│                             │         │                                      │
+│  POST /session_start        │         │  Tools:                              │
+│    → Load memories          │         │    remember(content, kind, impact)   │
+│    → Return DSL block       │         │    recall(query, limit)              │
+│                             │         │    forget(memory_id)                 │
+│  POST /session_end          │         │    memories(kind, impact)            │
+│    → Run end-session        │         │    doctor(action) - diagnostics      │
+│    → Backup database        │         │    body(action) - eyes/voice/light   │
+│                             │         │    dream(action) - consolidation     │
+│  POST /pre_compact          │         │    dissonance(action) - conflicts    │
+│    → Extract WIP context    │         │                                      │
+│    → Save to memory         │         │                                      │
+└─────────────────────────────┘         └─────────────────────────────────────┘
+                    │                                    │
+                    └────────────────┬───────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                             Anima Core                                       │
+│                                                                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
+│  │  Injection  │  │   Storage   │  │    Dream    │  │  Cognitive Auth     │ │
+│  │   Engine    │  │   Layer     │  │  Processing │  │  (Trust Scoring)    │ │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────────────┘ │
+│                                                                              │
+│  • Token-budgeted retrieval (10% context)                                   │
+│  • Tiered loading (CRITICAL → HIGH → MEDIUM → LOW)                          │
+│  • Semantic search with embeddings                                          │
+│  • Signature verification for tamper detection                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           SQLite Database                                    │
+│                         (~/.anima/memories.db)                               │
+│                                                                              │
+│  Tables: agents │ projects │ memories │ curiosity │ sessions                │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Component Roles
+
+| Component | Purpose |
+|-----------|---------|
+| **HTTP Hooks Server** | Handles Claude Code lifecycle events. Runs as background process. |
+| **MCP Server** | Exposes memory operations as native tools via Model Context Protocol. |
+| **Anima Core** | Platform-agnostic memory engine. Handles injection, storage, processing. |
+| **SQLite Database** | Persistent storage for memories, agents, projects, and metadata. |
+
+### Data Flow
+
+1. **Session Start**: Hook fires → HTTP server loads memories → Returns DSL for context injection
+2. **During Session**: Agent calls MCP tools → remember/recall/etc operations
+3. **Pre-Compact**: Before context compression → Extract and save WIP state
+4. **Session End**: Hook fires → Run maintenance, backup database, update stats
+
 ## Core Philosophy
 
 1. **Human-like decay**: LOW impact memories fade in days, CRITICAL memories persist forever
@@ -260,13 +332,15 @@ Three mechanisms control memory count:
 
 | File | Purpose |
 |------|---------|
-| [ltm/storage/schema.sql](../../ltm/storage/schema.sql) | Database schema |
-| [ltm/core/memory.py](../../ltm/core/memory.py) | Memory dataclass & DSL formatting |
-| [ltm/core/types.py](../../ltm/core/types.py) | Enums (RegionType, MemoryKind, ImpactLevel) |
-| [ltm/core/signing.py](../../ltm/core/signing.py) | HMAC signing & verification |
-| [ltm/lifecycle/injection.py](../../ltm/lifecycle/injection.py) | Budget-aware memory injection |
-| [ltm/hooks/session_start.py](../../ltm/hooks/session_start.py) | Integration hook handler |
-| [ltm/commands/](../../ltm/commands/) | Command implementations |
+| `anima/storage/schema.sql` | Database schema |
+| `anima/core/memory.py` | Memory dataclass & DSL formatting |
+| `anima/core/types.py` | Enums (RegionType, MemoryKind, ImpactLevel) |
+| `anima/core/signing.py` | HMAC signing & verification |
+| `anima/lifecycle/injection.py` | Budget-aware memory injection |
+| `anima/hooks/session_start.py` | Hook handler for session lifecycle |
+| `anima/server.py` | MCP server with FastMCP |
+| `anima/http_server.py` | HTTP hooks server |
+| `anima/tools/` | CLI command implementations |
 
 ---
 
@@ -289,17 +363,20 @@ Three mechanisms control memory count:
 
 ## Platform Integrations
 
-### Claude Code
-Uses the legacy `hooks` system defined in `SETUP_CLAUDE.md`. Communicates via JSON formatted hook outputs.
+See [PLATFORMS.md](PLATFORMS.md) for detailed setup instructions.
 
-### Antigravity
-Uses the modern `Skills` and `Workflows` system. Managed via `.agent/rules/anima.md`.
+### Claude Code (Primary)
+- **MCP Server**: Native tool integration for memory operations
+- **HTTP Hooks**: Session lifecycle events (start, end, pre_compact)
+- **Skills**: Slash commands installed to `~/.claude/skills/`
+
+### Antigravity/Gemini
+- **Rules & Skills**: Memory loading via `.agent/rules/anima.md`
+- **Expert Skill**: LTM interaction guide in `.agent/skills/anima-expert/`
 
 ### Opencode
-Uses a TypeScript **Universal Bridge** (`anima/platforms/opencode/plugin.ts`). 
-- **System Transform**: Injects DSL into the system prompt turn-by-turn.
-- **Compaction Hook**: Injects DSL into `experimental.session.compacting` to prevent amnesia.
-- **Maintenance**: Triggers `end-session` on `session.end`.
+- **TypeScript Plugin**: Universal bridge (`anima/platforms/opencode/plugin.ts`)
+- **System Transform**: DSL injection into system prompt
 
 ---
 
@@ -331,7 +408,7 @@ Mark certain memories as non-compactable in Anima's context system.
 
 ---
 
-*Last updated: 2026-03-03*
+*Last updated: 2026-03-09*
 
 ---
 
