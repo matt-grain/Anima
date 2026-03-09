@@ -169,9 +169,7 @@ def extract_cognitive_profile(
     profile = CognitiveProfile()
 
     # Filter to high-value memories for reliability
-    high_value = [
-        m for m in memories if m.impact in (ImpactLevel.CRITICAL, ImpactLevel.HIGH)
-    ]
+    high_value = [m for m in memories if m.impact in (ImpactLevel.CRITICAL, ImpactLevel.HIGH)]
 
     # Extract components
     profile.greeting_patterns = _extract_greeting_patterns(owner_messages or [])
@@ -244,9 +242,7 @@ def _extract_signature_phrases(memories: list["Memory"]) -> list[str]:
         for i in range(len(words) - 2):
             trigram = f"{words[i]} {words[i + 1]} {words[i + 2]}"
             # At least 2 non-stopwords
-            non_stop = sum(
-                1 for w in [words[i], words[i + 1], words[i + 2]] if w not in STOPWORDS
-            )
+            non_stop = sum(1 for w in [words[i], words[i + 1], words[i + 2]] if w not in STOPWORDS)
             if non_stop >= 2:
                 phrase_counter[trigram] += 1
 
@@ -254,11 +250,7 @@ def _extract_signature_phrases(memories: list["Memory"]) -> list[str]:
     min_count = 2
     max_count = len(memories) // 3  # Not in >33% of memories (too generic)
 
-    signature = [
-        phrase
-        for phrase, count in phrase_counter.most_common(50)
-        if min_count <= count <= max_count
-    ]
+    signature = [phrase for phrase, count in phrase_counter.most_common(50) if min_count <= count <= max_count]
 
     return signature[:10]  # Top 10 signature phrases
 
@@ -415,9 +407,7 @@ def _extract_preferences(memories: list["Memory"]) -> dict[str, str]:
     return preferences
 
 
-def refresh_profile_from_ltm(
-    agent_id: str, project_id: str | None = None
-) -> CognitiveProfile:
+def refresh_profile_from_ltm(agent_id: str, project_id: str | None = None) -> CognitiveProfile:
     """
     Build a fresh cognitive profile from LTM memories.
 

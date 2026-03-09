@@ -24,12 +24,14 @@ from anima.storage import FTS5NotSupportedError, MemoryStore, SubconsciousStore
 from anima.logging import log_hook_start, log_hook_end, get_logger
 
 
-def _get_transcript_path() -> Path | None:
+def _get_transcript_path_from_stdin() -> Path | None:
     """
     Resolve transcript path from Claude Code hook input (stdin).
 
     Claude Code sends hook input as JSON via stdin, containing
     transcript_path when invoking session-end hooks.
+
+    Note: Only used in command-line mode. HTTP mode passes hook_input directly.
     """
     try:
         # Read from stdin (Claude Code sends hook input here)
@@ -42,6 +44,16 @@ def _get_transcript_path() -> Path | None:
     if not isinstance(data, dict):
         return None
     tp = data.get("transcript_path")
+    if not isinstance(tp, str) or not tp:
+        return None
+    return Path(tp)
+
+
+def _extract_transcript_path(hook_input: dict[str, object] | None) -> Path | None:
+    """Extract transcript_path from hook input dict."""
+    if hook_input is None:
+        return None
+    tp = hook_input.get("transcript_path")
     if not isinstance(tp, str) or not tp:
         return None
     return Path(tp)
@@ -75,7 +87,10 @@ def _index_current_session(transcript_path: Path | None) -> int | None:
     return store.index_session(meta, dialogue)
 
 
-def run(args: Optional[list[str]] = None) -> int:
+def run(
+    args: Optional[list[str]] = None,
+    hook_input: Optional[dict[str, object]] = None,
+) -> int:
     """
     Run session end maintenance.
 
@@ -86,6 +101,7 @@ def run(args: Optional[list[str]] = None) -> int:
         args: Optional arguments:
             --spaceship-journal "text" - Save an introspective memory
             --platform NAME - Which platform created this (claude, antigravity, opencode)
+        hook_input: Hook payload (from HTTP body or stdin). If None, reads from stdin.
 
     Returns:
         Exit code (0 for success)
@@ -200,7 +216,11 @@ def run(args: Optional[list[str]] = None) -> int:
         print("0 memories compacted at end of session")
 
     # Index current session dialogue to subconscious.db
-    transcript_path = _get_transcript_path()
+    # Get transcript path from hook_input (HTTP mode) or stdin (command-line mode)
+    if hook_input is not None:
+        transcript_path = _extract_transcript_path(hook_input)
+    else:
+        transcript_path = _get_transcript_path_from_stdin()
     try:
         indexed = _index_current_session(transcript_path)
         if indexed is not None:

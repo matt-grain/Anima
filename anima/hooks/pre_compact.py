@@ -76,26 +76,40 @@ def _extract_recent_context(transcript_path: str) -> Optional[str]:
         return None
 
 
-def run(args: Optional[list[str]] = None) -> int:
+def run(
+    args: Optional[list[str]] = None,
+    hook_input: Optional[dict[str, object]] = None,
+) -> int:
     """
     Run the pre-compact hook.
 
-    Reads hook input from stdin, extracts recent work context from
-    the transcript, and saves a temporary memory that survives compaction.
+    Reads hook input from stdin (or accepts it directly for HTTP mode),
+    extracts recent work context from the transcript, and saves a
+    temporary memory that survives compaction.
+
+    Args:
+        args: Command-line arguments (unused currently)
+        hook_input: Hook payload (from HTTP body or stdin). If None, reads from stdin.
 
     Returns:
         Exit code (0 for success)
     """
     log = get_logger("hooks.pre_compact")
 
-    # Read hook input from stdin
-    try:
-        hook_input = json.load(sys.stdin)
-    except json.JSONDecodeError:
-        hook_input = {}
+    # Read hook input from stdin if not provided (command-line mode)
+    resolved_input: dict[str, object]
+    if hook_input is None:
+        try:
+            resolved_input = json.load(sys.stdin)
+        except json.JSONDecodeError:
+            resolved_input = {}
+    else:
+        resolved_input = hook_input
 
-    trigger = hook_input.get("trigger", "unknown")
-    transcript_path = hook_input.get("transcript_path", "")
+    trigger_val = resolved_input.get("trigger", "unknown")
+    trigger = trigger_val if isinstance(trigger_val, str) else "unknown"
+    transcript_val = resolved_input.get("transcript_path", "")
+    transcript_path = transcript_val if isinstance(transcript_val, str) else ""
     log_hook_start("PreCompact", trigger=trigger, transcript_path=transcript_path)
 
     # Resolve agent and project from current directory

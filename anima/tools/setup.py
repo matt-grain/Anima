@@ -176,10 +176,55 @@ def prompt_platform_choice(found_configs: list[str]) -> str | None:
         return None
 
 
+def setup_global_skills() -> tuple[int, int]:
+    """Install skills to global ~/.claude/skills/ directory.
+
+    Returns:
+        Tuple of (copied_count, skipped_count)
+    """
+    import shutil
+    from anima.tools.platforms.base import get_package_skills_dir
+    from anima.utils.terminal import safe_print, get_icon
+
+    try:
+        src_dir = get_package_skills_dir()
+    except FileNotFoundError as e:
+        safe_print(f"  {get_icon('', '[!]')}  {e}")
+        return (0, 0)
+
+    dest_dir = Path.home() / ".claude" / "skills"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
+    copied = 0
+    skipped = 0
+
+    for skill_dir in src_dir.iterdir():
+        if not skill_dir.is_dir():
+            continue
+
+        skill_md = skill_dir / "SKILL.md"
+        if not skill_md.exists():
+            continue
+
+        dest_skill_dir = dest_dir / skill_dir.name
+        is_update = dest_skill_dir.exists()
+
+        # Copy entire skill directory (replace if exists)
+        if is_update:
+            shutil.rmtree(dest_skill_dir)
+        shutil.copytree(skill_dir, dest_skill_dir)
+        status = "updated" if is_update else "installed"
+        safe_print(f"  {get_icon('', '[OK]')} {skill_dir.name}/ ({status})")
+        copied += 1
+
+    return (copied, skipped)
+
+
 def setup_global_hooks() -> bool:
     """Set up global HTTP hooks for Claude Code.
 
     Creates shim scripts in ~/.claude/hooks/ that forward to the HTTP server.
+    Installs skills to ~/.claude/skills/ for global availability.
     No per-project install needed - just run `anima serve` once.
 
     Returns:
@@ -263,6 +308,12 @@ curl -s -X POST http://127.0.0.1:3741/hooks/pre-compact \\
     settings_file.write_text(json.dumps(settings, indent=2) + "\n")
     safe_print(f"  {get_icon('', '[+]')} Updated {settings_file}")
 
+    # Install skills globally
+    print()
+    print("Installing global skills...")
+    copied, _ = setup_global_skills()
+    print(f"  Skills: {copied} installed")
+
     print()
     safe_print(f"{get_icon('', '[!]')} Global setup complete!")
     safe_print("    Start the HTTP server: anima serve")
@@ -279,20 +330,21 @@ def run(args: list[str]) -> int:
         ltm setup [options] [project-dir]
 
     Options:
-        --global            Set up global HTTP hooks (no per-project install needed)
+        --local             Set up for local Anima development (MCP with --directory)
+        --hooks             Configure hooks only (HTTP mode by default, local if --local)
         --platform <p>      Target platform: claude, antigravity, opencode, copilot
         --mode <m>          Interaction mode: mcp, skill, or both (prompts if not specified)
         --eyes              Enable eyes (visual expression window)
         --tts               Enable TTS (text-to-speech with Piper)
         --light             Enable i-Buddy USB light control
         --commands          Install slash commands only
-        --hooks             Configure hooks only
         --no-patch          Skip patching existing agents as subagents
         --no-startup-hook   Disable SessionStart 'startup' hook (Windows Terminal workaround)
         --force             Overwrite existing files
         --help              Show this help
 
-    If no options specified, installs commands, hooks, and patches subagents.
+    By default, sets up HTTP hooks for use with `anima serve`.
+    Use --local for Anima development repos where MCP server needs --directory.
     """
     # Parse arguments
     force = "--force" in args
@@ -304,11 +356,13 @@ def run(args: list[str]) -> int:
     eyes_enabled = "--eyes" in args
     tts_enabled = "--tts" in args
     light_enabled = "--light" in args
-    global_setup = "--global" in args
+    local_mode = "--local" in args
 
-    # Handle --global setup (HTTP hooks, no per-project install)
-    if global_setup:
+    # Default behavior (no --local): Set up global HTTP hooks
+    # This enables centralized Anima server without per-project installs
+    if not local_mode and not commands_only and not hooks_only and "--platform" not in args:
         print("Setting up global HTTP hooks for Claude Code...")
+        print("(Use --local for Anima development with MCP server)")
         print()
         if setup_global_hooks():
             return 0
@@ -352,7 +406,7 @@ def run(args: list[str]) -> int:
         "--eyes",
         "--tts",
         "--light",
-        "--global",
+        "--local",
     }
     project_args = []
     skip_next = False
@@ -376,7 +430,15 @@ LTM Setup Tool
 Usage:
     uv run anima setup [options] [project-dir]
 
+Default Behavior:
+    Without --local, sets up global HTTP hooks for use with `anima serve`.
+    This enables centralized Anima without per-project installs.
+
 Options:
+    --local             Set up for local Anima development:
+                        - Configures MCP server with --directory to current repo
+                        - Installs local hooks (uv run python -m anima.hooks.*)
+                        - Required when working ON Anima itself
     --platform <p>      Target platform (see list below)
     --mode <m>          Interaction mode: mcp, skill, or both
                         - mcp:   MCP server tools (remember(), recall(), etc.)
@@ -384,6 +446,7 @@ Options:
                         - both:  MCP tools + skills as fallback
     --eyes              Enable eyes (visual expression window)
     --tts               Enable TTS (text-to-speech with Piper voices)
+    --light             Enable i-Buddy USB light control
     --commands          Install slash commands/workflows only
     --hooks             Configure hooks/plugins only
     --no-patch          Skip patching existing agents as subagents
@@ -395,23 +458,20 @@ Platforms:
 {platforms_help}
 
 Examples:
-    # Set up everything with auto-detection (interactive mode selection)
+    # Default: Set up global HTTP hooks (for any project)
     uv run anima setup
 
-    # MCP mode with eyes and TTS
-    uv run anima setup --mode mcp --eyes --tts
+    # Local development: Configure MCP with --directory to this repo
+    uv run anima setup --local --mode mcp --eyes --tts
 
-    # MCP mode with just TTS (no visual window)
-    uv run anima setup --mode mcp --tts
+    # MCP mode with eyes and TTS (requires --local for MCP)
+    uv run anima setup --local --mode mcp --eyes --tts
 
-    # Skills only (current behavior)
-    uv run anima setup --mode skill
+    # Force specific platform setup
+    uv run anima setup --local --platform claude
 
-    # Force Copilot setup
-    uv run anima setup --platform copilot
-
-    # Install only commands for Claude
-    uv run anima setup --platform claude --commands
+    # Install only hooks (HTTP mode)
+    uv run anima setup --hooks
 """)
         return 0
 
@@ -511,6 +571,7 @@ Examples:
             eyes_enabled=eyes_enabled,
             tts_enabled=tts_enabled,
             light_enabled=light_enabled,
+            local_mode=local_mode,
         )
 
     if success:

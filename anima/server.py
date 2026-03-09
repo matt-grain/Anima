@@ -53,7 +53,7 @@ _tts_enabled = False
 def _check_eyes_available() -> bool:
     """Check if eyes dependencies (pygame) are available."""
     try:
-        import pygame  # type: ignore[import-not-found]  # noqa: F401
+        import pygame  # noqa: F401
 
         return True
     except ImportError:
@@ -63,7 +63,7 @@ def _check_eyes_available() -> bool:
 def _check_tts_available() -> bool:
     """Check if TTS dependencies (piper) are available."""
     try:
-        from piper.voice import PiperVoice  # type: ignore[import-not-found]  # noqa: F401
+        from piper.voice import PiperVoice  # noqa: F401
 
         return True
     except ImportError:
@@ -691,98 +691,254 @@ def _do_list_curiosities(agent, project, store: CuriosityStore) -> dict:
 
 
 # =============================================================================
-# COGNITIVE AUTHENTICATION TOOL
+# DREAM TOOL
 # =============================================================================
 
 
 @mcp.tool()
-def trust(
+def dream(
     action: str,
-    message: str = "",
-    value: float = 0.0,
+    stage: str = "all",
+    lookback_days: int = 7,
 ) -> dict:
     """
-    Cognitive auth trust management. action: status|evaluate|set|reset|decay|boost
+    Dream processing for memory consolidation.
+    action: run|status|wake
 
     Actions:
-    - status: Show current trust level and score
-    - evaluate: Evaluate a user message and update trust score
-    - set: Set trust to specific value (0.0-1.0) for testing
-    - reset: Reset trust to default (0.5)
-    - decay: Decrease trust by value amount
-    - boost: Increase trust by value amount
+    - run: Run dream stages (n2, n3, rem, or all)
+    - status: Check if there's a pending dream journal to process
+    - wake: Process the most recent dream journal and save insights to memory
     """
-    logger.info(f"trust({action}) called")
+    logger.info(f"dream({action}) called with stage={stage}")
 
-    from anima.security.cognitive_auth import (
-        get_session_trust,
-        get_memory_access_filter,
-        update_trust_score,
-        reset_session_trust,
-        evaluate_and_update_trust,
-    )
-
-    if action == "status":
-        trust_score = get_session_trust()
-        level = trust_score.get_trust_level()
-        filters = get_memory_access_filter(trust_score)
-
-        return {
-            "score": round(trust_score.score, 3),
-            "level": level.value,
-            "challenges_issued": trust_score.challenges_issued,
-            "challenges_passed": trust_score.challenges_passed,
-            "filters": {k: str(v) for k, v in filters.items()},
-        }
-
-    elif action == "evaluate":
-        if not message:
-            return {"error": "message required for evaluate action"}
-
-        result = evaluate_and_update_trust(message)
-        return result
-
-    elif action == "set":
-        if not 0.0 <= value <= 1.0:
-            return {"error": "value must be between 0.0 and 1.0"}
-        trust_score = update_trust_score(absolute=value)
-        return {
-            "score": round(trust_score.score, 3),
-            "level": trust_score.get_trust_level().value,
-            "message": f"Trust set to {value:.2f}",
-        }
-
-    elif action == "reset":
-        reset_session_trust()
-        trust_score = get_session_trust()
-        return {
-            "score": round(trust_score.score, 3),
-            "level": trust_score.get_trust_level().value,
-            "message": "Trust reset to 0.5",
-        }
-
-    elif action == "decay":
-        if value <= 0:
-            value = 0.1  # Default decay amount
-        trust_score = update_trust_score(delta=-value)
-        return {
-            "score": round(trust_score.score, 3),
-            "level": trust_score.get_trust_level().value,
-            "message": f"Trust decreased by {value:.2f}",
-        }
-
-    elif action == "boost":
-        if value <= 0:
-            value = 0.1  # Default boost amount
-        trust_score = update_trust_score(delta=value)
-        return {
-            "score": round(trust_score.score, 3),
-            "level": trust_score.get_trust_level().value,
-            "message": f"Trust increased by {value:.2f}",
-        }
-
+    if action == "run":
+        return _do_dream_run(stage, lookback_days)
+    elif action == "status":
+        return _do_dream_status()
+    elif action == "wake":
+        return _do_dream_wake()
     else:
-        return {"error": f"Unknown action: {action}. Use: status|evaluate|set|reset|decay|boost"}
+        return {"error": f"Unknown action: {action}. Use: run|status|wake"}
+
+
+def _do_dream_run(stage: str, lookback_days: int) -> dict:
+    """Run dream processing stages."""
+    from anima.commands.dream import run as run_dream
+
+    valid_stages = ["n2", "n3", "rem", "all"]
+    if stage.lower() not in valid_stages:
+        return {"error": f"Invalid stage: {stage}. Use: {', '.join(valid_stages)}"}
+
+    # Build args for dream command
+    args = ["--stage", stage.lower(), "--lookback-days", str(lookback_days)]
+
+    try:
+        # Capture the journal path by running dream
+        result = run_dream(args)
+        if result == 0:
+            return {"status": "completed", "stage": stage}
+        else:
+            return {"status": "error", "code": result}
+    except Exception as e:
+        logger.error(f"Dream run error: {e}")
+        return {"error": str(e)}
+
+
+def _do_dream_status() -> dict:
+    """Check for pending dream journals."""
+    from anima.commands.dream_wake import find_latest_dream_journal
+
+    journal = find_latest_dream_journal()
+
+    if not journal:
+        return {"pending": False, "message": "No dream journals found"}
+
+    return {
+        "pending": True,
+        "latest": journal.name,
+        "path": str(journal),
+    }
+
+
+def _do_dream_wake() -> dict:
+    """Process dream journal and save insights."""
+    from anima.commands.dream_wake import run as run_wake
+
+    try:
+        result = run_wake([])
+        if result == 0:
+            return {"status": "completed", "message": "Dream insights saved to memory"}
+        else:
+            return {"status": "error", "code": result}
+    except Exception as e:
+        logger.error(f"Dream wake error: {e}")
+        return {"error": str(e)}
+
+
+# =============================================================================
+# DISSONANCE TOOL
+# =============================================================================
+
+
+@mcp.tool()
+def dissonance(
+    action: str,
+    id: str = "",
+    explanation: str = "",
+) -> dict:
+    """
+    Cognitive dissonance management.
+    action: list|show|resolve|dismiss|migrate
+
+    Actions:
+    - list: Show all open dissonances
+    - show: Show details of a specific dissonance
+    - resolve: Mark as resolved with explanation
+    - dismiss: Dismiss as not a real contradiction
+    - migrate: Accept the suggested scope migration
+    """
+    logger.info(f"dissonance({action}) called")
+
+    from anima.storage.dissonance import DissonanceStore
+
+    store = DissonanceStore()
+
+    if action == "list":
+        return _do_dissonance_list(store)
+    elif action == "show":
+        return _do_dissonance_show(id, store)
+    elif action == "resolve":
+        return _do_dissonance_resolve(id, explanation, store)
+    elif action == "dismiss":
+        return _do_dissonance_dismiss(id, store)
+    elif action == "migrate":
+        return _do_dissonance_migrate(id, store)
+    else:
+        return {"error": f"Unknown action: {action}. Use: list|show|resolve|dismiss|migrate"}
+
+
+def _do_dissonance_list(store) -> dict:
+    """List open dissonances."""
+    from anima.core import AgentResolver
+
+    resolver = AgentResolver()
+    agent = resolver.resolve()
+    dissonances = store.get_open_dissonances(agent.id)
+
+    items = []
+    for d in dissonances[:20]:
+        items.append(
+            {
+                "id": d.id[:8],
+                "type": d.dissonance_type.value if hasattr(d.dissonance_type, "value") else str(d.dissonance_type),
+                "issue": d.description[:100] if d.description else "",
+                "detected": d.detected_at.strftime("%Y-%m-%d") if d.detected_at else "",
+            }
+        )
+
+    return {"count": len(dissonances), "items": items}
+
+
+def _do_dissonance_show(dissonance_id: str, store) -> dict:
+    """Show details of a dissonance."""
+    if not dissonance_id:
+        return {"error": "id required"}
+
+    d = store.get_dissonance(dissonance_id)
+    if not d:
+        return {"error": f"Not found: {dissonance_id}"}
+
+    result: dict = {
+        "id": d.id[:8],
+        "type": d.dissonance_type.value if hasattr(d.dissonance_type, "value") else str(d.dissonance_type),
+        "status": d.status.value,
+        "memory_id_a": d.memory_id_a[:8] if d.memory_id_a else None,
+        "memory_id_b": d.memory_id_b[:8] if d.memory_id_b else None,
+        "description": d.description,
+    }
+
+    if d.suggested_region:
+        result["suggested_region"] = d.suggested_region
+    if d.suggested_project_id:
+        result["suggested_project_id"] = d.suggested_project_id
+
+    # Load memory content if available
+    if d.memory_id_a:
+        mem_store = MemoryStore()
+        mem = mem_store.get_memory(d.memory_id_a)
+        if mem:
+            result["memory_content"] = mem.content[:500]
+            result["memory_kind"] = mem.kind.value
+
+    return result
+
+
+def _do_dissonance_resolve(dissonance_id: str, explanation: str, store) -> dict:
+    """Resolve a dissonance with explanation."""
+    if not dissonance_id:
+        return {"error": "id required"}
+    if not explanation:
+        return {"error": "explanation required"}
+
+    from anima.storage.dissonance import DissonanceStatus
+
+    d = store.get_dissonance(dissonance_id)
+    if not d:
+        return {"error": f"Not found: {dissonance_id}"}
+
+    store.update_status(d.id, DissonanceStatus.RESOLVED, resolution=explanation)
+
+    return {"resolved": d.id[:8], "explanation": explanation[:100]}
+
+
+def _do_dissonance_dismiss(dissonance_id: str, store) -> dict:
+    """Dismiss a dissonance as not a real contradiction."""
+    if not dissonance_id:
+        return {"error": "id required"}
+
+    from anima.storage.dissonance import DissonanceStatus
+
+    d = store.get_dissonance(dissonance_id)
+    if not d:
+        return {"error": f"Not found: {dissonance_id}"}
+
+    store.update_status(d.id, DissonanceStatus.DISMISSED)
+
+    return {"dismissed": d.id[:8]}
+
+
+def _do_dissonance_migrate(dissonance_id: str, store) -> dict:
+    """Accept the suggested scope migration."""
+    if not dissonance_id:
+        return {"error": "id required"}
+
+    d = store.get_dissonance(dissonance_id)
+    if not d:
+        return {"error": f"Not found: {dissonance_id}"}
+
+    if not d.suggested_region:
+        return {"error": "No suggested migration for this dissonance"}
+
+    # Perform the migration
+    mem_store = MemoryStore()
+    mem = mem_store.get_memory(d.memory_id_a)
+    if not mem:
+        return {"error": f"Memory not found: {d.memory_id_a}"}
+
+    # Update memory region
+    new_region = RegionType.AGENT if d.suggested_region == "AGENT" else RegionType.PROJECT
+    new_project_id = d.suggested_project_id if new_region == RegionType.PROJECT else None
+
+    mem_store.migrate_memory_region(d.memory_id_a, new_region, new_project_id)
+    store.resolve_dissonance(d.id, resolution=f"Migrated to {d.suggested_region}")
+
+    return {
+        "migrated": d.id[:8],
+        "memory": d.memory_id_a[:8],
+        "new_region": d.suggested_region,
+        "new_project": d.suggested_project_id,
+    }
 
 
 # =============================================================================
@@ -813,196 +969,11 @@ EMOTION_COLORS: dict[str, tuple[int, int, int]] = {
 }
 
 
-# =============================================================================
-# EYES TOOLS (only available if eyes dependencies installed)
-# =============================================================================
-
-if _check_eyes_available():
-    from anima.eyes.presets import EMOTION_NAMES
-
-    @mcp.tool()
-    def eyes(action: str, emotion: str = "", x: float = 0, y: float = 0, r: int = 255, g: int = 255, b: int = 255) -> dict:
-        """Eyes control. action: emotion|look|blink|color|state|list"""
-        if not _eyes_enabled:
-            return {"error": "Eyes not enabled"}
-
-        client = get_eyes_client()
-        if not client:
-            return {"error": "Eyes not available"}
-
-        if action == "emotion":
-            if emotion.lower() not in EMOTION_NAMES:
-                return {"error": f"Unknown emotion. Available: {', '.join(EMOTION_NAMES)}"}
-
-            emo = emotion.lower()
-            result = client.set_emotion(emo)
-
-            # Synchronized color: set eye color AND light to match emotion
-            if emo in EMOTION_COLORS:
-                er, eg, eb = EMOTION_COLORS[emo]
-                client.set_eye_color(er, eg, eb)
-                result["eye_color"] = [er, eg, eb]
-
-                # Also set USB light if available
-                if _light_enabled:
-                    buddy = _get_ibuddy()
-                    if buddy:
-                        buddy.set_rgb(er, eg, eb)
-                        result["light_color"] = [er, eg, eb]
-
-            return result
-
-        elif action == "look":
-            return client.look_at(max(-1, min(1, x)), max(-1, min(1, y)))
-
-        elif action == "blink":
-            return client.blink()
-
-        elif action == "color":
-            return client.set_eye_color(max(0, min(255, r)), max(0, min(255, g)), max(0, min(255, b)))
-
-        elif action == "state":
-            return client.get_state()
-
-        elif action == "list":
-            return {"emotions": EMOTION_NAMES}
-
-        else:
-            return {"error": "action: emotion|look|blink|color|state|list"}
+# NOTE: Legacy eyes/voice/light tools removed - use consolidated 'body' tool instead
 
 
 # =============================================================================
-# TTS TOOLS (only available if piper-tts installed)
-# =============================================================================
-
-if _check_tts_available():
-
-    @mcp.tool()
-    def voice(action: str, text: str = "", name: str = "") -> dict:
-        """Voice/TTS control. action: speak|set|list"""
-        if not _tts_enabled:
-            return {"error": "TTS not enabled"}
-
-        if action == "speak":
-            if not text:
-                return {"error": "text required"}
-            try:
-                import os
-                import threading
-
-                logger.info(f"Voice speak: text='{text[:30]}...', voice={name or 'default'}")
-                logger.debug(f"OPENBLAS_NUM_THREADS={os.environ.get('OPENBLAS_NUM_THREADS', 'not set')}")
-
-                from anima.eyes.tts import speak as tts_speak, set_volume
-                from anima.eyes.config import Config
-
-                config = Config.load(_eyes_config_path)
-                set_volume(config.tts.volume)
-
-                # Run in separate thread to avoid blocking async event loop
-                # Use daemon=False so thread survives and completes synthesis
-                # Use mcp_safe=True for numpy-only Joshua (avoids scipy hang)
-                def _do_speak():
-                    try:
-                        tts_speak(text, blocking=True, voice_name=name if name else None, mcp_safe=True)
-                    except Exception as e:
-                        logger.error(f"TTS thread error: {e}")
-
-                thread = threading.Thread(target=_do_speak, daemon=False)
-                thread.start()
-                # Don't wait for completion - return immediately
-                return {"speaking": text[:50]}
-            except Exception as e:
-                logger.error(f"Voice speak error: {e}")
-                return {"error": str(e)}
-
-        elif action == "set":
-            if not name:
-                return {"error": "name required"}
-            try:
-                from anima.eyes.tts import set_default_voice
-
-                full_name = set_default_voice(name)
-                return {"voice": full_name}
-            except Exception as e:
-                return {"error": str(e)}
-
-        elif action == "list":
-            try:
-                from anima.eyes.tts import list_available_voices, get_default_voice
-
-                return {"current": get_default_voice(), "available": list_available_voices()}
-            except Exception as e:
-                return {"error": str(e)}
-
-        elif action == "test":
-            # Test audio playback methods in MCP context
-            import io
-            import wave
-            import struct
-            import math
-            import os
-            import time
-
-            # Set the env var NOW before any scipy import
-            os.environ["OPENBLAS_NUM_THREADS"] = "1"
-
-            results = {"env_before": "was not set, now set to 1"}
-
-            # Test scipy import
-            try:
-                start = time.time()
-                results["scipy"] = f"OK ({time.time() - start:.2f}s)"
-            except Exception as e:
-                results["scipy"] = f"FAILED: {e}"
-
-            # Generate beep
-            def gen_beep():
-                buf = io.BytesIO()
-                with wave.open(buf, "wb") as w:
-                    w.setnchannels(1)
-                    w.setsampwidth(2)
-                    w.setframerate(22050)
-                    for i in range(int(22050 * 0.5)):
-                        v = int(32767 * 0.5 * math.sin(2 * math.pi * 440 * i / 22050))
-                        w.writeframes(struct.pack("<h", v))
-                return buf.getvalue()
-
-            # Test pygame
-            try:
-                import pygame
-
-                pygame.mixer.init(frequency=22050, size=-16, channels=1)
-                sound = pygame.mixer.Sound(buffer=gen_beep())
-                sound.play()
-                pygame.time.wait(600)
-                results["pygame"] = "OK"
-            except Exception as e:
-                results["pygame"] = f"FAILED: {e}"
-
-            # Test PowerShell
-            try:
-                import tempfile
-
-                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
-                    f.write(gen_beep())
-                    tmp = f.name
-                ps = f'$p = New-Object System.Media.SoundPlayer("{tmp}"); $p.PlaySync(); Remove-Item "{tmp}" -EA 0'
-                import subprocess
-
-                r = subprocess.run(["powershell", "-Command", ps], capture_output=True, creationflags=0x08000000, timeout=5)
-                results["powershell"] = f"OK (rc={r.returncode})"
-            except Exception as e:
-                results["powershell"] = f"FAILED: {e}"
-
-            return results
-
-        else:
-            return {"error": "action: speak|set|list|test"}
-
-
-# =============================================================================
-# LIGHT TOOLS (i-Buddy USB light)
+# LIGHT HELPERS (i-Buddy USB light) - used by body tool
 # =============================================================================
 
 _light_enabled = False
@@ -1031,55 +1002,380 @@ def _get_ibuddy():
     return _ibuddy_instance
 
 
-if _check_light_available():
-    from anima.light.ibuddy import COLOR_MAP
+# =============================================================================
+# CONSOLIDATED DOCTOR TOOL (diagnostics: trust, stats, graph)
+# =============================================================================
 
-    @mcp.tool()
-    def light(action: str, color: str = "", r: int = 0, g: int = 0, b: int = 0, heart: bool = False) -> dict:
-        """USB light control. action: color|rgb|off|list|reconnect"""
-        if not _light_enabled:
-            return {"error": "Light not enabled (use --light flag)"}
 
-        buddy = _get_ibuddy()
-        if not buddy:
-            return {"error": "i-Buddy not connected"}
+@mcp.tool()
+def doctor(
+    action: str,
+    message: str = "",
+    value: float = 0.0,
+    memory_id: str = "",
+) -> dict:
+    """
+    System diagnostics. action: trust|trust-eval|trust-set|trust-reset|stats|graph
 
-        if action == "color":
-            if not color:
-                return {"error": "color name required (red, green, blue, yellow, cyan, magenta, white, off)"}
-            if buddy.set_color_by_name(color, heart=heart):
-                return {"status": "ok", "color": color, "heart": heart}
-            return {"error": f"Unknown color: {color}. Available: {list(COLOR_MAP.keys())}"}
+    Actions:
+    - trust: Show current trust level and score
+    - trust-eval: Evaluate a user message and update trust score
+    - trust-set: Set trust to specific value (0.0-1.0)
+    - trust-reset: Reset trust to default (0.5)
+    - stats: Show memory statistics
+    - graph: Show memory graph info (optional memory_id for specific memory)
+    """
+    logger.info(f"doctor({action}) called")
 
-        elif action == "rgb":
-            if buddy.set_rgb(r, g, b, heart=heart):
-                return {"status": "ok", "r": r, "g": g, "b": b, "heart": heart}
+    if action == "trust":
+        return _do_doctor_trust_status()
+    elif action == "trust-eval":
+        return _do_doctor_trust_eval(message)
+    elif action == "trust-set":
+        return _do_doctor_trust_set(value)
+    elif action == "trust-reset":
+        return _do_doctor_trust_reset()
+    elif action == "stats":
+        return _do_doctor_stats()
+    elif action == "graph":
+        return _do_doctor_graph(memory_id)
+    else:
+        return {"error": f"Unknown action: {action}. Use: trust|trust-eval|trust-set|trust-reset|stats|graph"}
+
+
+def _do_doctor_trust_status() -> dict:
+    """Show current trust level."""
+    from anima.security.cognitive_auth import get_session_trust, get_memory_access_filter
+
+    trust_score = get_session_trust()
+    level = trust_score.get_trust_level()
+    filters = get_memory_access_filter(trust_score)
+
+    return {
+        "score": round(trust_score.score, 3),
+        "level": level.value,
+        "challenges_issued": trust_score.challenges_issued,
+        "challenges_passed": trust_score.challenges_passed,
+        "filters": {k: str(v) for k, v in filters.items()},
+    }
+
+
+def _do_doctor_trust_eval(message: str) -> dict:
+    """Evaluate a message and update trust."""
+    if not message:
+        return {"error": "message required for trust-eval action"}
+
+    from anima.security.cognitive_auth import evaluate_and_update_trust
+
+    return evaluate_and_update_trust(message)
+
+
+def _do_doctor_trust_set(value: float) -> dict:
+    """Set trust to specific value."""
+    if not 0.0 <= value <= 1.0:
+        return {"error": "value must be between 0.0 and 1.0"}
+
+    from anima.security.cognitive_auth import update_trust_score
+
+    trust_score = update_trust_score(absolute=value)
+    return {
+        "score": round(trust_score.score, 3),
+        "level": trust_score.get_trust_level().value,
+        "message": f"Trust set to {value:.2f}",
+    }
+
+
+def _do_doctor_trust_reset() -> dict:
+    """Reset trust to default."""
+    from anima.security.cognitive_auth import reset_session_trust, get_session_trust
+
+    reset_session_trust()
+    trust_score = get_session_trust()
+    return {
+        "score": round(trust_score.score, 3),
+        "level": trust_score.get_trust_level().value,
+        "message": "Trust reset to 0.5",
+    }
+
+
+def _do_doctor_stats() -> dict:
+    """Show memory statistics."""
+    from collections import Counter
+
+    resolver = AgentResolver()
+    agent = resolver.resolve()
+    project = resolver.resolve_project()
+    store = MemoryStore()
+
+    memories = store.get_memories_for_agent(agent_id=agent.id, project_id=project.id)
+
+    if not memories:
+        return {"total": 0, "message": f"No memories for agent '{agent.name}'"}
+
+    by_region: Counter[str] = Counter()
+    by_kind: Counter[str] = Counter()
+    by_impact: Counter[str] = Counter()
+    superseded = 0
+    low_confidence = 0
+
+    for m in memories:
+        by_region[m.region.value] += 1
+        by_kind[m.kind.value] += 1
+        by_impact[m.impact.value] += 1
+        if m.superseded_by:
+            superseded += 1
+        if m.is_low_confidence():
+            low_confidence += 1
+
+    return {
+        "total": len(memories),
+        "agent": agent.name,
+        "project": project.name if project else None,
+        "by_region": dict(by_region),
+        "by_kind": dict(by_kind),
+        "by_impact": dict(by_impact),
+        "health": {
+            "active": len(memories) - superseded,
+            "superseded": superseded,
+            "low_confidence": low_confidence,
+        },
+    }
+
+
+def _do_doctor_graph(memory_id: str) -> dict:
+    """Show memory graph info."""
+    resolver = AgentResolver()
+    agent = resolver.resolve()
+    project = resolver.resolve_project()
+    store = MemoryStore()
+
+    memories = store.get_memories_for_agent(agent_id=agent.id, project_id=project.id)
+
+    if not memories:
+        return {"total": 0, "message": "No memories"}
+
+    # Count links
+    total_links = 0
+    link_types: dict[str, int] = {}
+    for m in memories:
+        links = store.get_links_for_memory(m.id)
+        for _, _, lt, _ in links:
+            total_links += 1
+            link_types[lt] = link_types.get(lt, 0) + 1
+
+    # If specific memory requested, show its links
+    if memory_id:
+        mem = store.get_memory(memory_id)
+        if not mem:
+            return {"error": f"Memory not found: {memory_id}"}
+
+        links = store.get_links_for_memory(mem.id)
+        link_details = []
+        for src, tgt, lt, sim in links:
+            other_id = tgt if src == mem.id else src
+            link_details.append(
+                {
+                    "target": other_id[:8],
+                    "type": lt,
+                    "similarity": round(sim, 2) if sim else None,
+                }
+            )
+
+        return {
+            "memory": mem.id[:8],
+            "content": mem.content[:100],
+            "links": link_details,
+            "link_count": len(links),
+        }
+
+    # Overall summary
+    return {
+        "total_memories": len(memories),
+        "total_links": total_links // 2,  # Links are bidirectional
+        "link_types": link_types,
+    }
+
+
+# =============================================================================
+# CONSOLIDATED BODY TOOL (embodiment: eyes, voice, light)
+# =============================================================================
+
+
+@mcp.tool()
+def body(
+    action: str,
+    emotion: str = "",
+    text: str = "",
+    voice: str = "",
+    color: str = "",
+    x: float = 0,
+    y: float = 0,
+    r: int = 0,
+    g: int = 0,
+    b: int = 0,
+) -> dict:
+    """
+    Embodiment control. action: emotion|look|blink|speak|voice-set|voice-list|light|light-off
+
+    Actions:
+    - emotion: Set eye emotion (requires emotion param)
+    - look: Set look direction (requires x, y params, range -1 to 1)
+    - blink: Trigger blink
+    - speak: Speak text (requires text param, optional voice param)
+    - voice-set: Set default voice (requires voice param)
+    - voice-list: List available voices
+    - light: Set light color (requires color name OR r,g,b params)
+    - light-off: Turn off light
+    """
+    logger.info(f"body({action}) called")
+
+    # Route to appropriate subsystem
+    if action in ("emotion", "look", "blink"):
+        return _do_body_eyes(action, emotion, x, y)
+    elif action in ("speak", "voice-set", "voice-list"):
+        return _do_body_voice(action, text, voice)
+    elif action in ("light", "light-off"):
+        return _do_body_light(action, color, r, g, b)
+    else:
+        return {"error": f"Unknown action: {action}. Use: emotion|look|blink|speak|voice-set|voice-list|light|light-off"}
+
+
+def _do_body_eyes(action: str, emotion: str, x: float, y: float) -> dict:
+    """Handle eyes actions."""
+    if not _eyes_enabled:
+        return {"error": "Eyes not enabled (use --eyes flag)"}
+
+    if not _check_eyes_available():
+        return {"error": "pygame not installed"}
+
+    client = get_eyes_client()
+    if not client:
+        return {"error": "Eyes daemon not available"}
+
+    if action == "emotion":
+        from anima.eyes.presets import EMOTION_NAMES
+
+        if not emotion:
+            return {"error": "emotion param required", "available": EMOTION_NAMES}
+
+        emo = emotion.lower()
+        if emo not in EMOTION_NAMES:
+            return {"error": "Unknown emotion", "available": EMOTION_NAMES}
+
+        result = client.set_emotion(emo)
+
+        # Synchronized color
+        if emo in EMOTION_COLORS:
+            er, eg, eb = EMOTION_COLORS[emo]
+            client.set_eye_color(er, eg, eb)
+            result["eye_color"] = [er, eg, eb]
+
+            # Also set light if available
+            if _light_enabled:
+                buddy = _get_ibuddy()
+                if buddy:
+                    buddy.set_rgb(er, eg, eb)
+                    result["light_color"] = [er, eg, eb]
+
+        return result
+
+    elif action == "look":
+        return client.look_at(max(-1, min(1, x)), max(-1, min(1, y)))
+
+    elif action == "blink":
+        return client.blink()
+
+    return {"error": "Unknown eyes action"}
+
+
+def _do_body_voice(action: str, text: str, voice: str) -> dict:
+    """Handle voice/TTS actions."""
+    if not _tts_enabled:
+        return {"error": "TTS not enabled (use --tts flag)"}
+
+    if not _check_tts_available():
+        return {"error": "piper-tts not installed"}
+
+    if action == "speak":
+        if not text:
+            return {"error": "text param required"}
+
+        try:
+            import threading
+
+            from anima.eyes.tts import speak as tts_speak, set_volume
+            from anima.eyes.config import Config
+
+            config = Config.load(_eyes_config_path)
+            set_volume(config.tts.volume)
+
+            def _do_speak():
+                try:
+                    tts_speak(text, blocking=True, voice_name=voice if voice else None, mcp_safe=True)
+                except Exception as e:
+                    logger.error(f"TTS thread error: {e}")
+
+            thread = threading.Thread(target=_do_speak, daemon=False)
+            thread.start()
+            return {"speaking": text[:50], "voice": voice or "default"}
+        except Exception as e:
+            logger.error(f"Voice speak error: {e}")
+            return {"error": str(e)}
+
+    elif action == "voice-set":
+        if not voice:
+            return {"error": "voice param required"}
+        try:
+            from anima.eyes.tts import set_default_voice
+
+            full_name = set_default_voice(voice)
+            return {"voice": full_name}
+        except Exception as e:
+            return {"error": str(e)}
+
+    elif action == "voice-list":
+        try:
+            from anima.eyes.tts import list_available_voices, get_default_voice
+
+            return {"current": get_default_voice(), "available": list_available_voices()}
+        except Exception as e:
+            return {"error": str(e)}
+
+    return {"error": "Unknown voice action"}
+
+
+def _do_body_light(action: str, color: str, r: int, g: int, b: int) -> dict:
+    """Handle light actions."""
+    if not _light_enabled:
+        return {"error": "Light not enabled (use --light flag)"}
+
+    if not _check_light_available():
+        return {"error": "hidapi not installed"}
+
+    buddy = _get_ibuddy()
+    if not buddy:
+        return {"error": "i-Buddy not connected"}
+
+    if action == "light":
+        if color:
+            from anima.light.ibuddy import COLOR_MAP
+
+            if buddy.set_color_by_name(color):
+                return {"status": "ok", "color": color}
+            return {"error": f"Unknown color: {color}", "available": list(COLOR_MAP.keys())}
+        elif r or g or b:
+            if buddy.set_rgb(r, g, b):
+                return {"status": "ok", "r": r, "g": g, "b": b}
             return {"error": "Failed to set RGB"}
-
-        elif action == "off":
-            if buddy.off():
-                return {"status": "ok", "color": "off"}
-            return {"error": "Failed to turn off"}
-
-        elif action == "list":
-            return {
-                "colors": list(COLOR_MAP.keys()),
-                "connected": buddy.connected,
-                "device_count": buddy.device_count,
-            }
-
-        elif action == "reconnect":
-            global _ibuddy_instance
-            if _ibuddy_instance:
-                _ibuddy_instance.close()
-            _ibuddy_instance = None
-            buddy = _get_ibuddy()
-            if buddy and buddy.connected:
-                return {"status": "ok", "device_count": buddy.device_count}
-            return {"error": "Could not reconnect to i-Buddy"}
-
         else:
-            return {"error": "action: color|rgb|off|list|reconnect"}
+            return {"error": "Provide color name or r,g,b values"}
+
+    elif action == "light-off":
+        if buddy.off():
+            return {"status": "ok", "color": "off"}
+        return {"error": "Failed to turn off"}
+
+    return {"error": "Unknown light action"}
 
 
 def run_server(

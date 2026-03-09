@@ -9,7 +9,7 @@ Respects the 10% context budget.
 """
 
 from functools import lru_cache
-from typing import Optional, TypedDict, Union, Any
+from typing import Optional, TypedDict, Union, Any, cast
 
 import tiktoken
 
@@ -276,8 +276,14 @@ class MemoryInjector:
                 deferred_ids=[],
                 deferred_count=0,
                 bucket_stats=BucketStats(
-                    agent_critical=0, agent_high=0, agent_medium=0, agent_low=0,
-                    project_critical=0, project_high=0, project_medium=0, project_low=0,
+                    agent_critical=0,
+                    agent_high=0,
+                    agent_medium=0,
+                    agent_low=0,
+                    project_critical=0,
+                    project_high=0,
+                    project_medium=0,
+                    project_low=0,
                     overflow=0,
                 ),
             )
@@ -356,7 +362,7 @@ class MemoryInjector:
             injected_ids=injected_ids,
             deferred_ids=deferred_ids,
             deferred_count=len(deferred_ids),
-            bucket_stats=BucketStats(**bucket_counts),
+            bucket_stats=bucket_counts,
         )
 
     def _load_tiered_memories(
@@ -609,7 +615,7 @@ class MemoryInjector:
 
         return filtered, removed_count
 
-    def _prioritize_memories(self, memories: list[Memory]) -> tuple[list[Memory], dict[str, int]]:
+    def _prioritize_memories(self, memories: list[Memory]) -> tuple[list[Memory], BucketStats]:
         """
         Prioritize memories for injection using token buckets.
 
@@ -755,7 +761,7 @@ class MemoryInjector:
                 else:
                     bucket_counts["agent_low"] += 1
 
-        return result, bucket_counts
+        return result, cast(BucketStats, bucket_counts)
 
     def load_deferred_memories(
         self,

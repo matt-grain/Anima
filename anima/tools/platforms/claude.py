@@ -359,6 +359,7 @@ class ClaudeSetup(BasePlatformSetup):
         eyes_enabled: bool = False,
         tts_enabled: bool = False,
         light_enabled: bool = False,
+        project_dir: Path | None = None,
     ) -> bool:
         """Configure Anima MCP server in global Claude settings (~/.claude.json).
 
@@ -366,6 +367,9 @@ class ClaudeSetup(BasePlatformSetup):
             eyes_enabled: Whether to enable eyes (visual expression)
             tts_enabled: Whether to enable TTS (text-to-speech)
             light_enabled: Whether to enable i-Buddy USB light
+            project_dir: If provided, use --directory to point to this Anima repo.
+                         Required for local development mode where Anima isn't
+                         globally installed.
 
         Returns:
             True if successful
@@ -390,7 +394,16 @@ class ClaudeSetup(BasePlatformSetup):
         uv_path = shutil.which("uv") or "uv"
 
         # Build server arguments
-        server_args = ["run", "anima", "--server"]
+        # If project_dir is provided, use --directory to run from that location
+        # This allows MCP server to work without global Anima installation
+        server_args: list[str] = []
+        if project_dir is not None:
+            # Use absolute path for --directory
+            abs_project_dir = project_dir.resolve()
+            server_args = ["--directory", str(abs_project_dir), "run", "anima", "--server"]
+        else:
+            server_args = ["run", "anima", "--server"]
+
         if eyes_enabled:
             server_args.append("--eyes")
         if tts_enabled:
@@ -465,10 +478,15 @@ class ClaudeSetup(BasePlatformSetup):
         eyes_enabled: bool = False,
         tts_enabled: bool = False,
         light_enabled: bool = False,
+        local_mode: bool = False,
     ) -> bool:
         """Run the complete setup for Claude Code.
 
         Extends base setup to handle MCP server configuration.
+
+        Args:
+            local_mode: If True, configure MCP server with --directory pointing
+                        to project_dir. This is for Anima development.
         """
         success = True
 
@@ -476,7 +494,9 @@ class ClaudeSetup(BasePlatformSetup):
         if mode in ("mcp", "both"):
             print("Configuring MCP server...")
             try:
-                if not self.setup_mcp_server(eyes_enabled, tts_enabled, light_enabled):
+                # In local mode, pass project_dir so MCP uses --directory
+                mcp_project_dir = project_dir if local_mode else None
+                if not self.setup_mcp_server(eyes_enabled, tts_enabled, light_enabled, project_dir=mcp_project_dir):
                     success = False
                 print()
             except Exception as e:

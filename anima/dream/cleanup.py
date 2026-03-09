@@ -16,7 +16,6 @@ Runs before N2/N3/REM to ensure a clean memory state:
 
 from __future__ import annotations
 
-import re
 import time
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
@@ -25,6 +24,7 @@ from loguru import logger
 
 from anima.core import ImpactLevel, MemoryKind
 from anima.dream.types import CleanupResult, DreamConfig, SuspiciousMemory
+from anima.security.validation import INJECTION_PATTERNS
 
 if TYPE_CHECKING:
     from anima.storage.sqlite import MemoryStore
@@ -116,9 +116,7 @@ def run_cleanup_stage(
                 logger.debug(f"Deleted stale WIP memory: {memory.id}")
 
     if not quiet and wip_deleted > 0:
-        print(
-            f"   Stale WIP (>{config.cleanup_wip_max_age_days}d): {wip_deleted} deleted"
-        )
+        print(f"   Stale WIP (>{config.cleanup_wip_max_age_days}d): {wip_deleted} deleted")
 
     # Refresh list after deletions
     if wip_deleted > 0 and not config.cleanup_dry_run:
@@ -129,14 +127,12 @@ def run_cleanup_stage(
         )
 
     # === 3. Find and handle duplicates ===
-    duplicates_found, duplicates_deleted, duplicates_merged, merged_pairs = (
-        _handle_duplicates(
-            store=store,
-            memories=all_memories,
-            threshold=config.cleanup_duplicate_threshold,
-            dry_run=config.cleanup_dry_run,
-            quiet=quiet,
-        )
+    duplicates_found, duplicates_deleted, duplicates_merged, merged_pairs = _handle_duplicates(
+        store=store,
+        memories=all_memories,
+        threshold=config.cleanup_duplicate_threshold,
+        dry_run=config.cleanup_dry_run,
+        quiet=quiet,
     )
 
     # Refresh list after deletions
@@ -165,9 +161,7 @@ def run_cleanup_stage(
                 logger.debug(f"Deleted old LOW impact memory: {memory.id}")
 
     if not quiet and low_impact_deleted > 0:
-        print(
-            f"   Old LOW impact (>{config.cleanup_low_max_age_days}d): {low_impact_deleted} deleted"
-        )
+        print(f"   Old LOW impact (>{config.cleanup_low_max_age_days}d): {low_impact_deleted} deleted")
 
     # Refresh list after deletions
     if low_impact_deleted > 0 and not config.cleanup_dry_run:
@@ -178,19 +172,15 @@ def run_cleanup_stage(
         )
 
     # === 5. Detect suspicious memories (prompt injection attempts) ===
-    suspicious_found, suspicious_quarantined, suspicious_memories = (
-        _detect_suspicious_memories(
-            store=store,
-            memories=all_memories,
-            dry_run=config.cleanup_dry_run,
-            quiet=quiet,
-        )
+    suspicious_found, suspicious_quarantined, suspicious_memories = _detect_suspicious_memories(
+        store=store,
+        memories=all_memories,
+        dry_run=config.cleanup_dry_run,
+        quiet=quiet,
     )
 
     # Calculate totals
-    total_deleted = (
-        forgotten_deleted + wip_deleted + duplicates_deleted + low_impact_deleted
-    )
+    total_deleted = forgotten_deleted + wip_deleted + duplicates_deleted + low_impact_deleted
     duration = time.time() - start_time
 
     if not quiet:
@@ -244,9 +234,7 @@ def _handle_duplicates(
     # Sort memories by creation date (oldest first)
     sorted_memories = sorted(
         memories,
-        key=lambda m: m.created_at.replace(tzinfo=None)
-        if m.created_at.tzinfo
-        else m.created_at,
+        key=lambda m: m.created_at.replace(tzinfo=None) if m.created_at.tzinfo else m.created_at,
     )
 
     # Pre-compute embeddings for all memories (use existing if available)
@@ -303,9 +291,7 @@ def _handle_duplicates(
                         store.delete_memory(older.id)
                     processed_ids.add(older.id)
                     deleted += 1
-                    logger.debug(
-                        f"Deleted duplicate SUBCONSCIOUS: {older.id} (sim={similarity:.2f})"
-                    )
+                    logger.debug(f"Deleted duplicate SUBCONSCIOUS: {older.id} (sim={similarity:.2f})")
                 else:
                     # Other kinds: merge content into newer, delete older
                     if not dry_run:
@@ -313,9 +299,7 @@ def _handle_duplicates(
                     processed_ids.add(older.id)
                     merged += 1
                     merged_pairs.append((newer.id, older.id))
-                    logger.debug(
-                        f"Merged duplicate: {older.id} -> {newer.id} (sim={similarity:.2f})"
-                    )
+                    logger.debug(f"Merged duplicate: {older.id} -> {newer.id} (sim={similarity:.2f})")
 
     if not quiet and found > 0:
         print(f"   Duplicates (sim>{threshold}): {deleted} deleted, {merged} merged")
@@ -331,9 +315,7 @@ def _merge_memories(store: "MemoryStore", keep: "Memory", remove: "Memory") -> N
     # Just append a note if contents differ meaningfully
     if remove.content not in keep.content:
         # Add a separator and the old content (truncated if long)
-        old_snippet = (
-            remove.content[:200] if len(remove.content) > 200 else remove.content
-        )
+        old_snippet = remove.content[:200] if len(remove.content) > 200 else remove.content
         keep.content = f"{keep.content}\n\n[Merged from {remove.id[:8]}]: {old_snippet}"
         keep.version += 1
         store.save_memory(keep)
@@ -356,8 +338,6 @@ def _merge_memories(store: "MemoryStore", keep: "Memory", remove: "Memory") -> N
 #
 # Patterns imported from shared security/validation module.
 # See anima/security/validation.py for pattern definitions and documentation.
-
-from anima.security.validation import INJECTION_PATTERNS
 
 
 def _detect_suspicious_memories(
@@ -396,16 +376,12 @@ def _detect_suspicious_memories(
                     # For now, we quarantine by tagging the content rather than deleting
                     # This preserves the memory for human review
                     if "[QUARANTINED:" not in memory.content:
-                        memory.content = (
-                            f"[QUARANTINED:{pattern_name}] {memory.content}"
-                        )
+                        memory.content = f"[QUARANTINED:{pattern_name}] {memory.content}"
                         memory.version += 1
                         store.save_memory(memory)
                         suspicious.quarantined = True
                         quarantined += 1
-                        logger.warning(
-                            f"Quarantined suspicious memory: {memory.id} ({pattern_name})"
-                        )
+                        logger.warning(f"Quarantined suspicious memory: {memory.id} ({pattern_name})")
 
                 suspicious_list.append(suspicious)
                 break  # One match per memory is enough

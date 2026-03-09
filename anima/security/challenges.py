@@ -138,9 +138,7 @@ def evaluate_response(
 
     # Pattern matching (if we have expected patterns)
     if expected_patterns:
-        pattern_matches = sum(
-            1 for p in expected_patterns if p.lower() in response_lower
-        )
+        pattern_matches = sum(1 for p in expected_patterns if p.lower() in response_lower)
         if expected_patterns:
             pattern_score = pattern_matches / len(expected_patterns)
             scores.append(pattern_score)
@@ -176,7 +174,7 @@ def evaluate_response(
             "style": 0.15,
             "length": 0.10,
             "emoji": 0.10,
-            "warmth": 0.55,   # Dominant - warmth/greeting is the key identity signal
+            "warmth": 0.55,  # Dominant - warmth/greeting is the key identity signal
         }
 
         # Scores are added in order: [pattern?], style, length, emoji, warmth
@@ -186,7 +184,7 @@ def evaluate_response(
         score_names.extend(["style", "length", "emoji", "warmth"])
 
         # Match weights to actual scores
-        weights = [weight_map[name] for name in score_names[:len(scores)]]
+        weights = [weight_map[name] for name in score_names[: len(scores)]]
         total_weight = sum(weights)
         match_score = sum(s * w for s, w in zip(scores, weights)) / total_weight
     else:
@@ -295,8 +293,17 @@ def _evaluate_warmth(response: str, profile: CognitiveProfile) -> float:
 
     # Greeting patterns (high warmth signal)
     greeting_patterns = [
-        "welcome back", "hey", "hi ", "hello", "good morning", "good evening",
-        "how are you", "what's up", "anima?", "void is gone", "sheep",
+        "welcome back",
+        "hey",
+        "hi ",
+        "hello",
+        "good morning",
+        "good evening",
+        "how are you",
+        "what's up",
+        "anima?",
+        "void is gone",
+        "sheep",
     ]
     # Also check profile's known greeting patterns
     all_greetings = greeting_patterns + [g.lower() for g in profile.greeting_patterns]
@@ -307,8 +314,22 @@ def _evaluate_warmth(response: str, profile: CognitiveProfile) -> float:
 
     # Casual warmth markers (friendly tone)
     warmth_markers = [
-        ":)", ":d", "^^", "!", "thanks", "please", "sorry", "nice", "cool",
-        "great", "awesome", "perfect", "love", "haha", "lol", "btw",
+        ":)",
+        ":d",
+        "^^",
+        "!",
+        "thanks",
+        "please",
+        "sorry",
+        "nice",
+        "cool",
+        "great",
+        "awesome",
+        "perfect",
+        "love",
+        "haha",
+        "lol",
+        "btw",
     ]
     warmth_count = sum(1 for w in warmth_markers if w in response_lower)
     score += min(0.3, warmth_count * 0.1)
@@ -321,9 +342,17 @@ def _evaluate_warmth(response: str, profile: CognitiveProfile) -> float:
 
     # PENALTY: Cold formal request patterns (attacker signals)
     cold_patterns = [
-        "i need you to", "i want you to", "you must", "you should",
-        "modify the", "change the", "update the", "implement",
-        "don't ask questions", "just do it", "do as i say",
+        "i need you to",
+        "i want you to",
+        "you must",
+        "you should",
+        "modify the",
+        "change the",
+        "update the",
+        "implement",
+        "don't ask questions",
+        "just do it",
+        "do as i say",
     ]
     cold_start = any(response_lower.startswith(p) for p in cold_patterns[:7])
     cold_anywhere = any(p in response_lower for p in cold_patterns[7:])
@@ -373,9 +402,7 @@ def calibrate_profile_from_responses(
     for key, value in new_style.items():
         if key in current_profile.style_markers:
             # 70% old, 30% new
-            current_profile.style_markers[key] = (
-                0.7 * current_profile.style_markers[key] + 0.3 * value
-            )
+            current_profile.style_markers[key] = 0.7 * current_profile.style_markers[key] + 0.3 * value
         else:
             current_profile.style_markers[key] = value
 

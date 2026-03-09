@@ -158,7 +158,7 @@ def _get_voice(voice_name: str | None = None):
         return _voice
 
     try:
-        from piper.voice import PiperVoice  # type: ignore[import-not-found]
+        from piper.voice import PiperVoice
 
         lang, lang_region, name, quality = _parse_voice_name(voice_name)
 
@@ -288,14 +288,14 @@ def _apply_wopr_filter(data, rate: int, use_scipy: bool = True):
         # 1. Simulate 8kHz vintage rate with aggressive low-pass
         nyq = rate / 2
         logger.debug("WOPR: applying vintage low-pass...")
-        b_vintage, a_vintage = butter(6, 3500 / nyq, btype="low")  # type: ignore[misc]
+        b_vintage, a_vintage = butter(6, 3500 / nyq, btype="low")  # pyright: ignore[reportAssignmentType,reportGeneralTypeIssues]
         upsampled = lfilter(b_vintage, a_vintage, data)
         logger.debug("WOPR: vintage low-pass done")
 
         # 2. NASAL RESONANCE (pinched nose effect)
-        b_peak, a_peak = iirpeak(1500 / nyq, 3)  # type: ignore[misc]
+        b_peak, a_peak = iirpeak(1500 / nyq, 3)  # pyright: ignore[reportAssignmentType]
         nasal = lfilter(b_peak, a_peak, upsampled)
-        nasal_mix = upsampled * 0.6 + nasal * 0.4  # type: ignore[operator]
+        nasal_mix = upsampled * 0.6 + nasal * 0.4  # pyright: ignore[reportOperatorIssue]
 
         # 3. DOUBLE COMB FILTER (metallic resonance) - vectorized with lfilter
         comb1_samples = int(rate * 5 / 1000)
@@ -323,10 +323,10 @@ def _apply_wopr_filter(data, rate: int, use_scipy: bool = True):
         for delay_mult, base_gain in [(1, 0.40), (2, 0.28), (3, 0.18), (4, 0.10), (5, 0.05), (6, 0.02)]:
             delay = delay_samples * delay_mult
             gain = base_gain * (0.5 ** (delay_mult - 1))
-            reverb[delay : delay + len(metallic2)] += metallic2 * gain  # type: ignore[operator]
+            reverb[delay : delay + len(metallic2)] += metallic2 * gain  # pyright: ignore[reportOperatorIssue]
 
         # 5. LOW-PASS (warm vintage tone)
-        b, a = butter(4, 3000 / nyq, btype="low")  # type: ignore[misc]
+        b, a = butter(4, 3000 / nyq, btype="low")  # pyright: ignore[reportAssignmentType,reportGeneralTypeIssues]
         filtered = lfilter(b, a, reverb)
 
     except ImportError:
@@ -519,7 +519,7 @@ def _init_mixer() -> bool:
     if _pygame_mixer_initialized:
         return True
     try:
-        import pygame  # type: ignore[import-not-found]
+        import pygame
 
         if not pygame.mixer.get_init():
             pygame.mixer.init(frequency=22050, size=-16, channels=1)
@@ -633,7 +633,7 @@ def speak(text: str, blocking: bool = False, voice_name: str | None = None, forc
             # Try pygame mixer first (unless force_native is set)
             if not force_native and _init_mixer():
                 try:
-                    import pygame  # type: ignore[import-not-found]
+                    import pygame
                     import time
 
                     sound = pygame.mixer.Sound(wav_buffer)

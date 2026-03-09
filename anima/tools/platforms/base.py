@@ -278,6 +278,7 @@ class BasePlatformSetup(ABC):
         eyes_enabled: bool = False,
         tts_enabled: bool = False,
         light_enabled: bool = False,
+        local_mode: bool = False,
     ) -> bool:
         """Run the complete setup for this platform.
 
@@ -290,6 +291,7 @@ class BasePlatformSetup(ABC):
             eyes_enabled: Enable eyes (visual expression window)
             tts_enabled: Enable TTS (text-to-speech)
             light_enabled: Enable USB light (i-Buddy)
+            local_mode: If True, configure for local Anima development (MCP uses --directory)
 
         Returns:
             True if all setup steps succeeded

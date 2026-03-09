@@ -150,7 +150,7 @@ async def hook_session_end(request: Request) -> JSONResponse:
     def _run_hook() -> None:
         """Run hook in thread - this can block for integrity checks."""
         with redirect_stdout(stdout_capture), redirect_stderr(stdout_capture):
-            run_session_end(args=["--format", "json"])
+            run_session_end(args=["--format", "json"], hook_input=body)
 
     try:
         # Serialize hook execution (os.chdir is not thread-safe)
@@ -186,7 +186,7 @@ async def hook_pre_compact(request: Request) -> JSONResponse:
     def _run_hook() -> None:
         """Run hook in thread."""
         with redirect_stdout(stdout_capture), redirect_stderr(stdout_capture):
-            run_pre_compact(args=[])
+            run_pre_compact(args=[], hook_input=body)
 
     try:
         # Serialize hook execution (os.chdir is not thread-safe)

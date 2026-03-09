@@ -7,7 +7,7 @@ Display window for the eyes using pygame.
 
 import os
 
-import pygame  # type: ignore[import-not-found]
+import pygame
 import threading
 import queue
 import ctypes

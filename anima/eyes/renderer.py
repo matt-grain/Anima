@@ -5,7 +5,7 @@
 Eye rendering using pygame.
 """
 
-import pygame  # type: ignore[import-not-found]
+import pygame
 from enum import Enum
 from typing import Tuple
 from .eye_config import EyeConfig
