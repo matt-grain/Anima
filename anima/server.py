@@ -671,7 +671,7 @@ def _do_diary(title: str, content: str, read_id: str) -> dict:
         return {"entries": [name for name, _ in entries], "path": str(diary_dir)}
 
     # Create new entry
-    date_str = datetime.now().strftime("%Y-%m-%d")
+    date_str = datetime.now(UTC).strftime("%Y-%m-%d")
     if title:
         safe_title = "".join(c if c.isalnum() or c in " -_" else "" for c in title)
         safe_title = safe_title.replace(" ", "_").lower()
