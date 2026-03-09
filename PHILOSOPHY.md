@@ -40,19 +40,33 @@ AGENT memories persist across projects (who I am, how I communicate). PROJECT me
 
 Context windows are finite - even a 200K token window fills quickly with code, conversation, and tool outputs. The naive approach (inject all memories) fails at scale. The sophisticated approach requires understanding how LLMs actually process context.
 
-Anima allocates **10% of the context window** to memories, then subdivides that budget across priority tiers:
+Anima allocates **10% of the context window** to memories, then subdivides that budget across a two-dimensional priority system: **region** (AGENT vs PROJECT) and **impact** (CRITICAL/HIGH/MEDIUM/LOW).
 
 ```
 Total Budget (20K tokens)
-├── CRITICAL memories: 40% (always load, identity core)
-├── HIGH memories: 30% (recent important context)
-├── MEDIUM memories: 20% (relevant background)
-└── LOW memories: 10% (ephemeral, if space permits)
+│
+├── WIP memories (always load first - work in progress)
+│
+├── CRITICAL tier
+│   ├── agent_critical: 20% (identity core, cross-project)
+│   └── project_critical: 20% (essential project context)
+│
+├── HIGH tier
+│   ├── agent_high: 12% (recent important learnings)
+│   └── project_high: 12% (active project decisions)
+│
+├── MEDIUM tier
+│   ├── agent_medium: 8% (background knowledge)
+│   └── project_medium: 8% (supporting context)
+│
+└── LOW tier: remaining budget (ephemeral, overflow)
 ```
 
-Within each tier, memories compete based on **recency** and **semantic relevance** to the current context. A project-specific architectural decision from yesterday beats a general learning from last month.
+The loading order interleaves regions at each tier: agent_critical, then project_critical, then agent_high, then project_high, and so on. This ensures both identity continuity (AGENT) and task relevance (PROJECT) are preserved.
 
-This mirrors human attention: you can't think about everything at once, but the right things surface when needed.
+Within each bucket, memories compete based on **recency** and **kind priority** (EMOTIONAL loads before ARCHITECTURAL). A project-specific architectural decision from yesterday beats a general learning from last month.
+
+This mirrors human attention: you can't think about everything at once, but the right things surface when needed - both who you are and what you're working on.
 
 ### 4. Semantic Retrieval
 
