@@ -7,10 +7,30 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, UTC
-from typing import Optional
+from typing import Final
 import uuid
 
 from anima.core.types import RegionType, MemoryKind, ImpactLevel
+
+
+# DSL format abbreviations (module-level for efficiency)
+_KIND_SHORT: Final[dict[MemoryKind, str]] = {
+    MemoryKind.EMOTIONAL: "EMOT",
+    MemoryKind.ARCHITECTURAL: "ARCH",
+    MemoryKind.LEARNINGS: "LEARN",
+    MemoryKind.ACHIEVEMENTS: "ACHV",
+    MemoryKind.INTROSPECT: "INTRO",
+    MemoryKind.DREAM: "DREAM",
+    MemoryKind.SUBCONSCIOUS: "SUBC",
+}
+
+_IMPACT_SHORT: Final[dict[ImpactLevel, str]] = {
+    ImpactLevel.LOW: "LOW",
+    ImpactLevel.MEDIUM: "MED",
+    ImpactLevel.HIGH: "HIGH",
+    ImpactLevel.CRITICAL: "CRIT",
+    ImpactLevel.WIP: "WIP",
+}
 
 
 @dataclass
@@ -29,7 +49,7 @@ class Memory:
 
     # Location
     region: RegionType = RegionType.PROJECT
-    project_id: Optional[str] = None
+    project_id: str | None = None
 
     # Content
     kind: MemoryKind = MemoryKind.LEARNINGS
@@ -45,29 +65,29 @@ class Memory:
     last_accessed: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     # Graph structure - linked list of memories by kind
-    previous_memory_id: Optional[str] = None
+    previous_memory_id: str | None = None
 
     # Append-only corrections
     version: int = 1
-    superseded_by: Optional[str] = None  # Points to correcting memory
+    superseded_by: str | None = None  # Points to correcting memory
 
     # Security
-    signature: Optional[str] = None  # Optional cryptographic signature
-    signature_valid: Optional[bool] = None  # Set during injection if verified
+    signature: str | None = None  # Optional cryptographic signature
+    signature_valid: bool | None = None  # Set during injection if verified
 
     # Performance optimization
-    token_count: Optional[int] = None  # Cached token count for injection budget
+    token_count: int | None = None  # Cached token count for injection budget
 
     # Platform tracking (spaceship journals)
-    platform: Optional[str] = None  # Which platform created this memory (claude, antigravity, opencode)
-    model: Optional[str] = None  # Which LLM model created this memory (e.g., claude-opus-4-5-20251101)
+    platform: str | None = None  # Which platform created this memory (claude, antigravity, opencode)
+    model: str | None = None  # Which LLM model created this memory (e.g., claude-opus-4-5-20251101)
 
     # Session tracking (Phase 3: Temporal Infrastructure)
-    session_id: Optional[str] = None  # Groups memories by conversation session
+    session_id: str | None = None  # Groups memories by conversation session
 
     # Git event correlation (Phase 3: Temporal Infrastructure)
-    git_commit: Optional[str] = None  # Commit hash when memory was created
-    git_branch: Optional[str] = None  # Branch name when memory was created
+    git_commit: str | None = None  # Commit hash when memory was created
+    git_branch: str | None = None  # Branch name when memory was created
 
     def __post_init__(self):
         """Ensure original_content is set if not provided."""
@@ -90,28 +110,11 @@ class Memory:
         With ? after impact if low confidence.
         With ⚠ prefix if signature verification failed.
         """
-        kind_short = {
-            MemoryKind.EMOTIONAL: "EMOT",
-            MemoryKind.ARCHITECTURAL: "ARCH",
-            MemoryKind.LEARNINGS: "LEARN",
-            MemoryKind.ACHIEVEMENTS: "ACHV",
-            MemoryKind.INTROSPECT: "INTRO",
-            MemoryKind.DREAM: "DREAM",
-            MemoryKind.SUBCONSCIOUS: "SUBC",
-        }
-        impact_short = {
-            ImpactLevel.LOW: "LOW",
-            ImpactLevel.MEDIUM: "MED",
-            ImpactLevel.HIGH: "HIGH",
-            ImpactLevel.CRITICAL: "CRIT",
-            ImpactLevel.WIP: "WIP",
-        }
-
         confidence_marker = "?" if self.is_low_confidence() else ""
         # Show warning if signature was checked and failed
         untrusted_marker = "⚠" if self.signature_valid is False else ""
 
-        return f"{untrusted_marker}~{kind_short[self.kind]}:{impact_short[self.impact]}{confidence_marker}| {self.content}"
+        return f"{untrusted_marker}~{_KIND_SHORT[self.kind]}:{_IMPACT_SHORT[self.impact]}{confidence_marker}| {self.content}"
 
     def touch(self) -> None:
         """Update last_accessed to now."""
@@ -128,7 +131,7 @@ class MemoryBlock:
     """
 
     agent_name: str
-    project_name: Optional[str]
+    project_name: str | None
     memories: list[Memory] = field(default_factory=list)
 
     def to_dsl(self) -> str:

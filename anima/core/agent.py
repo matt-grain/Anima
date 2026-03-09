@@ -3,10 +3,14 @@
 
 """Agent identity and resolution for LTM."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 import re
+
+import yaml
 
 
 @dataclass
@@ -20,10 +24,10 @@ class Agent:
 
     id: str
     name: str
-    definition_path: Optional[Path] = None
-    signing_key: Optional[str] = None
+    definition_path: Path | None = None
+    signing_key: str | None = None
     is_subagent: bool = False
-    created_at: Optional[str] = None
+    created_at: str | None = None
 
     def has_signing_key(self) -> bool:
         """Check if this agent has a signing key for memory authentication."""
@@ -41,7 +45,7 @@ class Project:
     id: str
     name: str
     path: Path
-    created_at: Optional[str] = None
+    created_at: str | None = None
 
 
 def slugify(text: str) -> str:
@@ -59,11 +63,11 @@ def parse_agent_frontmatter(content: str) -> dict[str, Any]:
     """
     Parse LTM frontmatter from an agent definition file.
 
-    Looks for YAML frontmatter between --- markers with an ltm: section.
+    Looks for YAML frontmatter between --- markers with an anima: or ltm: section.
 
     Example:
         ---
-        ltm:
+        anima:
           id: "my-agent"
           signing_key: "optional-key"
           subagent: true
@@ -78,36 +82,28 @@ def parse_agent_frontmatter(content: str) -> dict[str, Any]:
     if not match:
         return result
 
-    frontmatter = match.group(1)
+    frontmatter_text = match.group(1)
 
-    # Simple YAML parsing for ltm section
-    in_ltm_section = False
-    for line in frontmatter.split("\n"):
-        stripped = line.strip()
+    try:
+        frontmatter = yaml.safe_load(frontmatter_text)
+        if not isinstance(frontmatter, dict):
+            return result
 
-        if stripped in ("anima:", "ltm:"):
-            in_ltm_section = True
-            continue
+        # Look for anima: or ltm: section
+        ltm_section = frontmatter.get("anima") or frontmatter.get("ltm")
+        if not isinstance(ltm_section, dict):
+            return result
 
-        if in_ltm_section:
-            # Check if we've left the ltm section (no indent)
-            if stripped and not line.startswith(" ") and not line.startswith("\t"):
-                in_ltm_section = False
-                continue
+        if "id" in ltm_section:
+            result["id"] = str(ltm_section["id"])
+        if "signing_key" in ltm_section:
+            result["signing_key"] = str(ltm_section["signing_key"])
+        if "subagent" in ltm_section:
+            result["subagent"] = bool(ltm_section["subagent"])
 
-            # Parse key: value
-            if ":" in stripped:
-                key, value = stripped.split(":", 1)
-                key = key.strip()
-                value = value.strip().strip("\"'")
-
-                if key == "id":
-                    result["id"] = value
-                elif key == "signing_key":
-                    result["signing_key"] = value
-                elif key == "subagent":
-                    # Parse boolean
-                    result["subagent"] = value.lower() in ("true", "yes", "1")
+    except yaml.YAMLError:
+        # If YAML parsing fails, return defaults
+        pass
 
     return result
 
@@ -123,11 +119,11 @@ class AgentResolver:
     4. Fallback to project name as implicit agent ID
     """
 
-    def __init__(self, project_path: Optional[Path] = None):
+    def __init__(self, project_path: Path | None = None):
         self.project_path = project_path or Path.cwd()
         self.home = Path.home()
 
-    def resolve(self, explicit_agent: Optional[str] = None) -> Agent:
+    def resolve(self, explicit_agent: str | None = None) -> Agent:
         """
         Resolve the current agent.
 
@@ -180,7 +176,7 @@ class AgentResolver:
         project_name = self.project_path.name
         return Project(id=slugify(project_name), name=project_name, path=self.project_path)
 
-    def _find_agent_by_name(self, name: str) -> Optional[Agent]:
+    def _find_agent_by_name(self, name: str) -> Agent | None:
         """Find an agent by name in local or global dirs."""
         # Check local first (in order: .agent, .claude, .gemini)
         for config_name in [".agent", ".claude", ".gemini"]:
@@ -196,7 +192,7 @@ class AgentResolver:
 
         return None
 
-    def _find_first_agent_in_dir(self, agents_dir: Path) -> Optional[Agent]:
+    def _find_first_agent_in_dir(self, agents_dir: Path) -> Agent | None:
         """
         Find the first non-subagent agent definition in a directory.
 
