@@ -28,18 +28,60 @@ Session Start → Load memories → Agent has context → Session End → Save n
 
 ## Quick Start
 
+### First-Time Setup
+
 ```bash
-# Install
+# Clone and install
 git clone https://github.com/matt-grain/Anima.git
 cd Anima
 uv sync
 
-# Setup for Claude Code (MCP server + hooks)
+# Configure Claude Code (installs global MCP server + hooks + skills)
 uv run anima setup --mode mcp
 
-# Or setup for local development
+# Optional: enable eyes and voice
+uv run anima setup --mode mcp --eyes --tts
+```
+
+### Start the Server
+
+The MCP/HTTP server needs to run in the background:
+
+```bash
+# Start server (run once, keeps running)
+uv run anima serve
+
+# Or with debug logging
+uv run anima serve --debug
+```
+
+The server handles:
+- **MCP tools**: Memory operations called by Claude Code
+- **HTTP hooks**: Session lifecycle events (start, end, compact)
+
+### Using in Other Projects
+
+Once setup completes, **no per-project installation is needed**. The configuration is global:
+
+| Component | Location | Scope |
+|-----------|----------|-------|
+| MCP Server | `~/.claude.json` | All Claude Code sessions |
+| Hooks | `~/.claude/hooks.json` | All sessions |
+| Skills | `~/.claude/skills/` | All sessions |
+| Memories | `~/.anima/memories.db` | Shared across projects |
+
+Just open Claude Code in any project - memories load automatically at session start.
+
+### Local Development
+
+If you're developing Anima itself:
+
+```bash
+# Point global MCP to your local checkout
 uv run anima setup --local --mode mcp
 ```
+
+This configures the global server to use your local repo instead of an installed version.
 
 ## Key Features
 
