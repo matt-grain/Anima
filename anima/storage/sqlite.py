@@ -99,6 +99,49 @@ class MemoryStore(MemoryStoreProtocol):
         finally:
             conn.close()
 
+    # --- Global statistics ---
+
+    def get_global_stats(self) -> dict:
+        """
+        Get global memory statistics across all agents and projects.
+
+        Returns counts by region (agent vs project) and impact level.
+        Used for startup diagnostics and health checks.
+        """
+        with self._connect() as conn:
+            # Total and region counts
+            row = conn.execute("""
+                SELECT
+                    COUNT(*) as total,
+                    SUM(CASE WHEN project_id IS NULL THEN 1 ELSE 0 END) as agent_count,
+                    SUM(CASE WHEN project_id IS NOT NULL THEN 1 ELSE 0 END) as project_count
+                FROM memories
+                WHERE superseded_by IS NULL
+            """).fetchone()
+            total = row[0] if row else 0
+            agent_count = row[1] if row else 0
+            project_count = row[2] if row else 0
+
+            # Impact level counts
+            impact_rows = conn.execute("""
+                SELECT impact, COUNT(*) as cnt
+                FROM memories
+                WHERE superseded_by IS NULL
+                GROUP BY impact
+            """).fetchall()
+            by_impact = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
+            for impact_row in impact_rows:
+                impact_name = impact_row[0].upper() if impact_row[0] else "LOW"
+                if impact_name in by_impact:
+                    by_impact[impact_name] = impact_row[1]
+
+        return {
+            "total": total,
+            "agent_count": agent_count,
+            "project_count": project_count,
+            "by_impact": by_impact,
+        }
+
     # --- Agent operations ---
 
     def save_agent(self, agent: Agent) -> None:

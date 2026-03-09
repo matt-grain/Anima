@@ -205,34 +205,12 @@ def _print_startup_stats() -> None:
     from anima.tools.version import get_installed_version, check_for_update_cached
 
     store = MemoryStore()
+    stats = store.get_global_stats()
 
-    # Count memories using raw SQL for global stats
-    with store._connect() as conn:
-        # Total and region counts
-        row = conn.execute("""
-            SELECT
-                COUNT(*) as total,
-                SUM(CASE WHEN project_id IS NULL THEN 1 ELSE 0 END) as agent_count,
-                SUM(CASE WHEN project_id IS NOT NULL THEN 1 ELSE 0 END) as project_count
-            FROM memories
-            WHERE superseded_by IS NULL
-        """).fetchone()
-        total = row[0] if row else 0
-        agent_count = row[1] if row else 0
-        project_count = row[2] if row else 0
-
-        # Impact level counts
-        impact_rows = conn.execute("""
-            SELECT impact, COUNT(*) as cnt
-            FROM memories
-            WHERE superseded_by IS NULL
-            GROUP BY impact
-        """).fetchall()
-        by_impact = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
-        for impact_row in impact_rows:
-            impact_name = impact_row[0].upper() if impact_row[0] else "LOW"
-            if impact_name in by_impact:
-                by_impact[impact_name] = impact_row[1]
+    total = stats["total"]
+    agent_count = stats["agent_count"]
+    project_count = stats["project_count"]
+    by_impact = stats["by_impact"]
 
     installed = get_installed_version()
 

@@ -480,9 +480,11 @@ class MemoryInjector:
                         memories.append(mem)
                         seen_ids.add(mem.id)
 
-        except Exception:
+        except Exception as e:
             # If fingerprinting fails, fall back to tier-based loading
-            pass
+            from loguru import logger
+
+            logger.debug(f"Semantic project loading failed, using tier-based fallback: {e}")
 
         return memories
 
@@ -583,8 +585,6 @@ class MemoryInjector:
             if "since" in filters and not is_critical:
                 since = filters["since"]
                 mem_time = mem.created_at
-                if mem_time.tzinfo:
-                    mem_time = mem_time.replace(tzinfo=None)
                 if mem_time < since:
                     keep = False
 
@@ -698,6 +698,7 @@ class MemoryInjector:
         result: list[Memory] = []
         total_tokens_used = 0
         overflow: list[Memory] = []  # Memories that didn't fit their bucket
+        overflow_ids: set[str] = set()  # O(1) lookup for overflow membership
         bucket_counts: dict[str, int] = {
             "agent_critical": 0,
             "agent_high": 0,
@@ -740,6 +741,7 @@ class MemoryInjector:
                 else:
                     # Didn't fit in bucket, add to overflow
                     overflow.append(mem)
+                    overflow_ids.add(mem.id)
 
         # Fill LOW buckets and overflow with remaining budget
         remaining_budget = total_budget - total_tokens_used
@@ -754,7 +756,7 @@ class MemoryInjector:
                 result.append(mem)
                 remaining_budget -= mem_tokens
                 # Track which bucket it came from
-                if mem in overflow:
+                if mem.id in overflow_ids:
                     bucket_counts["overflow"] += 1
                 elif mem.region == RegionType.PROJECT:
                     bucket_counts["project_low"] += 1

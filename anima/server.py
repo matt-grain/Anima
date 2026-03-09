@@ -14,7 +14,7 @@ Usage:
 """
 
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Literal
 
@@ -22,7 +22,9 @@ from loguru import logger
 from mcp.server.fastmcp import FastMCP
 
 from anima.core import (
+    Agent,
     Memory,
+    Project,
     ImpactLevel,
     RegionType,
     AgentResolver,
@@ -269,12 +271,12 @@ def memory(
         return {"error": f"Unknown action: {action}"}
 
 
-def _do_remember(text: str, agent, project, store: MemoryStore) -> dict:
+def _do_remember(text: str, agent: Agent, project: Project, store: MemoryStore) -> dict:
     """Save a memory."""
     if not text:
         return {"error": "text required for remember"}
 
-    now = datetime.now()
+    now = datetime.now(UTC)
     memory_impact = infer_impact(text)
     memory_kind = infer_kind(text)
     memory_region = infer_region(text, has_project=True)
@@ -306,7 +308,7 @@ def _do_remember(text: str, agent, project, store: MemoryStore) -> dict:
         session_id=session_id,
     )
 
-    if should_sign(agent):
+    if should_sign(agent) and agent.signing_key:
         mem.signature = sign_memory(mem, agent.signing_key)
 
     ensure_token_count(mem)
@@ -355,7 +357,7 @@ def _do_remember(text: str, agent, project, store: MemoryStore) -> dict:
     }
 
 
-def _do_recall(query: str, limit: int, agent, project, store: MemoryStore) -> dict:
+def _do_recall(query: str, limit: int, agent: Agent, project: Project, store: MemoryStore) -> dict:
     """Search memories."""
     if not query:
         return {"error": "query required for recall"}
@@ -402,7 +404,7 @@ def _do_recall(query: str, limit: int, agent, project, store: MemoryStore) -> di
     return {"results": results[:limit], "count": len(results)}
 
 
-def _do_forget(memory_id: str, agent, store: MemoryStore) -> dict:
+def _do_forget(memory_id: str, agent: Agent, store: MemoryStore) -> dict:
     """Forget a memory."""
     if not memory_id:
         return {"error": "id required for forget"}
@@ -416,7 +418,7 @@ def _do_forget(memory_id: str, agent, store: MemoryStore) -> dict:
         return {"error": "Multiple matches", "ids": [m.id[:8] for m in matching]}
 
     mem = matching[0]
-    now = datetime.now()
+    now = datetime.now(UTC)
 
     correction = Memory(
         agent_id=mem.agent_id,
@@ -440,7 +442,7 @@ def _do_forget(memory_id: str, agent, store: MemoryStore) -> dict:
     return {"forgotten": mem.id[:8], "preview": mem.content[:60]}
 
 
-def _do_list(limit: int, agent, project, store: MemoryStore) -> dict:
+def _do_list(limit: int, agent: Agent, project: Project, store: MemoryStore) -> dict:
     """List memories."""
     memories = store.get_memories_for_agent(agent_id=agent.id, project_id=project.id)
     memories.sort(key=lambda m: m.created_at, reverse=True)
@@ -459,7 +461,7 @@ def _do_list(limit: int, agent, project, store: MemoryStore) -> dict:
     return {"memories": results, "total": len(memories)}
 
 
-def _do_refresh(agent, project, store: MemoryStore) -> dict:
+def _do_refresh(agent: Agent, project: Project, store: MemoryStore) -> dict:
     """Refresh memories into context."""
     from anima.core import Agent
     from anima.core.config import get_config

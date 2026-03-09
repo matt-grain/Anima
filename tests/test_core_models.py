@@ -5,7 +5,7 @@
 Unit tests for LTM core models.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC
 from pathlib import Path
 
 
@@ -96,14 +96,14 @@ class TestMemory:
 
     def test_memory_timestamps(self) -> None:
         """Test memory timestamps are set correctly."""
-        before = datetime.now()
+        before = datetime.now(UTC)
         memory = Memory(
             agent_id="test",
             region=RegionType.AGENT,
             kind=MemoryKind.LEARNINGS,
             content="Test",
         )
-        after = datetime.now()
+        after = datetime.now(UTC)
 
         assert before <= memory.created_at <= after
         assert before <= memory.last_accessed <= after

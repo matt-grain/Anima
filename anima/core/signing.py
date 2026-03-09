@@ -26,7 +26,20 @@ def _get_signing_payload(memory: "Memory") -> bytes:
     - id, agent_id, region, project_id, kind
     - original_content (not content, which may compact)
     - impact, created_at
+
+    Note: Timestamps are normalized to naive (no timezone) for consistent
+    signing regardless of whether the memory was created with UTC-aware
+    or naive timestamps. This ensures signatures remain valid across
+    storage round-trips (SQLite stores as string, may lose timezone info).
     """
+    # Normalize timestamp to naive for consistent signing
+    created_at_str = ""
+    if memory.created_at:
+        ts = memory.created_at
+        if ts.tzinfo is not None:
+            ts = ts.replace(tzinfo=None)
+        created_at_str = ts.isoformat()
+
     parts = [
         memory.id,
         memory.agent_id,
@@ -35,7 +48,7 @@ def _get_signing_payload(memory: "Memory") -> bytes:
         memory.kind.value,
         memory.original_content,
         memory.impact.value,
-        memory.created_at.isoformat() if memory.created_at else "",
+        created_at_str,
     ]
     return "|".join(parts).encode("utf-8")
 

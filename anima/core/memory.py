@@ -3,8 +3,10 @@
 
 """Memory data model for LTM."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Optional
 import uuid
 
@@ -39,8 +41,8 @@ class Memory:
     confidence: float = 1.0  # 0.0-1.0, decreases on contradiction
 
     # Timestamps (always from OS, never from AI knowledge)
-    created_at: datetime = field(default_factory=datetime.now)
-    last_accessed: datetime = field(default_factory=datetime.now)
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    last_accessed: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     # Graph structure - linked list of memories by kind
     previous_memory_id: Optional[str] = None
@@ -113,7 +115,7 @@ class Memory:
 
     def touch(self) -> None:
         """Update last_accessed to now."""
-        self.last_accessed = datetime.now()
+        self.last_accessed = datetime.now(UTC)
 
 
 @dataclass

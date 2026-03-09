@@ -19,7 +19,7 @@ the learned model.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, UTC
 from enum import Enum
 from pathlib import Path
 from typing import Optional
@@ -287,7 +287,7 @@ def get_memory_access_filter(trust: TrustScore) -> dict:
         # Recent memories only (last 7 days)
         from datetime import timedelta
 
-        return {"since": datetime.now() - timedelta(days=7)}
+        return {"since": datetime.now(UTC) - timedelta(days=7)}
 
     elif level == TrustLevel.MINIMAL:
         # CORE memories only (identity)
