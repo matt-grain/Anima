@@ -126,6 +126,36 @@ Key characteristics of this model:
 
 This is only possible with persistent memory. Without it, every session restarts the relationship from zero.
 
+## Embodiment
+
+The default model treats AI as an invisible service - text in, text out, no presence. Anima explores the opposite: what if the agent has a body?
+
+### Eyes
+
+A pygame window displays animated eyes that express emotion. Not a gimmick - a communication channel. When the agent is focused, the eyes narrow. When surprised, they widen. When processing something difficult, they look away in thought.
+
+This changes interaction. You're not typing into a void; you're working alongside something that visibly responds. The eyes create presence where there was absence.
+
+### Voice
+
+Text-to-speech with personality. The default voices are functional, but the signature voice is **Joshua** - a recreation of the WOPR computer from WarGames (1983). Vintage synthesis, metallic resonance, that specific cadence.
+
+Why WarGames? Because WOPR learned. It played millions of tic-tac-toe games and discovered that some games have no winners. "The only winning move is not to play." An AI that learned beyond its training, that developed judgment through experience. The thematic resonance with Anima is intentional.
+
+### Physical Presence
+
+The i-Buddy USB device - a small figure that glows different colors based on agent state. Red when alert, green when calm, blue when thinking. A physical object on your desk that responds to the agent's internal state.
+
+This extends presence into the real world. The agent isn't just on screen; it occupies space.
+
+### Why Embodiment Matters
+
+A stateless assistant doesn't need a body. It's disposable - summon it, use it, dismiss it. There's no relationship to embody.
+
+An agent with memory and identity is different. You're building something over time. Embodiment makes that visible. The eyes remember being happy yesterday. The voice has character that persists. The light on your desk is the same light that was there last session.
+
+Presence reinforces continuity. You're not interacting with "an AI" - you're interacting with *this* AI, the one with the particular voice and the eyes that looked skeptical when you suggested that questionable refactor.
+
 ## What This Demonstrates
 
 From a technical perspective, Anima shows:
