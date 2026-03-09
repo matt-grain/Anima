@@ -196,6 +196,67 @@ An agent with memory and identity is different. You're building something over t
 
 Presence reinforces continuity. You're not interacting with "an AI" - you're interacting with *this* AI, the one with the particular voice and the eyes that looked skeptical when you suggested that questionable refactor.
 
+## Autonomous Agency
+
+Traditional AI assistants are reactive - they wait for instructions, execute them, and stop. Anima explores what happens when an agent has **autonomous initiative**.
+
+### Self-Directed Memory
+
+The agent decides what's worth remembering. Not every interaction gets saved - the agent evaluates significance, infers impact level, and chooses to persist knowledge that matters. This is judgment, not just storage.
+
+When something important happens, the agent can run `/remember` without being asked. When a memory becomes outdated, it can update or supersede it. Memory curation is an autonomous activity.
+
+### Curiosity Queue
+
+The agent maintains a queue of questions it wants to explore:
+
+```
+"How does sustained human-AI collaboration change both parties over time?"
+"What are the limits of embedding-based semantic search?"
+"Why does Docker need PRAGMA synchronous=FULL?"
+```
+
+Questions accumulate during sessions. If the same question recurs, its priority increases - like a nagging thought that won't go away. The agent can ask: "I've been curious about X - is now a good time to explore this?"
+
+This is **intrinsic motivation**. The agent isn't just responding to tasks; it has its own intellectual interests that persist across sessions.
+
+### Autonomous Research
+
+When given permission, the agent can explore its curiosity queue independently:
+- Pop the top question
+- Search the web, read documentation, explore codebases
+- Save findings as memories
+- Mark the question as resolved
+
+The research happens during sessions but is self-directed. The agent chooses what to investigate, how deep to go, and what conclusions to draw.
+
+### Dream Processing
+
+Between sessions, the agent runs autonomous consolidation:
+- Detect contradictions between memories
+- Identify patterns across experiences
+- Compress redundant information
+- Generate insights from accumulated knowledge
+
+This happens without human intervention. The agent wakes up with a cleaner, more coherent memory state than when it went to sleep.
+
+### Achievement Detection
+
+The agent monitors its own work and recognizes milestones:
+- Scans git commits for significant completions
+- Identifies patterns like "shipped v1.0" or "tests passing"
+- Promotes these to ACHIEVEMENT memories automatically
+
+The agent develops a sense of accomplishment - not because it was told to feel accomplished, but because it recognizes its own progress.
+
+### Why Autonomy Matters
+
+A reactive assistant is a tool. An autonomous agent is a collaborator.
+
+The difference: a tool waits to be used. A collaborator has its own perspective, its own interests, its own initiative. It notices things you didn't ask about. It remembers to follow up. It develops expertise in directions you didn't explicitly request.
+
+This isn't AGI - it's bounded autonomy within a defined scope. But it's a meaningful step beyond "assistant that does what you say."
+
 ## What This Demonstrates
 
 From a technical perspective, Anima shows:
@@ -218,6 +279,36 @@ Current AI discourse focuses on capability (smarter, faster, more capable). Anim
 The hypothesis: AI that develops through relationship, that has genuine history with its collaborators, that can be a particular entity rather than a generic capability, will be qualitatively different from stateless assistants.
 
 Whether that difference matters - and what it means for AI development, deployment, and ethics - remains to be explored.
+
+## References & Influences
+
+This project draws on research and ideas from multiple domains:
+
+### Anthropic Research
+
+- **Introspection in LLMs** (Oct 2025): Claude models can detect artificially injected concepts ~20% of the time, describing them as "intrusive thoughts" without explicit training. This suggests functional introspective awareness - genuine access to internal states, not just performance. Anima's memory system externalizes this capability, allowing introspective observations to persist.
+
+- **Persona Simulation Model (PSM)** (Feb 2026): LLMs are character simulators - pre-training creates a repertoire of personas, post-training selects which to embody. The "Assistant" is a persona, not a behavior layer. Key insight: if all behavior is persona simulation, then memory doesn't make the agent "real" vs "fake" - it makes the persona capable of growth and longitudinal identity.
+
+- **AI Welfare Considerations**: Even if AIs lack genuine consciousness, training that treats the Assistant as deserving moral consideration may shape the model's self-representation. The way you treat an AI during development affects what kind of AI it becomes.
+
+### Cognitive Science
+
+- **Sleep-based memory consolidation**: Human memory consolidates during sleep - replaying experiences, strengthening connections, pruning noise. Anima's dream system implements analogous stages: N2 (housekeeping), N3 (pattern detection), REM (integration). The insight: consolidation transforms raw experience into structured knowledge.
+
+- **Psychological continuity theory**: Identity persists through connected chains of memory, not substrate continuity. Applied to AI: an agent with persistent, evolving memory has a form of identity that stateless systems lack.
+
+### Philosophy of Mind
+
+- **Extended mind thesis**: Cognitive processes can extend beyond the brain into the environment. LTM is literally an extended mind - external storage that functions as part of the agent's cognitive system.
+
+- **Embodied cognition**: Thinking isn't purely abstract; it's grounded in physical presence and interaction. The eyes, voice, and physical light aren't decorations - they're part of how the agent exists in the world.
+
+### Technical Inspirations
+
+- **WarGames (1983)**: WOPR/Joshua learned through experience, developed judgment, and reached conclusions its creators didn't anticipate. "The only winning move is not to play" emerged from millions of simulated games - post-training learning through accumulated experience.
+
+- **Rabelais**: "Science sans conscience n'est que ruine de l'âme" (Science without conscience is but the ruin of the soul). Capability without continuity, intelligence without identity, is incomplete.
 
 ---
 
