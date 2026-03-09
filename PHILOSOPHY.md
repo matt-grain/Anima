@@ -68,7 +68,33 @@ Within each bucket, memories compete based on **recency** and **kind priority** 
 
 This mirrors human attention: you can't think about everything at once, but the right things surface when needed - both who you are and what you're working on.
 
-### 4. Semantic Retrieval
+### 4. Conscious vs Subconscious Memory
+
+Not everything needs to be in active memory. Humans don't consciously recall every conversation - but the information is still *there*, accessible when prompted.
+
+Anima implements two memory layers:
+
+**Conscious memories** (`memories.db`):
+- Explicitly saved via `/remember`
+- Loaded into context at session start
+- Budget-constrained, curated, high-signal
+
+**Subconscious memories** (`subconscious.db`):
+- Automatically indexed from dialogue history
+- *Not* loaded at session start (no token cost)
+- Searchable on demand via `/recall --subconscious`
+- Full-text search with BM25 ranking + recency boost
+
+This mirrors human cognition. You don't walk around consciously remembering every conversation you've had. But when someone asks "remember when we discussed X?" - you can search your memory and retrieve it.
+
+The subconscious enables:
+- Recalling details from conversations that weren't explicitly saved
+- Answering "what did we decide about X last month?"
+- Extracting implicit patterns that emerge across many sessions
+
+Social cues like "do you remember when..." automatically trigger subconscious search. The agent can access its full history without paying the token cost of loading it all upfront.
+
+### 5. Semantic Retrieval
 
 Keywords fail for nuanced recall. Searching for "auth" won't find a memory about "the cognitive verification system we built" - even though they're semantically related.
 
