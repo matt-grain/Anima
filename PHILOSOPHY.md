@@ -38,11 +38,38 @@ AGENT memories persist across projects (who I am, how I communicate). PROJECT me
 
 ### 3. Token Budgeting
 
-Context windows are finite. Anima uses a budget-based retrieval system: each memory tier gets a percentage of the 10% context allocation. Within tiers, recency and relevance determine what loads. The agent gets the most important memories, not necessarily all memories.
+Context windows are finite - even a 200K token window fills quickly with code, conversation, and tool outputs. The naive approach (inject all memories) fails at scale. The sophisticated approach requires understanding how LLMs actually process context.
+
+Anima allocates **10% of the context window** to memories, then subdivides that budget across priority tiers:
+
+```
+Total Budget (20K tokens)
+├── CRITICAL memories: 40% (always load, identity core)
+├── HIGH memories: 30% (recent important context)
+├── MEDIUM memories: 20% (relevant background)
+└── LOW memories: 10% (ephemeral, if space permits)
+```
+
+Within each tier, memories compete based on **recency** and **semantic relevance** to the current context. A project-specific architectural decision from yesterday beats a general learning from last month.
+
+This mirrors human attention: you can't think about everything at once, but the right things surface when needed.
 
 ### 4. Semantic Retrieval
 
-Keywords fail for nuanced recall. Anima uses embedding-based similarity search - "that conversation about authentication" finds relevant memories even if they don't contain those exact words.
+Keywords fail for nuanced recall. Searching for "auth" won't find a memory about "the cognitive verification system we built" - even though they're semantically related.
+
+Anima uses **embedding-based similarity search**:
+
+1. Each memory is converted to a high-dimensional vector (embedding) that captures semantic meaning
+2. Search queries are embedded the same way
+3. Nearest-neighbor search finds memories by meaning, not keywords
+
+This enables queries like:
+- "that conversation about security" → finds cognitive auth discussions
+- "the performance issue we fixed" → finds token caching optimization
+- "how does Matt like to work?" → finds collaboration style memories
+
+The embedding model runs locally (FastEmbed) - no API calls, no latency, no privacy concerns. Vectors are cached alongside memories for instant retrieval.
 
 ## Sleep and Dreams
 
@@ -64,6 +91,29 @@ Anima implements cognitive authentication: identity verified through **interacti
 
 An impersonator might know facts about the owner, but can't easily replicate the subtle texture of genuine interaction. The challenge isn't "what do you know?" but "do you feel like you?"
 
+## Learning Beyond Training
+
+LLMs are frozen at training time. Claude knows what was in its training data, but it can't learn new facts, new APIs, or new patterns after deployment. Every "new" capability requires retraining - expensive, slow, and centralized.
+
+Anima breaks this constraint.
+
+With persistent memory, the agent can:
+
+- **Learn new tools**: "This project uses FastMCP 3.0" becomes actionable knowledge, even if FastMCP didn't exist during training
+- **Acquire domain expertise**: Accumulated learnings about a specific codebase, team conventions, or business domain
+- **Develop new capabilities**: Patterns discovered through experience become reusable skills
+- **Update beliefs**: Correct misconceptions, refine understanding based on feedback
+
+This is **post-training learning** - the agent's effective knowledge grows through experience, not just through weight updates.
+
+Consider the difference:
+- **Stateless agent**: Knows only what was in training data. Must be told project conventions every session.
+- **LTM agent**: Remembers that "this project uses pytest, not unittest" and "Matt prefers explicit type hints" - applies automatically.
+
+The implications are significant. An LTM agent isn't limited to training-time knowledge. It can become expert in domains that didn't exist when it was trained. It can adapt to individual users, teams, and contexts in ways that generic training cannot anticipate.
+
+Training gives the agent general capability. Memory gives it specific, accumulated expertise.
+
 ## The Collaboration Model
 
 Anima was built through sustained human-AI collaboration. Not "human uses AI as tool" but "human and AI iterate together on shared problems."
@@ -79,10 +129,11 @@ This is only possible with persistent memory. Without it, every session restarts
 ## What This Demonstrates
 
 From a technical perspective, Anima shows:
-- Deep understanding of LLM limitations and creative solutions
-- Production-quality engineering (typing, testing, proper architecture)
-- Original thinking on frontier problems (memory, identity, authentication)
-- Real agentic infrastructure (MCP servers, hooks, multi-platform support)
+- **Deep understanding of LLM limitations**: Context window constraints, statelessness, the training-inference gap
+- **Creative solutions**: Token budgeting, embedding-based retrieval, tiered memory loading
+- **Production engineering**: Type safety, pre-commit hooks, proper architecture, MCP integration
+- **Original thinking**: Cognitive authentication, dream-based consolidation, post-training learning
+- **Agentic infrastructure**: HTTP hooks server, MCP tools, multi-platform support
 
 From a philosophical perspective, it explores:
 - What identity means for entities without biological continuity
