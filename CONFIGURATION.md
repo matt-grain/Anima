@@ -17,6 +17,14 @@ Create `~/.anima/config.json`:
     "context_percent": 0.1,
     "context_size": 200000
   },
+  "injection_buckets": {
+    "agent_critical": 0.40,
+    "agent_high": 0.20,
+    "agent_medium": 0.10,
+    "project_critical": 0.15,
+    "project_high": 0.10,
+    "project_medium": 0.05
+  },
   "decay": {
     "low_days": 1,
     "medium_days": 7,
@@ -88,6 +96,53 @@ Controls how much of the context window is used for memory injection.
 - With default settings: 200,000 * 0.10 = 20,000 tokens for memories
 - Increase `context_percent` if you want more memories loaded
 - Tiered loading ensures CRITICAL memories always fit
+
+---
+
+### `injection_buckets` - Token Budget Allocation
+
+Controls how the memory budget is subdivided across region (AGENT/PROJECT) and impact (CRITICAL/HIGH/MEDIUM) tiers. Values are percentages of the total memory budget.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `agent_critical` | float | `0.40` | AGENT CRITICAL memories (identity core). |
+| `agent_high` | float | `0.20` | AGENT HIGH memories (recent learnings). |
+| `agent_medium` | float | `0.10` | AGENT MEDIUM memories (background). |
+| `project_critical` | float | `0.15` | PROJECT CRITICAL memories (essential context). |
+| `project_high` | float | `0.10` | PROJECT HIGH memories (active decisions). |
+| `project_medium` | float | `0.05` | PROJECT MEDIUM memories (supporting info). |
+
+**Example:**
+```json
+{
+  "injection_buckets": {
+    "agent_critical": 0.35,
+    "agent_high": 0.15,
+    "agent_medium": 0.10,
+    "project_critical": 0.20,
+    "project_high": 0.15,
+    "project_medium": 0.05
+  }
+}
+```
+
+**Notes:**
+- Total should be <= 1.0 (100%). Remaining budget goes to LOW and overflow.
+- Loading order: WIP → agent_critical → project_critical → agent_high → project_high → agent_medium → project_medium → LOW
+- Within each bucket, memories are sorted by recency (newest first)
+- This ensures recent HIGH memories load even when there are many old CRITICAL
+
+**Visual breakdown with default 20K token budget:**
+```
+Total: 20,000 tokens
+├── agent_critical:   8,000 (40%)
+├── agent_high:       4,000 (20%)
+├── agent_medium:     2,000 (10%)
+├── project_critical: 3,000 (15%)
+├── project_high:     2,000 (10%)
+├── project_medium:   1,000 (5%)
+└── LOW/overflow:     remaining
+```
 
 ---
 
