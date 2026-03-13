@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from datetime import datetime
+from datetime import datetime, UTC
 
 from anima.core import AgentResolver, Agent
 from anima.core.types import MemoryKind
@@ -54,7 +54,7 @@ def get_curiosity_prompt(agent_id: str, project_id: str) -> str | None:
         # Check last research time
         last_research = get_last_research()
         if last_research:
-            days_since = (datetime.now() - last_research).days
+            days_since = (datetime.now(UTC) - last_research).days
             if days_since < 1:
                 return None  # Researched recently, no need to prompt
         else:
@@ -124,8 +124,8 @@ def get_dream_prompt(agent_id: str, project_id: Optional[str], store: MemoryStor
             last_dream = dream_store.get_last_completed_session(agent_id, None)
 
         if last_dream:
-            dream_time = datetime.fromisoformat(last_dream.updated_at)
-            hours_ago = (datetime.now() - dream_time).total_seconds() / 3600
+            dream_time = datetime.fromisoformat(last_dream.updated_at).replace(tzinfo=UTC)
+            hours_ago = (datetime.now(UTC) - dream_time).total_seconds() / 3600
 
             # Only surface if dream was within last 24 hours
             if hours_ago <= 24:
@@ -389,7 +389,7 @@ def run(args: Optional[list[str]] = None) -> int:
             # WIP was injected - check if it's recent (TTL check)
             wip_memory = store.get_memory(wip_id)
             if wip_memory:
-                hours_old = (datetime.now() - wip_memory.created_at).total_seconds() / 3600
+                hours_old = (datetime.now(UTC) - wip_memory.created_at).total_seconds() / 3600
                 if hours_old <= wip_ttl_hours:
                     # Recent WIP = this is post-compact, auto-load deferred
                     is_post_compact = True
@@ -432,7 +432,7 @@ def run(args: Optional[list[str]] = None) -> int:
             # Force-load it anyway
             wip_memory = store.get_memory(wip_id)
             if wip_memory:
-                hours_old = (datetime.now() - wip_memory.created_at).total_seconds() / 3600
+                hours_old = (datetime.now(UTC) - wip_memory.created_at).total_seconds() / 3600
                 if hours_old <= wip_ttl_hours:
                     is_post_compact = True
                 store.delete_memory(wip_id)
