@@ -16,7 +16,7 @@ from typing import Optional
 
 
 # Current schema version - increment when schema changes
-SCHEMA_VERSION = 10
+SCHEMA_VERSION = 11
 
 # Migration history:
 # v1: Original schema (EMOTIONAL, ARCHITECTURAL, LEARNINGS, ACHIEVEMENTS)
@@ -29,6 +29,7 @@ SCHEMA_VERSION = 10
 # v8: WIP impact level for post-compact recovery signals
 # v9: SUBCONSCIOUS kind for Sonnet-extracted memories (hidden but influencing)
 # v10: Added model column for LLM version tracking (e.g., claude-opus-4-5-20251101)
+# v11: Memory relationships - superseded_at timestamp, thread for saga grouping
 
 
 def get_schema_version(db_path: Path) -> int:
@@ -491,6 +492,34 @@ def migrate_v9_to_v10(conn: sqlite3.Connection) -> None:
     conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_model ON memories(model)")
 
 
+def migrate_v10_to_v11(conn: sqlite3.Connection) -> None:
+    """
+    Migrate from v10 to v11: Memory relationships.
+
+    Adds:
+    - superseded_at TIMESTAMP: When a memory was superseded (for tracking)
+    - thread TEXT: Saga/narrative grouping identifier
+
+    This enables proper memory lifecycle management where old memories
+    can be superseded by newer ones, and related memories can be grouped
+    into narrative threads/sagas.
+    """
+    # Add superseded_at column (nullable - only set when superseded)
+    try:
+        conn.execute("ALTER TABLE memories ADD COLUMN superseded_at TIMESTAMP")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
+    # Add thread column for saga grouping (nullable - most memories aren't in threads)
+    try:
+        conn.execute("ALTER TABLE memories ADD COLUMN thread TEXT")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
+    # Create index for thread-based queries
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_memories_thread ON memories(thread)")
+
+
 def has_memories_table(db_path: Path) -> bool:
     """Check if the memories table exists in the database."""
     try:
@@ -556,6 +585,9 @@ def run_migrations(db_path: Path, target_version: Optional[int] = None) -> tuple
 
         if current < 10 and target >= 10:
             migrate_v9_to_v10(conn)
+
+        if current < 11 and target >= 11:
+            migrate_v10_to_v11(conn)
 
         set_schema_version(conn, target)
         conn.commit()

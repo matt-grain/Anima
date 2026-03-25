@@ -70,6 +70,10 @@ class Memory:
     # Append-only corrections
     version: int = 1
     superseded_by: str | None = None  # Points to correcting memory
+    superseded_at: datetime | None = None  # When this memory was superseded
+
+    # Narrative grouping
+    thread: str | None = None  # Saga/narrative thread identifier
 
     # Security
     signature: str | None = None  # Optional cryptographic signature

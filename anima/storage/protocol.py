@@ -104,8 +104,20 @@ class MemoryStoreProtocol(ABC):
         ...
 
     @abstractmethod
-    def supersede_memory(self, old_memory_id: str, new_memory_id: str) -> None:
-        """Mark a memory as superseded by another."""
+    def supersede_memory(self, old_id: str, new_id: str) -> bool:
+        """
+        Mark a memory as superseded by another memory.
+
+        Sets superseded_by and superseded_at on the old memory, and creates
+        a SUPERSEDES link in memory_links.
+
+        Args:
+            old_id: ID of the memory being superseded
+            new_id: ID of the memory that supersedes it
+
+        Returns:
+            True if successful, False if old memory not found
+        """
         ...
 
     @abstractmethod

@@ -311,16 +311,19 @@ class MemoryStore(MemoryStoreProtocol):
                     id, agent_id, region, project_id, kind,
                     content, original_content, impact, confidence,
                     created_at, last_accessed, previous_memory_id,
-                    version, superseded_by, signature, token_count, platform,
+                    version, superseded_by, superseded_at, thread,
+                    signature, token_count, platform,
                     model, session_id, git_commit, git_branch
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id) DO UPDATE SET
                     content = excluded.content,
                     confidence = excluded.confidence,
                     last_accessed = excluded.last_accessed,
                     version = excluded.version,
                     superseded_by = excluded.superseded_by,
+                    superseded_at = excluded.superseded_at,
+                    thread = excluded.thread,
                     signature = excluded.signature,
                     token_count = excluded.token_count,
                     platform = excluded.platform,
@@ -344,6 +347,8 @@ class MemoryStore(MemoryStoreProtocol):
                     memory.previous_memory_id,
                     memory.version,
                     memory.superseded_by,
+                    memory.superseded_at.isoformat() if memory.superseded_at else None,
+                    memory.thread,
                     memory.signature,
                     memory.token_count,
                     memory.platform,
@@ -363,6 +368,71 @@ class MemoryStore(MemoryStoreProtocol):
                 return None
 
             return self._row_to_memory(row)
+
+    def supersede_memory(self, old_id: str, new_id: str) -> bool:
+        """
+        Mark a memory as superseded by another memory.
+
+        Sets superseded_by and superseded_at on the old memory, and creates
+        a SUPERSEDES link in memory_links.
+
+        Args:
+            old_id: ID of the memory being superseded
+            new_id: ID of the memory that supersedes it
+
+        Returns:
+            True if successful, False if old memory not found
+        """
+        with self._connect() as conn:
+            # Check old memory exists
+            old = conn.execute("SELECT id FROM memories WHERE id = ?", (old_id,)).fetchone()
+            if not old:
+                return False
+
+            # Update old memory
+            now = datetime.now(UTC).isoformat()
+            conn.execute(
+                "UPDATE memories SET superseded_by = ?, superseded_at = ? WHERE id = ?",
+                (new_id, now, old_id),
+            )
+
+            # Create SUPERSEDES link
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO memory_links (source_id, target_id, link_type, created_at)
+                VALUES (?, ?, 'SUPERSEDES', ?)
+                """,
+                (new_id, old_id, now),
+            )
+
+            return True
+
+    def set_thread(self, memory_id: str, thread: str) -> bool:
+        """
+        Assign a memory to a narrative thread/saga.
+
+        Args:
+            memory_id: ID of the memory
+            thread: Thread identifier
+
+        Returns:
+            True if successful, False if memory not found
+        """
+        with self._connect() as conn:
+            cursor = conn.execute(
+                "UPDATE memories SET thread = ? WHERE id = ?",
+                (thread, memory_id),
+            )
+            return cursor.rowcount > 0
+
+    def get_memories_by_thread(self, thread: str) -> list[Memory]:
+        """Get all memories in a thread/saga, ordered by creation time."""
+        with self._connect() as conn:
+            rows = conn.execute(
+                "SELECT * FROM memories WHERE thread = ? ORDER BY created_at ASC",
+                (thread,),
+            ).fetchall()
+            return [self._row_to_memory(row) for row in rows]
 
     def get_memories_for_agent(
         self,
@@ -494,14 +564,6 @@ class MemoryStore(MemoryStoreProtocol):
         with self._connect() as conn:
             rows = conn.execute(query, params).fetchall()
             return [self._row_to_memory(row) for row in rows]
-
-    def supersede_memory(self, old_memory_id: str, new_memory_id: str) -> None:
-        """Mark a memory as superseded by another."""
-        with self._connect() as conn:
-            conn.execute(
-                "UPDATE memories SET superseded_by = ? WHERE id = ?",
-                (new_memory_id, old_memory_id),
-            )
 
     def update_confidence(self, memory_id: str, confidence: float) -> None:
         """Update the confidence score of a memory."""
@@ -749,6 +811,8 @@ class MemoryStore(MemoryStoreProtocol):
             previous_memory_id=row["previous_memory_id"],
             version=row["version"],
             superseded_by=row["superseded_by"],
+            superseded_at=datetime.fromisoformat(row["superseded_at"]).replace(tzinfo=UTC) if row["superseded_at"] else None,
+            thread=row["thread"] if "thread" in row.keys() else None,
             signature=row["signature"],
             token_count=row["token_count"],
             platform=row["platform"] if "platform" in row.keys() else None,
@@ -1059,7 +1123,13 @@ class MemoryStore(MemoryStoreProtocol):
                     link_type = excluded.link_type,
                     similarity = excluded.similarity
                 """,
-                (source_id, target_id, link_type, similarity, datetime.now(UTC).isoformat()),
+                (
+                    source_id,
+                    target_id,
+                    link_type,
+                    similarity,
+                    datetime.now(UTC).isoformat(),
+                ),
             )
 
     def get_links_for_memory(self, memory_id: str) -> list[tuple[str, str, str, float | None]]:
@@ -1078,7 +1148,15 @@ class MemoryStore(MemoryStoreProtocol):
                 """,
                 (memory_id, memory_id),
             ).fetchall()
-            return [(row["source_id"], row["target_id"], row["link_type"], row["similarity"]) for row in rows]
+            return [
+                (
+                    row["source_id"],
+                    row["target_id"],
+                    row["link_type"],
+                    row["similarity"],
+                )
+                for row in rows
+            ]
 
     def get_linked_memory_ids(
         self,

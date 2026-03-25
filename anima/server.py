@@ -43,7 +43,12 @@ from anima.utils.spaceship import detect_spaceship
 
 # Configure loguru to write to file (stderr is used by MCP protocol)
 logger.remove()
-logger.add(str(Path.home() / ".anima" / "mcp_server.log"), rotation="1 MB", level="DEBUG", format="{time:YYYY-MM-DD HH:mm:ss} | {level:<7} | {message}")
+logger.add(
+    str(Path.home() / ".anima" / "mcp_server.log"),
+    rotation="1 MB",
+    level="DEBUG",
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level:<7} | {message}",
+)
 
 logger.info("=== Anima MCP Server module loaded ===")
 
@@ -317,6 +322,7 @@ def _do_remember(text: str, agent: Agent, project: Project, store: MemoryStore) 
 
     # Generate embedding and find links
     semantic_links = 0
+    candidates: list = []
     try:
         embedding = embed_text(text, quiet=True)
         store.save_embedding(mem.id, embedding)
@@ -350,12 +356,29 @@ def _do_remember(text: str, agent: Agent, project: Project, store: MemoryStore) 
         if memory_impact in (ImpactLevel.HIGH, ImpactLevel.CRITICAL):
             _set_eyes_emotion("happy")
 
-    return {
+    result: dict = {
         "id": mem.id[:8],
         "kind": memory_kind.value,
         "impact": memory_impact.value,
         "links": semantic_links,
     }
+
+    # Check for potential supersession/thread candidates
+    # Only suggest if we found high-similarity matches during link creation
+    if candidates:
+        top_match = candidates[0]
+        if top_match.similarity >= 0.70:
+            # Get the actual memory content for context
+            related_mem = store.get_memory(top_match.memory_id)
+            if related_mem and not related_mem.is_superseded():
+                result["related_memory"] = {
+                    "id": top_match.memory_id[:8],
+                    "similarity": round(top_match.similarity, 2),
+                    "content_preview": related_mem.content[:100].replace("\n", " "),
+                    "suggestion": ("HIGH_CONFIDENCE" if top_match.similarity >= 0.85 else "REVIEW_SUGGESTED"),
+                }
+
+    return result
 
 
 def _do_recall(query: str, limit: int, agent: Agent, project: Project, store: MemoryStore) -> dict:
@@ -570,7 +593,11 @@ def _do_add_curiosity(question: str, agent: Agent, project: Project, store: Curi
     if _eyes_enabled:
         _set_eyes_emotion("focused")
 
-    result = {"id": c.id[:8], "question": question, "queue": store.count_open(agent.id, project.id)}
+    result = {
+        "id": c.id[:8],
+        "question": question,
+        "queue": store.count_open(agent.id, project.id),
+    }
     if c.recurrence_count > 1:
         result["recurrence"] = c.recurrence_count
 
@@ -654,7 +681,12 @@ def _do_complete_research(curiosity_id: str, store: CuriosityStore) -> dict:
 
 def _do_diary(title: str, content: str, read_id: str) -> dict:
     """Create or read diary entries."""
-    from anima.commands.diary import get_diary_dir, get_diary_template, list_diary_entries, read_entry
+    from anima.commands.diary import (
+        get_diary_dir,
+        get_diary_template,
+        list_diary_entries,
+        read_entry,
+    )
 
     diary_dir = get_diary_dir()
 
@@ -1051,7 +1083,10 @@ def doctor(
 
 def _do_doctor_trust_status() -> dict:
     """Show current trust level."""
-    from anima.security.cognitive_auth import get_session_trust, get_memory_access_filter
+    from anima.security.cognitive_auth import (
+        get_session_trust,
+        get_memory_access_filter,
+    )
 
     trust_score = get_session_trust()
     level = trust_score.get_trust_level()
@@ -1209,7 +1244,16 @@ def _do_doctor_graph(memory_id: str) -> dict:
 
 @mcp.tool()
 def body(
-    action: Literal["emotion", "look", "blink", "speak", "voice-set", "voice-list", "light", "light-off"],
+    action: Literal[
+        "emotion",
+        "look",
+        "blink",
+        "speak",
+        "voice-set",
+        "voice-list",
+        "light",
+        "light-off",
+    ],
     emotion: str = "",
     text: str = "",
     voice: str = "",
@@ -1317,7 +1361,12 @@ def _do_body_voice(action: str, text: str, voice: str) -> dict:
 
             def _do_speak():
                 try:
-                    tts_speak(text, blocking=True, voice_name=voice if voice else None, mcp_safe=True)
+                    tts_speak(
+                        text,
+                        blocking=True,
+                        voice_name=voice if voice else None,
+                        mcp_safe=True,
+                    )
                 except Exception as e:
                     logger.error(f"TTS thread error: {e}")
 
@@ -1343,7 +1392,10 @@ def _do_body_voice(action: str, text: str, voice: str) -> dict:
         try:
             from anima.eyes.tts import list_available_voices, get_default_voice
 
-            return {"current": get_default_voice(), "available": list_available_voices()}
+            return {
+                "current": get_default_voice(),
+                "available": list_available_voices(),
+            }
         except Exception as e:
             return {"error": str(e)}
 
@@ -1368,7 +1420,10 @@ def _do_body_light(action: str, color: str, r: int, g: int, b: int) -> dict:
 
             if buddy.set_color_by_name(color):
                 return {"status": "ok", "color": color}
-            return {"error": f"Unknown color: {color}", "available": list(COLOR_MAP.keys())}
+            return {
+                "error": f"Unknown color: {color}",
+                "available": list(COLOR_MAP.keys()),
+            }
         elif r or g or b:
             if buddy.set_rgb(r, g, b):
                 return {"status": "ok", "r": r, "g": g, "b": b}

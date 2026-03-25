@@ -45,6 +45,7 @@ def main() -> int:
         print("  remember <text>        Save a memory")
         print("  recall <query>         Search memories")
         print("  forget <id>            Remove a memory")
+        print("  supersede <old> <new>  Mark memory as superseded by another")
         print("  memories               List all memories")
         print("")
         print("Session:")
@@ -96,6 +97,10 @@ def main() -> int:
             return run(args)
         case "forget":
             from anima.commands.forget import run
+
+            return run(args)
+        case "supersede":
+            from anima.commands.supersede import run
 
             return run(args)
         case "memories":
