@@ -17,6 +17,12 @@ This enables lazy loading of additional context without exceeding hook output li
 
 ## Usage
 
+Use the MCP tool (works in all projects):
+```
+mcp__anima__memory(action="refresh")
+```
+
+Or via CLI (Anima project only):
 ```bash
 uv run anima load-deferred
 ```

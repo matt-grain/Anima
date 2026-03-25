@@ -15,6 +15,12 @@ Manually loads all LTM memories into the current session context.
 
 ## Usage
 
+Use the MCP tool (works in all projects):
+```
+mcp__anima__memory(action="refresh")
+```
+
+Or via CLI (Anima project only):
 ```bash
 uv run anima load-context
 ```
