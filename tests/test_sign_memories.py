@@ -64,7 +64,9 @@ class TestSignMemoriesTool:
         monkeypatch.setattr(Path, "home", lambda: fake_home)
 
         # Create agent
-        agent = Agent(id="test-agent", name="TestAgent", signing_key="test-secret-key-123")
+        agent = Agent(
+            id="test-agent", name="TestAgent", signing_key="test-secret-key-123"
+        )
         store.save_agent(agent)
 
         return store, agent, tmp_path
@@ -124,7 +126,9 @@ class TestSignMemoriesTool:
         after = store.get_memory(memory.id)
         assert after.signature == original_signature
 
-    def test_cannot_resign_with_different_key(self, configured_env, monkeypatch) -> None:
+    def test_cannot_resign_with_different_key(
+        self, configured_env, monkeypatch
+    ) -> None:
         """Signed memories keep their original signature even if key changes."""
         store, agent, tmp_path = configured_env
         monkeypatch.chdir(tmp_path)

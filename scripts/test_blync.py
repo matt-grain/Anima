@@ -30,9 +30,9 @@ INITIAL = 0xF5
 
 # Bit masks (XOR to toggle)
 HEART = 0x80  # Bit 7
-BLUE = 0x40   # Bit 6
+BLUE = 0x40  # Bit 6
 GREEN = 0x20  # Bit 5
-RED = 0x10    # Bit 4
+RED = 0x10  # Bit 4
 
 
 class IBuddy:
@@ -77,7 +77,13 @@ class IBuddy:
         """Turn all off."""
         self._send_cmd(INITIAL)
 
-    def set_color(self, red: bool = False, green: bool = False, blue: bool = False, heart: bool = False) -> None:
+    def set_color(
+        self,
+        red: bool = False,
+        green: bool = False,
+        blue: bool = False,
+        heart: bool = False,
+    ) -> None:
         """Set color by toggling bits."""
         cmd = INITIAL
         if red:

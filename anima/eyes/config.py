@@ -95,7 +95,10 @@ class Config:
         """Load config from file, or return defaults."""
         if path is None:
             # Try default locations
-            for p in [Path("anima_eyes.json"), Path.home() / ".anima" / "anima_eyes.json"]:
+            for p in [
+                Path("anima_eyes.json"),
+                Path.home() / ".anima" / "anima_eyes.json",
+            ]:
                 if p.exists():
                     path = p
                     break

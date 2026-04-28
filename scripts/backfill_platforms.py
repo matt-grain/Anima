@@ -67,7 +67,9 @@ def backfill_platforms(db_path: Path | None = None) -> None:
         (antigravity_start.isoformat(),),
     )
     claude_count = cursor.rowcount
-    print(f"Set {claude_count} memories to platform='claude' (before {antigravity_start.date()})")
+    print(
+        f"Set {claude_count} memories to platform='claude' (before {antigravity_start.date()})"
+    )
 
     # Update memories from 2026-01-17 to 2026-01-23 to antigravity
     cursor = conn.execute(
@@ -81,7 +83,9 @@ def backfill_platforms(db_path: Path | None = None) -> None:
         (antigravity_start.isoformat(), today.isoformat()),
     )
     antigravity_count = cursor.rowcount
-    print(f"Set {antigravity_count} memories to platform='antigravity' ({antigravity_start.date()} to {(today - timedelta(days=1)).date()})")
+    print(
+        f"Set {antigravity_count} memories to platform='antigravity' ({antigravity_start.date()} to {(today - timedelta(days=1)).date()})"
+    )
 
     # Today's memories stay NULL for now (will be set via --platform flag)
     cursor = conn.execute(
@@ -93,7 +97,9 @@ def backfill_platforms(db_path: Path | None = None) -> None:
     )
     today_count = cursor.fetchone()["cnt"]
     if today_count > 0:
-        print(f"Left {today_count} memories from today without platform (use --platform flag)")
+        print(
+            f"Left {today_count} memories from today without platform (use --platform flag)"
+        )
 
     conn.commit()
     conn.close()

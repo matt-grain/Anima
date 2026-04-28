@@ -23,7 +23,8 @@ import io
 import json
 import os
 import sys
-from contextlib import redirect_stdout, redirect_stderr
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager, redirect_stdout, redirect_stderr
 from pathlib import Path
 from typing import Callable
 
@@ -195,14 +196,31 @@ routes = [
     Route("/hooks/pre-compact", hook_pre_compact, methods=["POST"]),
 ]
 
-# Create Starlette app
-app = Starlette(routes=routes)
+
+@asynccontextmanager
+async def lifespan(app: Starlette) -> AsyncGenerator[None, None]:
+    """Lifespan context manager - print stats on startup."""
+    try:
+        _print_startup_stats()
+    except Exception as e:
+        print(f"  (Could not load stats: {e})", file=sys.stderr)
+    yield
+
+
+# Create Starlette app with lifespan
+app = Starlette(routes=routes, lifespan=lifespan)
 
 
 def _print_startup_stats() -> None:
     """Print memory statistics on server startup (like 'void is gone!' output)."""
-    from anima.storage import MemoryStore
+    from datetime import datetime, UTC
+
+    from anima.storage import MemoryStore, CuriosityStore
+    from anima.storage.dissonance import DissonanceStore
+    from anima.storage.dream_state import DreamStateStore
+    from anima.storage.sqlite import get_default_db_path
     from anima.tools.version import get_installed_version, check_for_update_cached
+    from anima.core.config import get_config
 
     store = MemoryStore()
     stats = store.get_global_stats()
@@ -218,17 +236,103 @@ def _print_startup_stats() -> None:
     update_info = check_for_update_cached()
     latest = update_info.get("latest_version") if update_info else None
 
-    print("=" * 50, file=sys.stderr)
-    print(f"  Anima LTM v{installed}", file=sys.stderr)
+    # Get database size
+    db_path = get_default_db_path()
+    db_size_mb = db_path.stat().st_size / (1024 * 1024) if db_path.exists() else 0
+
+    # Get config for agent ID
+    config = get_config()
+    agent_id = config.agent.id
+
+    # Count open curiosities (research queue)
+    try:
+        curiosity_store = CuriosityStore()
+        curiosity_count = curiosity_store.count_open(agent_id)
+    except Exception:
+        curiosity_count = 0
+
+    # Count open dissonances
+    try:
+        dissonance_store = DissonanceStore()
+        dissonance_count = dissonance_store.count_open(agent_id)
+    except Exception:
+        dissonance_count = 0
+
+    # Get last dream time
+    try:
+        dream_store = DreamStateStore()
+        last_dream = dream_store.get_last_completed_session(agent_id, None)
+        if last_dream:
+            dream_time = datetime.fromisoformat(last_dream.updated_at).replace(tzinfo=UTC)
+            hours_ago = (datetime.now(UTC) - dream_time).total_seconds() / 3600
+            if hours_ago < 24:
+                dream_status = f"{hours_ago:.0f}h ago"
+            else:
+                days_ago = hours_ago / 24
+                dream_status = f"{days_ago:.0f}d ago"
+        else:
+            dream_status = "never"
+    except Exception:
+        dream_status = "?"
+
+    # Count unsigned memories
+    try:
+        unsigned_count = store.count_unvalidated_memories(agent_id)
+    except Exception:
+        unsigned_count = 0
+
+    # Count backups
+    try:
+        backup_dir = Path.home() / ".anima" / "backups"
+        backup_count = len(list(backup_dir.glob("*.db"))) if backup_dir.exists() else 0
+    except Exception:
+        backup_count = 0
+
+    # Build the banner
+    print("=" * 60, file=sys.stderr)
+    version_line = f"  🧠 Anima LTM v{installed}"
     if latest and latest != installed:
-        print(f"  (update available: {latest})", file=sys.stderr)
-    print("=" * 50, file=sys.stderr)
-    print(f"  Memories: {total} total ({agent_count} agent, {project_count} project)", file=sys.stderr)
-    print(f"  CRIT={by_impact['CRITICAL']} HIGH={by_impact['HIGH']} MED={by_impact['MEDIUM']} LOW={by_impact['LOW']}", file=sys.stderr)
-    print("=" * 50, file=sys.stderr)
+        version_line += f"  (update: {latest})"
+    print(version_line, file=sys.stderr)
+    print("=" * 60, file=sys.stderr)
+
+    # Memory stats
+    print(
+        f"  📚 Memories: {total} ({agent_count} agent, {project_count} project)",
+        file=sys.stderr,
+    )
+    print(
+        f"     CRIT={by_impact['CRITICAL']} HIGH={by_impact['HIGH']} MED={by_impact['MEDIUM']} LOW={by_impact['LOW']}",
+        file=sys.stderr,
+    )
+
+    # Database info
+    print(f"  💾 Database: {db_size_mb:.1f} MB | {backup_count} backups", file=sys.stderr)
+
+    # Activity stats
+    activity_parts = []
+    if curiosity_count > 0:
+        activity_parts.append(f"🔬 {curiosity_count} curiosities")
+    if dissonance_count > 0:
+        activity_parts.append(f"⚡ {dissonance_count} dissonances")
+    if unsigned_count > 0:
+        activity_parts.append(f"🔓 {unsigned_count} unsigned")
+
+    if activity_parts:
+        print(f"  {' | '.join(activity_parts)}", file=sys.stderr)
+
+    # Dream status
+    print(f"  💭 Last dream: {dream_status}", file=sys.stderr)
+
+    print("=" * 60, file=sys.stderr)
 
 
-def run_server(port: int = DEFAULT_PORT, host: str = "127.0.0.1", debug: bool = False) -> None:
+def run_server(
+    port: int = DEFAULT_PORT,
+    host: str = "127.0.0.1",
+    debug: bool = False,
+    reload: bool = False,
+) -> None:
     """Run the HTTP hooks server."""
     import uvicorn
 
@@ -237,15 +341,26 @@ def run_server(port: int = DEFAULT_PORT, host: str = "127.0.0.1", debug: bool = 
     print("  POST /hooks/session-end    - Index subconscious", file=sys.stderr)
     print("  POST /hooks/pre-compact    - Save WIP state", file=sys.stderr)
     print("  GET  /health               - Health check", file=sys.stderr)
+    if debug:
+        print("  🐛 Debug mode enabled (verbose logging)", file=sys.stderr)
+    if reload:
+        print("  🔄 Auto-reload enabled (watching anima/ for changes)", file=sys.stderr)
 
-    # Print memory statistics on startup
-    try:
-        _print_startup_stats()
-    except Exception as e:
-        print(f"  (Could not load stats: {e})", file=sys.stderr)
-
+    # Stats are printed via on_startup event (works with --reload)
     log_level = "debug" if debug else "warning"
-    uvicorn.run(app, host=host, port=port, log_level=log_level)
+
+    if reload:
+        # Use string reference for reload mode (uvicorn reimports the module)
+        uvicorn.run(
+            "anima.http_server:app",
+            host=host,
+            port=port,
+            log_level=log_level,
+            reload=True,
+            reload_dirs=["anima"],
+        )
+    else:
+        uvicorn.run(app, host=host, port=port, log_level=log_level)
 
 
 if __name__ == "__main__":

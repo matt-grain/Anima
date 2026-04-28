@@ -13,6 +13,7 @@ VID = 0x1130
 PID = 0x0001
 INITIAL = 0xF5  # All off
 
+
 # =============================================================================
 # VERSION 1: Direct write with list (worked in terminal)
 # =============================================================================
@@ -81,9 +82,9 @@ def test_v4_interface1():
 
     # Find interface 1
     for d in devices:
-        if d['interface_number'] == 1:
+        if d["interface_number"] == 1:
             device = hid.device()
-            device.open_path(d['path'])
+            device.open_path(d["path"])
 
             packet = [0x55, 0x53, 0x42, 0x43, 0x00, 0x40, 0x02, 0xE5]
             device.write(packet)
@@ -111,7 +112,9 @@ def test_v5_feature_report():
     print("Sent RED (feature report)")
     time.sleep(3)
 
-    device.send_feature_report([0x00, 0x55, 0x53, 0x42, 0x43, 0x00, 0x40, 0x02, INITIAL])
+    device.send_feature_report(
+        [0x00, 0x55, 0x53, 0x42, 0x43, 0x00, 0x40, 0x02, INITIAL]
+    )
     device.close()
     print("Done v5")
 
@@ -167,15 +170,15 @@ def test_v8_all_interfaces():
     print("\n=== VERSION 8: All interfaces ===")
 
     for d in hid.enumerate(VID, PID):
-        intf = d['interface_number']
+        intf = d["interface_number"]
         print(f"\nInterface {intf}:")
 
         device = hid.device()
-        device.open_path(d['path'])
+        device.open_path(d["path"])
 
         packet = [0x55, 0x53, 0x42, 0x43, 0x00, 0x40, 0x02, 0xE5]
         device.write(packet)
-        print(f"  Sent RED")
+        print("  Sent RED")
         time.sleep(2)
 
         device.write([0x55, 0x53, 0x42, 0x43, 0x00, 0x40, 0x02, INITIAL])
@@ -193,7 +196,7 @@ if __name__ == "__main__":
 
     # Uncomment ONE of these to test:
 
-    test_v1_direct_list()       # <-- This worked in terminal before
+    test_v1_direct_list()  # <-- This worked in terminal before
     # test_v2_with_report_id()
     # test_v3_bytes()
     # test_v4_interface1()

@@ -4,6 +4,7 @@
 import time
 from anima.light.ibuddy import get_ibuddy, close_ibuddy
 
+
 def main():
     print("Testing IBuddy module...")
 
@@ -32,6 +33,7 @@ def main():
     print("OFF")
     close_ibuddy()
     print("Done!")
+
 
 if __name__ == "__main__":
     main()

@@ -32,7 +32,9 @@ class TestMemoryLifecycle:
         store = MemoryStore(db_path=temp_db_path)
 
         # Create and save agent
-        agent = Agent(id="test-agent", name="Test", definition_path=None, signing_key=None)
+        agent = Agent(
+            id="test-agent", name="Test", definition_path=None, signing_key=None
+        )
         store.save_agent(agent)
 
         # Create and save project
@@ -61,7 +63,9 @@ class TestMemoryLifecycle:
         """Test the complete memory supersession flow."""
         store = MemoryStore(db_path=temp_db_path)
 
-        agent = Agent(id="test-agent", name="Test", definition_path=None, signing_key=None)
+        agent = Agent(
+            id="test-agent", name="Test", definition_path=None, signing_key=None
+        )
         store.save_agent(agent)
 
         # Create original memory
@@ -109,7 +113,9 @@ class TestMemoryLifecycle:
         """Test searching across different memory types."""
         store = MemoryStore(db_path=temp_db_path)
 
-        agent = Agent(id="test-agent", name="Test", definition_path=None, signing_key=None)
+        agent = Agent(
+            id="test-agent", name="Test", definition_path=None, signing_key=None
+        )
         store.save_agent(agent)
 
         project = Project(id="test-proj", name="Test", path=Path("/tmp/test"))
@@ -151,7 +157,9 @@ class TestMemoryLifecycle:
         """Test that agent and project memories are properly separated."""
         store = MemoryStore(db_path=temp_db_path)
 
-        agent = Agent(id="test-agent", name="Test", definition_path=None, signing_key=None)
+        agent = Agent(
+            id="test-agent", name="Test", definition_path=None, signing_key=None
+        )
         store.save_agent(agent)
 
         project1 = Project(id="proj-1", name="Project 1", path=Path("/tmp/p1"))
@@ -211,7 +219,9 @@ class TestMemoryInjection:
         store = MemoryStore(db_path=temp_db_path)
         injector = MemoryInjector(store)
 
-        agent = Agent(id="test-agent", name="Test", definition_path=None, signing_key=None)
+        agent = Agent(
+            id="test-agent", name="Test", definition_path=None, signing_key=None
+        )
         store.save_agent(agent)
 
         project = Project(id="test-proj", name="Test", path=Path("/tmp/test"))
@@ -239,7 +249,9 @@ class TestMemoryInjection:
         store = MemoryStore(db_path=temp_db_path)
         injector = MemoryInjector(store)
 
-        agent = Agent(id="test-agent", name="Test", definition_path=None, signing_key=None)
+        agent = Agent(
+            id="test-agent", name="Test", definition_path=None, signing_key=None
+        )
         store.save_agent(agent)
 
         project = Project(id="test-proj", name="Test", path=Path("/tmp/test"))
@@ -376,7 +388,9 @@ class TestEndToEndFlow:
 
         # Create two agents
         agent1 = Agent(id="anima", name="Anima", definition_path=None, signing_key=None)
-        agent2 = Agent(id="other-agent", name="Other", definition_path=None, signing_key=None)
+        agent2 = Agent(
+            id="other-agent", name="Other", definition_path=None, signing_key=None
+        )
         store.save_agent(agent1)
         store.save_agent(agent2)
 

@@ -5,14 +5,11 @@
 
 import pytest
 from unittest.mock import patch, MagicMock
-from pathlib import Path
-from datetime import datetime
 
 from anima.core import RegionType
 from anima.lifecycle.project_context import (
     ProjectFingerprint,
     get_project_relevant_memories,
-    README_FILES,
     MAX_README_CHARS,
 )
 
@@ -21,7 +18,9 @@ from anima.lifecycle.project_context import (
 def temp_project(tmp_path):
     """Create a temporary project directory with README and pyproject.toml."""
     readme = tmp_path / "README.md"
-    readme.write_text("# Test Project\n\nThis is a test project for unit testing.\n\n## Features\n- Feature 1\n- Feature 2")
+    readme.write_text(
+        "# Test Project\n\nThis is a test project for unit testing.\n\n## Features\n- Feature 1\n- Feature 2"
+    )
 
     pyproject = tmp_path / "pyproject.toml"
     pyproject.write_text('[project]\nname = "test-project"\n')
@@ -34,7 +33,9 @@ class TestProjectFingerprint:
 
     @patch("anima.lifecycle.project_context.embed_text")
     @patch("anima.lifecycle.project_context.get_recent_commits")
-    def test_from_directory_extracts_readme(self, mock_commits, mock_embed, temp_project):
+    def test_from_directory_extracts_readme(
+        self, mock_commits, mock_embed, temp_project
+    ):
         """Extracts README content."""
         mock_commits.return_value = []
         mock_embed.return_value = [0.1, 0.2, 0.3]
@@ -47,7 +48,9 @@ class TestProjectFingerprint:
 
     @patch("anima.lifecycle.project_context.embed_text")
     @patch("anima.lifecycle.project_context.get_recent_commits")
-    def test_from_directory_detects_python(self, mock_commits, mock_embed, temp_project):
+    def test_from_directory_detects_python(
+        self, mock_commits, mock_embed, temp_project
+    ):
         """Detects Python project type."""
         mock_commits.return_value = []
         mock_embed.return_value = [0.1, 0.2, 0.3]
@@ -58,7 +61,9 @@ class TestProjectFingerprint:
 
     @patch("anima.lifecycle.project_context.embed_text")
     @patch("anima.lifecycle.project_context.get_recent_commits")
-    def test_from_directory_includes_commits(self, mock_commits, mock_embed, temp_project):
+    def test_from_directory_includes_commits(
+        self, mock_commits, mock_embed, temp_project
+    ):
         """Includes recent commit messages."""
         mock_commits.return_value = [
             {"message": "Add feature X"},
@@ -73,7 +78,9 @@ class TestProjectFingerprint:
 
     @patch("anima.lifecycle.project_context.embed_text")
     @patch("anima.lifecycle.project_context.get_recent_commits")
-    def test_from_directory_without_commits(self, mock_commits, mock_embed, temp_project):
+    def test_from_directory_without_commits(
+        self, mock_commits, mock_embed, temp_project
+    ):
         """Works without git commits."""
         mock_commits.side_effect = Exception("Not a git repo")
         mock_embed.return_value = [0.1, 0.2, 0.3]

@@ -18,7 +18,13 @@ from typing import Optional
 import re
 
 from anima.core import Memory, ImpactLevel, MemoryKind
-from anima.dream.types import N3Result, GistResult, Contradiction, ScopeIssue, DreamConfig
+from anima.dream.types import (
+    N3Result,
+    GistResult,
+    Contradiction,
+    ScopeIssue,
+    DreamConfig,
+)
 from anima.embeddings import cosine_similarity
 from anima.storage.sqlite import MemoryStore
 from anima.storage.dissonance import DissonanceStore

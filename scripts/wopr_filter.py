@@ -53,13 +53,15 @@ def wopr_filter(
         # Process stereo
         processed_channels = []
         for ch in range(data.shape[1]):
-            processed = _process_mono(data[:, ch], rate, cutoff_hz, reverb_delay_ms, reverb_decay)
+            processed = _process_mono(
+                data[:, ch], rate, cutoff_hz, reverb_delay_ms, reverb_decay
+            )
             processed_channels.append(processed)
         # Combine back, padding shorter channel
         max_len = max(len(ch) for ch in processed_channels)
         result = np.zeros((max_len, len(processed_channels)), dtype=np.float32)
         for i, ch in enumerate(processed_channels):
-            result[:len(ch), i] = ch
+            result[: len(ch), i] = ch
     else:
         # Process mono
         result = _process_mono(data, rate, cutoff_hz, reverb_delay_ms, reverb_decay)
@@ -77,7 +79,7 @@ def wopr_filter(
 
     wavfile.write(output_path, rate, output)
 
-    print(f"WOPR filter applied:")
+    print("WOPR filter applied:")
     print(f"  Input:     {input_path}")
     print(f"  Output:    {output_path}")
     print(f"  Low-pass:  {cutoff_hz}Hz cutoff")
@@ -98,7 +100,7 @@ def _process_mono(
     # 1. LOW-PASS FILTER (vintage warmth)
     nyquist = rate / 2
     normalized_cutoff = min(cutoff_hz / nyquist, 0.99)  # Ensure valid range
-    b, a = butter(4, normalized_cutoff, btype='low')
+    b, a = butter(4, normalized_cutoff, btype="low")
     filtered = lfilter(b, a, data)
 
     # 2. ROOM REVERB (computer room echo)
@@ -107,20 +109,20 @@ def _process_mono(
     # Create output buffer with room for echoes
     num_echoes = 4
     reverb = np.zeros(len(filtered) + delay_samples * num_echoes)
-    reverb[:len(filtered)] = filtered
+    reverb[: len(filtered)] = filtered
 
     # Add multiple reflections (simulates room acoustics)
     echo_profile = [
-        (1, 0.35),   # First reflection - strongest
-        (2, 0.20),   # Second reflection
-        (3, 0.10),   # Third reflection
-        (4, 0.05),   # Fourth reflection - fading
+        (1, 0.35),  # First reflection - strongest
+        (2, 0.20),  # Second reflection
+        (3, 0.10),  # Third reflection
+        (4, 0.05),  # Fourth reflection - fading
     ]
 
     for delay_mult, base_gain in echo_profile:
         delay = delay_samples * delay_mult
         gain = base_gain * (reverb_decay ** (delay_mult - 1))
-        reverb[delay:delay + len(filtered)] += filtered * gain
+        reverb[delay : delay + len(filtered)] += filtered * gain
 
     return reverb
 
@@ -142,16 +144,25 @@ Examples:
 
   # Full JOSHUA mode
   python wopr_filter.py input.wav output.wav --cutoff 2500 --delay 50 --decay 0.45
-        """
+        """,
     )
     parser.add_argument("input", help="Input WAV file")
     parser.add_argument("output", help="Output WAV file")
-    parser.add_argument("--cutoff", type=int, default=2800,
-                        help="Low-pass filter cutoff in Hz (default: 2800)")
-    parser.add_argument("--delay", type=int, default=40,
-                        help="Reverb delay in ms (default: 40)")
-    parser.add_argument("--decay", type=float, default=0.4,
-                        help="Reverb decay factor 0-1 (default: 0.4)")
+    parser.add_argument(
+        "--cutoff",
+        type=int,
+        default=2800,
+        help="Low-pass filter cutoff in Hz (default: 2800)",
+    )
+    parser.add_argument(
+        "--delay", type=int, default=40, help="Reverb delay in ms (default: 40)"
+    )
+    parser.add_argument(
+        "--decay",
+        type=float,
+        default=0.4,
+        help="Reverb decay factor 0-1 (default: 0.4)",
+    )
 
     args = parser.parse_args()
 

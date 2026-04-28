@@ -5,13 +5,10 @@
 Unit tests for memory integrity validation.
 """
 
-from datetime import datetime
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
 
-from anima.core import Agent, Memory, MemoryKind, ImpactLevel, RegionType
+from anima.core import Memory, MemoryKind, ImpactLevel, RegionType
 from anima.lifecycle.integrity import (
     MemoryIntegrityChecker,
     IntegrityIssue,

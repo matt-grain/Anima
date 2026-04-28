@@ -187,7 +187,14 @@ def _get_voice(voice_name: str | None = None):
     return _voice
 
 
-def _download_model(model_dir: Path, lang: str, lang_region: str, name: str, quality: str, voice_name: str):
+def _download_model(
+    model_dir: Path,
+    lang: str,
+    lang_region: str,
+    name: str,
+    quality: str,
+    voice_name: str,
+):
     """Download a Piper voice model from HuggingFace."""
     import urllib.request
 
@@ -245,7 +252,14 @@ def _apply_wopr_filter_numpy(data, rate: int):
     reverb = np.zeros(len(metallic) + delay_samples * 6)
     reverb[: len(metallic)] = metallic
 
-    for delay_mult, base_gain in [(1, 0.40), (2, 0.28), (3, 0.18), (4, 0.10), (5, 0.05), (6, 0.02)]:
+    for delay_mult, base_gain in [
+        (1, 0.40),
+        (2, 0.28),
+        (3, 0.18),
+        (4, 0.10),
+        (5, 0.05),
+        (6, 0.02),
+    ]:
         delay = delay_samples * delay_mult
         gain = base_gain * (0.5 ** (delay_mult - 1))
         reverb[delay : delay + len(metallic)] += metallic * gain
@@ -320,7 +334,14 @@ def _apply_wopr_filter(data, rate: int, use_scipy: bool = True):
         reverb = np.zeros(len(metallic2) + delay_samples * 6)
         reverb[: len(metallic2)] = metallic2
 
-        for delay_mult, base_gain in [(1, 0.40), (2, 0.28), (3, 0.18), (4, 0.10), (5, 0.05), (6, 0.02)]:
+        for delay_mult, base_gain in [
+            (1, 0.40),
+            (2, 0.28),
+            (3, 0.18),
+            (4, 0.10),
+            (5, 0.05),
+            (6, 0.02),
+        ]:
             delay = delay_samples * delay_mult
             gain = base_gain * (0.5 ** (delay_mult - 1))
             reverb[delay : delay + len(metallic2)] += metallic2 * gain  # pyright: ignore[reportOperatorIssue]
@@ -593,7 +614,13 @@ def _play_audio_native(wav_buffer: io.BytesIO, blocking: bool = True) -> bool:
         return False
 
 
-def speak(text: str, blocking: bool = False, voice_name: str | None = None, force_native: bool = False, mcp_safe: bool = False):
+def speak(
+    text: str,
+    blocking: bool = False,
+    voice_name: str | None = None,
+    force_native: bool = False,
+    mcp_safe: bool = False,
+):
     """
     Speak text using TTS.
 

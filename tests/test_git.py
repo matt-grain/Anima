@@ -9,7 +9,12 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock
 
 from anima.core import Memory, MemoryKind, ImpactLevel, RegionType
-from anima.utils.git import GitContext, get_git_context, get_commit_info, get_recent_commits
+from anima.utils.git import (
+    GitContext,
+    get_git_context,
+    get_commit_info,
+    get_recent_commits,
+)
 from anima.storage import MemoryStore
 
 
@@ -45,6 +50,7 @@ class TestGetGitContext:
     @patch("anima.utils.git.subprocess.run")
     def test_full_git_context(self, mock_run):
         """Test getting full git context."""
+
         # Mock all subprocess calls
         def side_effect(cmd, **kwargs):
             result = MagicMock()
@@ -70,6 +76,7 @@ class TestGetGitContext:
     @patch("anima.utils.git.subprocess.run")
     def test_dirty_repository(self, mock_run):
         """Test detection of uncommitted changes."""
+
         def side_effect(cmd, **kwargs):
             result = MagicMock()
             result.returncode = 0
@@ -92,6 +99,7 @@ class TestGetGitContext:
     @patch("anima.utils.git.subprocess.run")
     def test_not_a_git_repo(self, mock_run):
         """Test handling of non-git directory."""
+
         def side_effect(cmd, **kwargs):
             result = MagicMock()
             result.returncode = 128
@@ -108,6 +116,7 @@ class TestGetGitContext:
     def test_git_timeout(self, mock_run):
         """Test handling of git command timeout."""
         from subprocess import TimeoutExpired
+
         mock_run.side_effect = TimeoutExpired("git", 5)
 
         ctx = get_git_context()
@@ -177,6 +186,7 @@ class TestGitCorrelationStorage:
     def sample_agent(self, store):
         """Create and save a sample agent."""
         from anima.core import Agent
+
         agent = Agent(id="test-agent", name="Test")
         store.save_agent(agent)
         return agent
@@ -185,6 +195,7 @@ class TestGitCorrelationStorage:
     def sample_project(self, store):
         """Create and save a sample project."""
         from anima.core import Project
+
         project = Project(id="test-project", name="Test", path=Path("/test"))
         store.save_project(project)
         return project
@@ -228,10 +239,14 @@ class TestGitCorrelationStorage:
             store.save_memory(memory)
 
         # Query by commit
-        abc_memories = store.get_memories_by_git_commit("abc1234", agent_id=sample_agent.id)
+        abc_memories = store.get_memories_by_git_commit(
+            "abc1234", agent_id=sample_agent.id
+        )
         assert len(abc_memories) == 2
 
-        def_memories = store.get_memories_by_git_commit("def5678", agent_id=sample_agent.id)
+        def_memories = store.get_memories_by_git_commit(
+            "def5678", agent_id=sample_agent.id
+        )
         assert len(def_memories) == 1
 
     def test_get_memories_by_git_commit_prefix(self, store, sample_agent):
@@ -274,10 +289,14 @@ class TestGitCorrelationStorage:
             )
             store.save_memory(memory)
 
-        main_memories = store.get_memories_by_git_branch("main", agent_id=sample_agent.id)
+        main_memories = store.get_memories_by_git_branch(
+            "main", agent_id=sample_agent.id
+        )
         assert len(main_memories) == 2
 
-        feature_memories = store.get_memories_by_git_branch("feature/auth", agent_id=sample_agent.id)
+        feature_memories = store.get_memories_by_git_branch(
+            "feature/auth", agent_id=sample_agent.id
+        )
         assert len(feature_memories) == 1
 
     def test_memory_without_git_context(self, store, sample_agent):
@@ -330,7 +349,9 @@ class TestGitCorrelationStorage:
         store.save_memory(memory2)
 
         # Both have same commit
-        commit_memories = store.get_memories_by_git_commit("xxx", agent_id=sample_agent.id)
+        commit_memories = store.get_memories_by_git_commit(
+            "xxx", agent_id=sample_agent.id
+        )
         assert len(commit_memories) == 2
 
         # Different sessions

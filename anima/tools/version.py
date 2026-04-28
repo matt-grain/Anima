@@ -40,7 +40,10 @@ def get_latest_release() -> dict | None:
     try:
         req = urllib.request.Request(
             GITHUB_API_URL,
-            headers={"Accept": "application/vnd.github.v3+json", "User-Agent": "Anima-LTM"},
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "User-Agent": "Anima-LTM",
+            },
         )
         with urllib.request.urlopen(req, timeout=10) as response:
             return json.loads(response.read().decode())

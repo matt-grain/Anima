@@ -663,6 +663,7 @@ class MemoryInjector:
                 buckets[f"agent_{impact}"].append(mem)
 
         # Sort each bucket by recency (newest first), then by kind
+        # BEHAVIORAL RULE/PERSONALITY OVERRIDE memories come FIRST (priority -1)
         kind_order = {
             "EMOTIONAL": 0,
             "INTROSPECT": 1,
@@ -674,8 +675,11 @@ class MemoryInjector:
         }
 
         def recency_sort(m: Memory) -> tuple:
+            # Behavioral rules get absolute priority (-1) to come before everything
+            is_behavioral = m.content.startswith(("BEHAVIORAL RULE:", "PERSONALITY OVERRIDE:"))
+            priority = -1 if is_behavioral else kind_order.get(m.kind.value, 99)
             return (
-                kind_order.get(m.kind.value, 99),
+                priority,
                 -m.created_at.timestamp(),
             )
 

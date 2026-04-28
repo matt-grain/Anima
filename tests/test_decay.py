@@ -207,7 +207,9 @@ class TestCompaction:
         store = MemoryStore(db_path=temp_db_path)
         decay = MemoryDecay(store)
 
-        long_content = "First sentence here. " + "Middle content. " * 50 + "Last sentence here."
+        long_content = (
+            "First sentence here. " + "Middle content. " * 50 + "Last sentence here."
+        )
         memory = Memory(
             agent_id="test",
             region=RegionType.AGENT,
@@ -231,7 +233,9 @@ class TestProcessDecay:
         decay = MemoryDecay(store)
 
         # Setup agent
-        agent = Agent(id="test-agent", name="Test", definition_path=None, signing_key=None)
+        agent = Agent(
+            id="test-agent", name="Test", definition_path=None, signing_key=None
+        )
         store.save_agent(agent)
 
         project = Project(id="test-proj", name="Test", path=Path("/tmp/test"))
@@ -266,7 +270,9 @@ class TestProcessDecay:
         store = MemoryStore(db_path=temp_db_path)
         decay = MemoryDecay(store)
 
-        agent = Agent(id="test-agent", name="Test", definition_path=None, signing_key=None)
+        agent = Agent(
+            id="test-agent", name="Test", definition_path=None, signing_key=None
+        )
         store.save_agent(agent)
 
         project = Project(id="test-proj", name="Test", path=Path("/tmp/test"))
@@ -285,7 +291,9 @@ class TestProcessDecay:
         store.save_memory(old_memory)
 
         # Process with dry_run=True
-        compacted = decay.process_decay(agent_id=agent.id, project_id=project.id, dry_run=True)
+        compacted = decay.process_decay(
+            agent_id=agent.id, project_id=project.id, dry_run=True
+        )
 
         assert len(compacted) == 1
 
@@ -299,7 +307,9 @@ class TestProcessDecay:
         store = MemoryStore(db_path=temp_db_path)
         decay = MemoryDecay(store)
 
-        agent = Agent(id="test-agent", name="Test", definition_path=None, signing_key=None)
+        agent = Agent(
+            id="test-agent", name="Test", definition_path=None, signing_key=None
+        )
         store.save_agent(agent)
 
         project = Project(id="test-proj", name="Test", path=Path("/tmp/test"))
@@ -329,7 +339,9 @@ class TestDeleteEmptyMemories:
         store = MemoryStore(db_path=temp_db_path)
         decay = MemoryDecay(store)
 
-        agent = Agent(id="test-agent", name="Test", definition_path=None, signing_key=None)
+        agent = Agent(
+            id="test-agent", name="Test", definition_path=None, signing_key=None
+        )
         store.save_agent(agent)
 
         # Create a superseded memory with very short content
@@ -352,7 +364,9 @@ class TestDeleteEmptyMemories:
         store = MemoryStore(db_path=temp_db_path)
         decay = MemoryDecay(store)
 
-        agent = Agent(id="test-agent", name="Test", definition_path=None, signing_key=None)
+        agent = Agent(
+            id="test-agent", name="Test", definition_path=None, signing_key=None
+        )
         store.save_agent(agent)
 
         # Create a non-superseded memory with short content

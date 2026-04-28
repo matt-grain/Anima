@@ -17,7 +17,9 @@ from anima.lifecycle.injection import ensure_token_count, MemoryInjector
 from anima.storage import MemoryStore
 
 
-def setup_store(tmpdir: Path, num_memories: int = 500) -> tuple[MemoryStore, Agent, Project]:
+def setup_store(
+    tmpdir: Path, num_memories: int = 500
+) -> tuple[MemoryStore, Agent, Project]:
     store = MemoryStore(db_path=tmpdir / "perf.db")
     agent = Agent(id="perf-agent", name="PerfAgent", signing_key="perf-key-123")
     store.save_agent(agent)
@@ -53,7 +55,9 @@ def profile_run():
     def work():
         # stress injection and a couple of queries
         injector.inject(agent, project)
-        store.get_memories_for_agent(agent.id, region=RegionType.PROJECT, project_id=project.id)
+        store.get_memories_for_agent(
+            agent.id, region=RegionType.PROJECT, project_id=project.id
+        )
         store.search_memories(agent.id, "performance", project_id=project.id)
 
     prof = cProfile.Profile()

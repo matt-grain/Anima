@@ -21,6 +21,7 @@ def _embedder_available() -> bool:
     """Check if the FastEmbed model is available (cached locally)."""
     try:
         from anima.embeddings.embedder import get_embedder
+
         # This will fail in CI where model isn't cached
         get_embedder(quiet=True)
         return True
@@ -45,8 +46,7 @@ def embedder_available() -> bool:
 
 
 requires_embedder = pytest.mark.skipif(
-    not embedder_available(),
-    reason="FastEmbed model not available (skipped in CI)"
+    not embedder_available(), reason="FastEmbed model not available (skipped in CI)"
 )
 
 
@@ -85,7 +85,9 @@ def memory_store(temp_db_path: Path) -> MemoryStore:
 @pytest.fixture
 def test_agent() -> Agent:
     """Create a test agent."""
-    return Agent(id="test-agent", name="Test Agent", definition_path=None, signing_key=None)
+    return Agent(
+        id="test-agent", name="Test Agent", definition_path=None, signing_key=None
+    )
 
 
 @pytest.fixture
@@ -97,7 +99,9 @@ def anima_agent() -> Agent:
 @pytest.fixture
 def test_project() -> Project:
     """Create a test project."""
-    return Project(id="test-project", name="Test Project", path=Path("/tmp/test-project"))
+    return Project(
+        id="test-project", name="Test Project", path=Path("/tmp/test-project")
+    )
 
 
 @pytest.fixture
@@ -137,7 +141,9 @@ def temp_project_dir() -> Generator[Path, None, None]:
 
 
 @pytest.fixture
-def populated_store(memory_store: MemoryStore, test_agent: Agent, test_project: Project) -> MemoryStore:
+def populated_store(
+    memory_store: MemoryStore, test_agent: Agent, test_project: Project
+) -> MemoryStore:
     """Create a store with some test data."""
     # Save agent and project
     memory_store.save_agent(test_agent)

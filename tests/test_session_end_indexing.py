@@ -6,8 +6,6 @@
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 
 class TestSessionEndIndexing:
     """Tests for session end subconscious indexing."""
@@ -31,7 +29,9 @@ class TestSessionEndIndexing:
         from anima.storage import FTS5NotSupportedError
 
         transcript = tmp_path / "session.jsonl"
-        transcript.write_text('{"type": "user", "message": {"role": "user", "content": "Test"}}')
+        transcript.write_text(
+            '{"type": "user", "message": {"role": "user", "content": "Test"}}'
+        )
 
         with patch("anima.hooks.session_end.SubconsciousStore") as MockStore:
             MockStore.side_effect = FTS5NotSupportedError("FTS5 not available")
@@ -135,7 +135,9 @@ class TestDialogueParser:
         meta, _ = result
         assert meta.session_id == "my-session-id"
 
-    def test_parse_session_falls_back_to_stem_for_session_id(self, tmp_path: Path) -> None:
+    def test_parse_session_falls_back_to_stem_for_session_id(
+        self, tmp_path: Path
+    ) -> None:
         """Test that parse_session uses the filename stem when no sessionId is in entries."""
         transcript = tmp_path / "fallback-stem.jsonl"
         transcript.write_text(

@@ -18,7 +18,9 @@ from anima.hooks import session_start
 class TestSessionStartHook:
     """Tests for the SessionStart hook."""
 
-    def test_session_start_with_memories(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_session_start_with_memories(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test session start with memories available."""
         with (
             patch("anima.hooks.session_start.MemoryStore") as MockStore,
@@ -46,7 +48,9 @@ class TestSessionStartHook:
             }
             MockInjector.return_value = mock_injector
 
-            mock_agent = Agent(id="anima", name="Anima", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="anima", name="Anima", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -67,13 +71,17 @@ class TestSessionStartHook:
             assert output["hookSpecificOutput"]["hookEventName"] == "SessionStart"
             assert "additionalContext" in output["hookSpecificOutput"]
             assert "@Matt" in output["hookSpecificOutput"]["additionalContext"]
-            assert "Loaded 3 memories" in output["hookSpecificOutput"]["additionalContext"]
+            assert (
+                "Loaded 3 memories" in output["hookSpecificOutput"]["additionalContext"]
+            )
             assert "LTM-DIAG:" in output["hookSpecificOutput"]["additionalContext"]
 
             # Status message goes to stderr
             assert "Success" in captured.err
 
-    def test_session_start_no_memories(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_session_start_no_memories(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test session start with no memories."""
         with (
             patch("anima.hooks.session_start.MemoryStore") as MockStore,
@@ -93,7 +101,9 @@ class TestSessionStartHook:
             }
             MockInjector.return_value = mock_injector
 
-            mock_agent = Agent(id="anima", name="Anima", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="anima", name="Anima", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -110,12 +120,16 @@ class TestSessionStartHook:
 
             # Parse JSON output (stdout)
             output = json.loads(captured.out.strip())
-            assert "No memories found" in output["hookSpecificOutput"]["additionalContext"]
+            assert (
+                "No memories found" in output["hookSpecificOutput"]["additionalContext"]
+            )
 
             # Status message goes to stderr
             assert "Success" in captured.err
 
-    def test_session_start_json_format(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_session_start_json_format(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test that session start outputs valid JSON."""
         with (
             patch("anima.hooks.session_start.MemoryStore") as MockStore,
@@ -142,7 +156,9 @@ class TestSessionStartHook:
             }
             MockInjector.return_value = mock_injector
 
-            mock_agent = Agent(id="anima", name="Anima", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="anima", name="Anima", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -165,12 +181,14 @@ class TestSessionStartHook:
             assert "additionalContext" in hook_output
             assert hook_output["hookEventName"] == "SessionStart"
             # Verify greeting instructions are present
-            assert "GREETING BEHAVIOR" in hook_output["additionalContext"]
+            assert "GREETING PROTOCOL" in hook_output["additionalContext"]
 
             # Status message goes to stderr
             assert "Success" in captured.err
 
-    def test_session_start_saves_agent_and_project(self, temp_project_dir: Path) -> None:
+    def test_session_start_saves_agent_and_project(
+        self, temp_project_dir: Path
+    ) -> None:
         """Test that session start saves agent and project."""
         with (
             patch("anima.hooks.session_start.MemoryStore") as MockStore,
@@ -190,7 +208,9 @@ class TestSessionStartHook:
             }
             MockInjector.return_value = mock_injector
 
-            mock_agent = Agent(id="anima", name="Anima", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="anima", name="Anima", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -206,7 +226,9 @@ class TestSessionStartHook:
             mock_store.save_agent.assert_called_once_with(mock_agent)
             mock_store.save_project.assert_called_once_with(mock_project)
 
-    def test_session_start_dsl_format(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_session_start_dsl_format(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test that session start outputs raw DSL with --format dsl."""
         with (
             patch("anima.hooks.session_start.MemoryStore") as MockStore,
@@ -228,7 +250,9 @@ class TestSessionStartHook:
             }
             MockInjector.return_value = mock_injector
 
-            mock_agent = Agent(id="anima", name="Anima", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="anima", name="Anima", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()

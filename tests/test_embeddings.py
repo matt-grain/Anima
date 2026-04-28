@@ -58,6 +58,7 @@ class TestCosineSimilarity:
     def test_normalized_vectors(self):
         """Pre-normalized vectors should work correctly."""
         import math
+
         vec1 = [1.0 / math.sqrt(2), 1.0 / math.sqrt(2), 0.0]
         vec2 = [1.0, 0.0, 0.0]
         sim = cosine_similarity(vec1, vec2)
@@ -195,11 +196,13 @@ class TestEmbedderModule:
     def test_embedding_dimensions_constant(self):
         """EMBEDDING_DIMENSIONS should be 384 for bge-small."""
         from anima.embeddings.embedder import EMBEDDING_DIMENSIONS
+
         assert EMBEDDING_DIMENSIONS == 384
 
     def test_model_name_constant(self):
         """MODEL_NAME should be bge-small."""
         from anima.embeddings.embedder import MODEL_NAME
+
         assert "bge-small" in MODEL_NAME
 
     def test_is_model_loaded_initially_false(self):

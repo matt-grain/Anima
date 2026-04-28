@@ -173,7 +173,13 @@ class EyeBlink:
 class Eye:
     """A single eye with transformation pipeline."""
 
-    def __init__(self, transition_speed: float = 1.0, look_speed: float = 1.0, blink_speed: float = 1.0, variation_speed: float = 1.0):
+    def __init__(
+        self,
+        transition_speed: float = 1.0,
+        look_speed: float = 1.0,
+        blink_speed: float = 1.0,
+        variation_speed: float = 1.0,
+    ):
         self.center_x = 0
         self.center_y = 0
         self.is_mirrored = False

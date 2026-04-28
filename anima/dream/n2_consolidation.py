@@ -376,7 +376,12 @@ def _integrate_subconscious_memories(
     ]
 
     if not subconscious_memories:
-        return {"merged": merged, "linked": linked, "kept": kept, "integrations": integrations}
+        return {
+            "merged": merged,
+            "linked": linked,
+            "kept": kept,
+            "integrations": integrations,
+        }
 
     if not quiet:
         print(f"   Integrating {len(subconscious_memories)} subconscious memories...")
@@ -397,7 +402,12 @@ def _integrate_subconscious_memories(
     if not conscious_candidates:
         # No conscious memories to compare against
         kept = len(subconscious_memories)
-        return {"merged": merged, "linked": linked, "kept": kept, "integrations": integrations}
+        return {
+            "merged": merged,
+            "linked": linked,
+            "kept": kept,
+            "integrations": integrations,
+        }
 
     for subconscious_mem in subconscious_memories:
         # Get embedding for this subconscious memory
@@ -475,4 +485,9 @@ def _integrate_subconscious_memories(
     if not quiet:
         print(f"      Merged: {merged}, Linked: {linked}, Kept: {kept}")
 
-    return {"merged": merged, "linked": linked, "kept": kept, "integrations": integrations}
+    return {
+        "merged": merged,
+        "linked": linked,
+        "kept": kept,
+        "integrations": integrations,
+    }

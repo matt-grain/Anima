@@ -17,7 +17,6 @@ from anima.tools.platforms import (
     detect_platforms,
     find_config_dir,
 )
-from anima.tools.platforms.base import get_package_commands_dir, get_package_skills_dir
 
 
 @pytest.fixture
@@ -58,7 +57,9 @@ def mock_package_skills(tmp_path):
 class TestSetupCommands:
     """Test command installation."""
 
-    def test_copies_commands_to_agent_workflows(self, temp_project, mock_package_commands):
+    def test_copies_commands_to_agent_workflows(
+        self, temp_project, mock_package_commands
+    ):
         """Should copy commands to .agent/workflows for Antigravity projects."""
         (temp_project / ".agent").mkdir()
         platform = get_platform("antigravity")
@@ -74,7 +75,9 @@ class TestSetupCommands:
         assert (temp_project / ".agent" / "workflows" / "test-command.md").exists()
         assert (temp_project / ".agent" / "workflows" / "another-command.md").exists()
 
-    def test_copies_commands_to_claude_commands(self, temp_project, mock_package_commands):
+    def test_copies_commands_to_claude_commands(
+        self, temp_project, mock_package_commands
+    ):
         """Should copy commands to .claude/commands for Claude projects."""
         (temp_project / ".claude").mkdir()
         platform = get_platform("claude")
@@ -88,7 +91,9 @@ class TestSetupCommands:
         assert copied == 2
         assert (temp_project / ".claude" / "commands" / "test-command.md").exists()
 
-    def test_always_updates_existing_commands(self, temp_project, mock_package_commands):
+    def test_always_updates_existing_commands(
+        self, temp_project, mock_package_commands
+    ):
         """Should always update existing commands (no --force required)."""
         workflows_dir = temp_project / ".agent" / "workflows"
         workflows_dir.mkdir(parents=True)
@@ -103,7 +108,9 @@ class TestSetupCommands:
 
         assert copied == 2  # Both commands installed/updated
         assert skipped == 0  # Nothing skipped
-        assert (workflows_dir / "test-command.md").read_text() == "# Test Command"  # Updated
+        assert (
+            workflows_dir / "test-command.md"
+        ).read_text() == "# Test Command"  # Updated
 
 
 class TestSetupSkills:

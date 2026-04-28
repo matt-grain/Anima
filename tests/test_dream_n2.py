@@ -3,7 +3,6 @@
 
 """Tests for N2 consolidation stage (Dream Mode Phase 1)."""
 
-import pytest
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
@@ -11,8 +10,6 @@ from anima.dream.types import DreamConfig, DreamStage, UrgencyLevel, N2Result
 from anima.dream.n2_consolidation import (
     run_n2_consolidation,
     _suggest_impact_from_topology,
-    _get_processable_memories,
-    _count_incoming_links,
 )
 from anima.core.types import ImpactLevel
 
@@ -154,7 +151,13 @@ class TestN2Consolidation:
 
         # Create 10 memories
         memories = [
-            (f"mem-{i}", f"Content {i}", [0.5] * 384, now - timedelta(hours=i), f"session-{i}")
+            (
+                f"mem-{i}",
+                f"Content {i}",
+                [0.5] * 384,
+                now - timedelta(hours=i),
+                f"session-{i}",
+            )
             for i in range(10)
         ]
         store.get_memories_with_temporal_context.return_value = memories
@@ -180,8 +183,20 @@ class TestN2Consolidation:
         now = datetime.now()
 
         memories = [
-            ("mem-1", "Earlier content", [0.5] * 384, now - timedelta(hours=2), "session-1"),
-            ("mem-2", "Building on earlier", [0.5] * 384, now - timedelta(hours=1), "session-1"),
+            (
+                "mem-1",
+                "Earlier content",
+                [0.5] * 384,
+                now - timedelta(hours=2),
+                "session-1",
+            ),
+            (
+                "mem-2",
+                "Building on earlier",
+                [0.5] * 384,
+                now - timedelta(hours=1),
+                "session-1",
+            ),
         ]
         store.get_memories_with_temporal_context.return_value = memories
         store.get_links_for_memory.return_value = []  # No existing links
@@ -226,9 +241,12 @@ class TestN2Integration:
             if mid in ("mem-1", "mem-2"):
                 return [("mem-2", "mem-1", "BUILDS_ON", 0.8)]
             return []
+
         store.get_links_for_memory.side_effect = get_links
 
-        with patch("anima.dream.n2_consolidation.find_builds_on_candidates") as mock_candidates:
+        with patch(
+            "anima.dream.n2_consolidation.find_builds_on_candidates"
+        ) as mock_candidates:
             mock_candidate = MagicMock()
             mock_candidate.memory_id = "mem-1"
             mock_candidate.similarity = 0.8

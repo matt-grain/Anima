@@ -52,13 +52,11 @@ class TestSessionLifecycle:
     def mock_settings(self, tmp_path):
         """Mock the settings storage to use temp db."""
         db_path = tmp_path / "test.db"
-        with patch(
-            "anima.storage.curiosity.get_default_db_path", return_value=db_path
-        ), patch(
-            "anima.lifecycle.session.get_setting"
-        ) as mock_get, patch(
-            "anima.lifecycle.session.set_setting"
-        ) as mock_set:
+        with (
+            patch("anima.storage.curiosity.get_default_db_path", return_value=db_path),
+            patch("anima.lifecycle.session.get_setting") as mock_get,
+            patch("anima.lifecycle.session.set_setting") as mock_set,
+        ):
             # Track settings in memory
             settings = {}
 

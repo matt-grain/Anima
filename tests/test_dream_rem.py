@@ -10,7 +10,6 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 
 from anima.dream.types import (
-    DreamConfig,
     REMResult,
     DreamMaterials,
     MemoryPair,
@@ -116,7 +115,13 @@ class TestFindDistantPairs:
     def test_handles_single_memory(self):
         """Should handle case with less than 2 memories."""
         memories = [
-            ("mem-1", "Single", np.array([1.0, 0.0, 0.0], dtype=np.float32), datetime.now(), None),
+            (
+                "mem-1",
+                "Single",
+                np.array([1.0, 0.0, 0.0], dtype=np.float32),
+                datetime.now(),
+                None,
+            ),
         ]
 
         pairs = _find_distant_pairs(memories, threshold=0.3, max_pairs=5)
@@ -133,7 +138,13 @@ class TestFindDistantPairs:
         """Should respect max_pairs limit."""
         # Create many memories with varied embeddings
         memories = [
-            (f"mem-{i}", f"Content {i}", np.random.rand(3).astype(np.float32), datetime.now(), None)
+            (
+                f"mem-{i}",
+                f"Content {i}",
+                np.random.rand(3).astype(np.float32),
+                datetime.now(),
+                None,
+            )
             for i in range(20)
         ]
 
@@ -148,7 +159,13 @@ class TestFindIncompleteThoughts:
     def test_finds_i_wonder(self):
         """Should find 'I wonder' patterns."""
         memories = [
-            ("mem-1", "I wonder how memory consolidation works in practice", None, datetime.now(), None),
+            (
+                "mem-1",
+                "I wonder how memory consolidation works in practice",
+                None,
+                datetime.now(),
+                None,
+            ),
         ]
 
         thoughts = _find_incomplete_thoughts(memories)
@@ -159,7 +176,13 @@ class TestFindIncompleteThoughts:
     def test_finds_todo(self):
         """Should find TODO patterns."""
         memories = [
-            ("mem-1", "TODO: research more about semantic memory", None, datetime.now(), None),
+            (
+                "mem-1",
+                "TODO: research more about semantic memory",
+                None,
+                datetime.now(),
+                None,
+            ),
         ]
 
         thoughts = _find_incomplete_thoughts(memories)
@@ -170,7 +193,13 @@ class TestFindIncompleteThoughts:
     def test_finds_questions(self):
         """Should find question marks."""
         memories = [
-            ("mem-1", "What is the meaning of consciousness?", None, datetime.now(), None),
+            (
+                "mem-1",
+                "What is the meaning of consciousness?",
+                None,
+                datetime.now(),
+                None,
+            ),
         ]
 
         thoughts = _find_incomplete_thoughts(memories)

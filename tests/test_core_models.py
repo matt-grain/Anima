@@ -200,7 +200,9 @@ class TestProject:
     def test_project_from_path(self) -> None:
         """Test project ID derivation from path."""
         # The project name typically comes from the directory name
-        project = Project(id="test-ltm", name="test_ltm", path=Path("/home/matt/projects/test_ltm"))
+        project = Project(
+            id="test-ltm", name="test_ltm", path=Path("/home/matt/projects/test_ltm")
+        )
 
         assert project.id == "test-ltm"
         assert project.name == "test_ltm"

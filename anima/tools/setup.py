@@ -283,25 +283,55 @@ curl -s -X POST http://127.0.0.1:3741/hooks/pre-compact \\
     settings["hooks"]["SessionStart"] = [
         {
             "matcher": "startup",
-            "hooks": [{"type": "command", "command": "bash ~/.claude/hooks/session-start.sh", "timeout": 15000}],
+            "hooks": [
+                {
+                    "type": "command",
+                    "command": "bash ~/.claude/hooks/session-start.sh",
+                    "timeout": 15000,
+                }
+            ],
         },
         {
             "matcher": "resume",
-            "hooks": [{"type": "command", "command": "bash ~/.claude/hooks/session-start.sh", "timeout": 15000}],
+            "hooks": [
+                {
+                    "type": "command",
+                    "command": "bash ~/.claude/hooks/session-start.sh",
+                    "timeout": 15000,
+                }
+            ],
         },
         {
             "matcher": "compact",
-            "hooks": [{"type": "command", "command": "bash ~/.claude/hooks/session-start.sh", "timeout": 15000}],
+            "hooks": [
+                {
+                    "type": "command",
+                    "command": "bash ~/.claude/hooks/session-start.sh",
+                    "timeout": 15000,
+                }
+            ],
         },
     ]
     settings["hooks"]["SessionEnd"] = [
         {
-            "hooks": [{"type": "command", "command": "bash ~/.claude/hooks/session-end.sh", "timeout": 30000}],
+            "hooks": [
+                {
+                    "type": "command",
+                    "command": "bash ~/.claude/hooks/session-end.sh",
+                    "timeout": 30000,
+                }
+            ],
         }
     ]
     settings["hooks"]["PreCompact"] = [
         {
-            "hooks": [{"type": "command", "command": "bash ~/.claude/hooks/pre-compact.sh", "timeout": 10000}],
+            "hooks": [
+                {
+                    "type": "command",
+                    "command": "bash ~/.claude/hooks/pre-compact.sh",
+                    "timeout": 10000,
+                }
+            ],
         }
     ]
 

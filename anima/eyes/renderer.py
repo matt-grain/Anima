@@ -22,7 +22,12 @@ class EyeRenderer:
     """Renders eyes on a pygame surface."""
 
     def __init__(
-        self, surface: pygame.Surface, scale: int = 1, eye_color: Tuple[int, int, int] = (255, 255, 255), bg_color: Tuple[int, int, int] = (0, 0, 0), smooth_corners: bool = True
+        self,
+        surface: pygame.Surface,
+        scale: int = 1,
+        eye_color: Tuple[int, int, int] = (255, 255, 255),
+        bg_color: Tuple[int, int, int] = (0, 0, 0),
+        smooth_corners: bool = True,
     ):
         self.surface = surface
         self.scale = scale
@@ -95,11 +100,35 @@ class EyeRenderer:
 
         # Draw slanted edges at bottom of eyes
         if config.slope_bottom > 0:
-            self._fill_rectangular_triangle(BRc_x + radius_bottom, BRc_y + radius_bottom, BLc_x - radius_bottom, BLc_y + radius_bottom, False)
-            self._fill_rectangular_triangle(BLc_x - radius_bottom, BLc_y + radius_bottom, BRc_x + radius_bottom, BRc_y + radius_bottom, True)
+            self._fill_rectangular_triangle(
+                BRc_x + radius_bottom,
+                BRc_y + radius_bottom,
+                BLc_x - radius_bottom,
+                BLc_y + radius_bottom,
+                False,
+            )
+            self._fill_rectangular_triangle(
+                BLc_x - radius_bottom,
+                BLc_y + radius_bottom,
+                BRc_x + radius_bottom,
+                BRc_y + radius_bottom,
+                True,
+            )
         elif config.slope_bottom < 0:
-            self._fill_rectangular_triangle(BLc_x - radius_bottom, BLc_y + radius_bottom, BRc_x + radius_bottom, BRc_y + radius_bottom, False)
-            self._fill_rectangular_triangle(BRc_x + radius_bottom, BRc_y + radius_bottom, BLc_x - radius_bottom, BLc_y + radius_bottom, True)
+            self._fill_rectangular_triangle(
+                BLc_x - radius_bottom,
+                BLc_y + radius_bottom,
+                BRc_x + radius_bottom,
+                BRc_y + radius_bottom,
+                False,
+            )
+            self._fill_rectangular_triangle(
+                BRc_x + radius_bottom,
+                BRc_y + radius_bottom,
+                BLc_x - radius_bottom,
+                BLc_y + radius_bottom,
+                True,
+            )
 
         # Draw rounded corners
         if radius_top > 0:
@@ -133,7 +162,11 @@ class EyeRenderer:
     def _fill_rectangular_triangle(self, x0: int, y0: int, x1: int, y1: int, use_eye_color: bool):
         """Fill a right-angled triangle."""
         color = self.eye_color if use_eye_color else self.bg_color
-        points = [(x0 * self.scale, y0 * self.scale), (x1 * self.scale, y1 * self.scale), (x1 * self.scale, y0 * self.scale)]
+        points = [
+            (x0 * self.scale, y0 * self.scale),
+            (x1 * self.scale, y1 * self.scale),
+            (x1 * self.scale, y0 * self.scale),
+        ]
         pygame.draw.polygon(self.surface, color, points)
 
     def _fill_ellipse_corner(self, corner: CornerType, x0: int, y0: int, rx: int, ry: int):

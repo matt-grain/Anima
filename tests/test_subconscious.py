@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from anima.storage import FTS5NotSupportedError, SubconsciousStore
+from anima.storage import SubconsciousStore
 from anima.storage.subconscious_types import DialogueTurn, SessionMeta
 
 
@@ -40,10 +40,22 @@ def sample_session_meta() -> SessionMeta:
 def sample_dialogue() -> list[DialogueTurn]:
     """Sample dialogue turns for testing."""
     return [
-        DialogueTurn(role="user", content="How do I implement caching?", timestamp=1709500000000),
-        DialogueTurn(role="assistant", content="Here's how to implement caching with Redis...", timestamp=1709500001000),
-        DialogueTurn(role="user", content="What about memory caching?", timestamp=1709500002000),
-        DialogueTurn(role="assistant", content="For in-memory caching, you can use functools.lru_cache...", timestamp=1709500003000),
+        DialogueTurn(
+            role="user", content="How do I implement caching?", timestamp=1709500000000
+        ),
+        DialogueTurn(
+            role="assistant",
+            content="Here's how to implement caching with Redis...",
+            timestamp=1709500001000,
+        ),
+        DialogueTurn(
+            role="user", content="What about memory caching?", timestamp=1709500002000
+        ),
+        DialogueTurn(
+            role="assistant",
+            content="For in-memory caching, you can use functools.lru_cache...",
+            timestamp=1709500003000,
+        ),
     ]
 
 
@@ -81,9 +93,14 @@ class TestSubconsciousStore:
         results = subconscious_store.search("caching")
         assert len(results) > 0
         # FTS5 snippet may wrap the term in ** markers
-        assert "caching" in results[0].excerpt.lower() or "**caching**" in results[0].excerpt.lower()
+        assert (
+            "caching" in results[0].excerpt.lower()
+            or "**caching**" in results[0].excerpt.lower()
+        )
 
-    def test_search_blended_score_differs_by_session_age(self, subconscious_store: SubconsciousStore) -> None:
+    def test_search_blended_score_differs_by_session_age(
+        self, subconscious_store: SubconsciousStore
+    ) -> None:
         """Test that the blended score differs between old and new sessions with the same content.
 
         The blended score formula modulates BM25 with recency, so two sessions with
@@ -93,11 +110,15 @@ class TestSubconsciousStore:
         old_ms = now_ms - (60 * 86_400_000)  # 60 days ago
 
         old_meta = SessionMeta("old-session", "claude", "/proj", "/old.jsonl", old_ms)
-        old_dialogue = [DialogueTurn("user", "authentication token verification", old_ms)]
+        old_dialogue = [
+            DialogueTurn("user", "authentication token verification", old_ms)
+        ]
         subconscious_store.index_session(old_meta, old_dialogue)
 
         new_meta = SessionMeta("new-session", "claude", "/proj", "/new.jsonl", now_ms)
-        new_dialogue = [DialogueTurn("user", "authentication token verification", now_ms)]
+        new_dialogue = [
+            DialogueTurn("user", "authentication token verification", now_ms)
+        ]
         subconscious_store.index_session(new_meta, new_dialogue)
 
         results = subconscious_store.search("authentication token verification")
@@ -106,7 +127,9 @@ class TestSubconsciousStore:
         scores = {r.session_id: r.score for r in results}
         assert scores["old-session"] != scores["new-session"]
 
-    def test_search_filters_by_project(self, subconscious_store: SubconsciousStore) -> None:
+    def test_search_filters_by_project(
+        self, subconscious_store: SubconsciousStore
+    ) -> None:
         """Test that project filter returns only sessions from the specified project."""
         meta1 = SessionMeta("s1", "claude", "/project-a", "/a.jsonl", 1000)
         meta2 = SessionMeta("s2", "claude", "/project-b", "/b.jsonl", 1000)
@@ -118,7 +141,9 @@ class TestSubconsciousStore:
         assert len(results) == 1
         assert results[0].project == "/project-a"
 
-    def test_search_filters_by_days(self, subconscious_store: SubconsciousStore) -> None:
+    def test_search_filters_by_days(
+        self, subconscious_store: SubconsciousStore
+    ) -> None:
         """Test that days filter excludes sessions older than the cutoff."""
         now_ms = int(time.time() * 1000)
         old_ms = now_ms - (10 * 86_400_000)  # 10 days ago
@@ -156,7 +181,9 @@ class TestSubconsciousStore:
         assert subconscious_store.is_session_indexed(str(real_file), 1.0) is True
 
         # Unknown path should not be indexed
-        assert subconscious_store.is_session_indexed("/different/path.jsonl", 1.0) is False
+        assert (
+            subconscious_store.is_session_indexed("/different/path.jsonl", 1.0) is False
+        )
 
     def test_reindex_replaces_existing_session(
         self,

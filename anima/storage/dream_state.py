@@ -73,7 +73,12 @@ class DreamStateStore:
                     ORDER BY started_at DESC
                     LIMIT 1
                     """,
-                    (agent_id, project_id, DreamState.IDLE.value, DreamState.COMPLETE.value),
+                    (
+                        agent_id,
+                        project_id,
+                        DreamState.IDLE.value,
+                        DreamState.COMPLETE.value,
+                    ),
                 ).fetchone()
             else:
                 row = conn.execute(

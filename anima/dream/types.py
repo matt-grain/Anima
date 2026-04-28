@@ -48,7 +48,14 @@ class DreamConfig:
     """Configuration for dream execution."""
 
     # Which stages to run
-    stages: list[DreamStage] = field(default_factory=lambda: [DreamStage.CLEANUP, DreamStage.N2, DreamStage.N3, DreamStage.REM])
+    stages: list[DreamStage] = field(
+        default_factory=lambda: [
+            DreamStage.CLEANUP,
+            DreamStage.N2,
+            DreamStage.N3,
+            DreamStage.REM,
+        ]
+    )
 
     # N2 configuration
     n2_similarity_threshold: float = 0.6  # Higher than normal (0.5) to reduce noise

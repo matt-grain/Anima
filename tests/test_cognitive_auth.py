@@ -24,9 +24,7 @@ from anima.security.challenges import (
     evaluate_response,
 )
 from anima.security.cognitive_profile import (
-    extract_cognitive_profile,
     _extract_style_markers,
-    _extract_signature_phrases,
 )
 
 

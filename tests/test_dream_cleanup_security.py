@@ -8,10 +8,7 @@ These tests verify that prompt injection patterns are correctly detected
 and quarantined during the dream CLEANUP phase.
 """
 
-import pytest
-
 from anima.dream.cleanup import INJECTION_PATTERNS, _detect_suspicious_memories
-from anima.dream.types import SuspiciousMemory
 
 
 class MockMemory:

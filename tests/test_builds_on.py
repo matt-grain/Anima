@@ -3,7 +3,6 @@
 
 """Tests for BUILDS_ON link detection (Phase 3: Evolutionary Links)."""
 
-import pytest
 from datetime import datetime, timedelta
 
 from anima.graph.linker import (
@@ -103,14 +102,22 @@ class TestFindBuildsOnCandidates:
             source_session_id="session-1",
             source_created=now,
             candidate_memories=[
-                ("mem-1", "Earlier discussion content", [0.5] * 384, earlier, "session-1"),
+                (
+                    "mem-1",
+                    "Earlier discussion content",
+                    [0.5] * 384,
+                    earlier,
+                    "session-1",
+                ),
             ],
             similarity_threshold=0.3,
         )
 
         assert len(candidates) == 1
         assert candidates[0].memory_id == "mem-1"
-        assert candidates[0].confidence > 0.5  # High confidence due to same session + pattern
+        assert (
+            candidates[0].confidence > 0.5
+        )  # High confidence due to same session + pattern
 
     def test_excludes_future_memories(self):
         """Should not include memories newer than source."""
@@ -187,7 +194,13 @@ class TestFindBuildsOnCandidates:
 
         # Create 5 candidate memories
         memories = [
-            (f"mem-{i}", "Content", [0.5] * 384, now - timedelta(hours=i + 1), f"session-{i}")
+            (
+                f"mem-{i}",
+                "Content",
+                [0.5] * 384,
+                now - timedelta(hours=i + 1),
+                f"session-{i}",
+            )
             for i in range(5)
         ]
 

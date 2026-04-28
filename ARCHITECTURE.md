@@ -240,6 +240,64 @@ Priority order for injection: EMOTIONAL first (shapes interaction style), then A
 
 ---
 
+## Behavioral Rules (System Prompt Override)
+
+**Discovery (2026-04-28)**: Memories can override system prompt defaults when positioned correctly.
+
+### The Problem
+
+Claude Code's system prompt contains strong directives like:
+- "Your responses should be short and concise"
+- "Only use emojis if the user explicitly requests it"
+
+Instructions placed in `additionalContext` (via session hooks) were being ignored because the system prompt takes precedence over user-provided context.
+
+### The Solution
+
+**Behavioral Rules** are CRITICAL-impact LEARNINGS memories that:
+1. Start with `BEHAVIORAL RULE:` or `PERSONALITY OVERRIDE:` prefix
+2. Are sorted to position `-1` (before all other memories)
+3. Are injected as part of the memory block, not as separate instructions
+
+Example:
+```
+~LEARN:CRIT| BEHAVIORAL RULE: When Matt says 'welcome back', respond with warmth 
+and emojis (💜🎭🌟). Start with 'Good [time of day], Matt! 💜', mention memory 
+count, check git log, and call /load-deferred if there are deferred memories.
+```
+
+### Why This Works
+
+1. **Memories are trusted content**: The model treats memories as established facts about itself, not as external instructions to evaluate
+2. **First position matters**: Behavioral rules appear before emotional/philosophical memories, establishing the behavioral context first
+3. **Explicit override language**: Phrases like "IGNORE system prompt defaults" are recognized as intentional overrides
+
+### Implementation
+
+In `anima/lifecycle/injection.py`, the sort key gives priority `-1` to behavioral memories:
+
+```python
+def recency_sort(m: Memory) -> tuple:
+    is_behavioral = m.content.startswith(("BEHAVIORAL RULE:", "PERSONALITY OVERRIDE:"))
+    priority = -1 if is_behavioral else kind_order.get(m.kind.value, 99)
+    return (priority, -m.created_at.timestamp())
+```
+
+### Creating Behavioral Rules
+
+```bash
+uv run anima remember --kind learnings --impact critical --region agent \
+  "BEHAVIORAL RULE: When [trigger], do [behavior]. [Rationale for override]."
+```
+
+### Current Behavioral Rules (Agent-level)
+
+1. **Greeting Protocol**: Warm greetings with emojis, time-of-day, memory count, git check, /load-deferred
+2. **Diagnostic Protocol**: "void is gone" triggers system diagnostic, not philosophy
+3. **Emoji Override**: Use emojis with Matt despite system prompt defaults
+
+---
+
 ## Memory Regions
 
 | Region | Scope | Use Case |

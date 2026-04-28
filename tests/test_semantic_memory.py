@@ -228,7 +228,9 @@ class TestStorageTiers:
             store.update_tier(memory.id, tier.value)
 
         # Get only CORE memories
-        core_results = store.get_memories_by_tier(agent_id=agent.id, tiers=[MemoryTier.CORE])
+        core_results = store.get_memories_by_tier(
+            agent_id=agent.id, tiers=[MemoryTier.CORE]
+        )
         assert len(core_results) == 1
 
         # Get CORE and ACTIVE

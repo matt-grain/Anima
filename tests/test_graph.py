@@ -225,6 +225,7 @@ class TestGetLinkedMemories:
 
     def test_gets_direct_links(self):
         """Should get directly linked memories."""
+
         # Mock functions
         def get_links(mem_id):
             if mem_id == "source":
@@ -249,6 +250,7 @@ class TestGetLinkedMemories:
 
     def test_respects_max_depth(self):
         """Should not traverse beyond max_depth."""
+
         def get_links(mem_id):
             links = {
                 "a": [MemoryLink("a", "b", LinkType.RELATES_TO)],
@@ -268,6 +270,7 @@ class TestGetLinkedMemories:
 
     def test_filters_by_link_type(self):
         """Should filter by link type if specified."""
+
         def get_links(mem_id):
             if mem_id == "source":
                 return [
@@ -280,8 +283,7 @@ class TestGetLinkedMemories:
             return (mem_id, f"Content of {mem_id}")
 
         results = get_linked_memories(
-            "source", get_links, get_memory,
-            link_types={LinkType.BUILDS_ON}
+            "source", get_links, get_memory, link_types={LinkType.BUILDS_ON}
         )
 
         assert len(results) == 1
@@ -293,6 +295,7 @@ class TestGetMemoryChain:
 
     def test_follows_chain(self):
         """Should follow a chain of links."""
+
         def get_links(mem_id):
             chains = {
                 "a": [MemoryLink("a", "b", LinkType.BUILDS_ON)],
@@ -312,6 +315,7 @@ class TestGetMemoryChain:
 
     def test_stops_at_max_length(self):
         """Should stop at max_length to prevent infinite loops."""
+
         def get_links(mem_id):
             # Infinite chain
             return [MemoryLink(mem_id, f"next_{mem_id}", LinkType.BUILDS_ON)]
@@ -325,6 +329,7 @@ class TestGetMemoryChain:
 
     def test_detects_cycles(self):
         """Should detect and stop on cycles."""
+
         def get_links(mem_id):
             cycles = {
                 "a": [MemoryLink("a", "b", LinkType.BUILDS_ON)],

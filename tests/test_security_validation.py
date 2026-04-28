@@ -7,8 +7,6 @@ Tests for security validation module.
 Tests the language-agnostic injection detection patterns and validation functions.
 """
 
-import pytest
-
 from anima.security.validation import (
     INJECTION_PATTERNS,
     ValidationResult,
@@ -202,7 +200,6 @@ class TestInjectionPatternsIntegrity:
 
     def test_all_patterns_are_compiled(self) -> None:
         """Every pattern should be a compiled regex."""
-        import re
 
         for name, pattern in INJECTION_PATTERNS:
             assert hasattr(pattern, "search"), f"{name} should be compiled regex"

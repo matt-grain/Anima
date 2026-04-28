@@ -115,7 +115,15 @@ def classify_memory(memory: dict) -> dict:
             return decision
 
     # Check for project-specific technical content
-    project_specific = ["grain-inventory", "grain-infrastructure", "grain_mobile", "questionnaire", "influxdb", "terraform", "azure"]
+    project_specific = [
+        "grain-inventory",
+        "grain-infrastructure",
+        "grain_mobile",
+        "questionnaire",
+        "influxdb",
+        "terraform",
+        "azure",
+    ]
 
     for proj in project_specific:
         if proj in content:
@@ -142,7 +150,13 @@ def classify_memory(memory: dict) -> dict:
 
 # Classify all memories
 decisions = []
-kind_counts = {"EMOTIONAL": 0, "LEARNINGS": 0, "ARCHITECTURAL": 0, "ACHIEVEMENTS": 0, "delete": 0}
+kind_counts = {
+    "EMOTIONAL": 0,
+    "LEARNINGS": 0,
+    "ARCHITECTURAL": 0,
+    "ACHIEVEMENTS": 0,
+    "delete": 0,
+}
 
 for memory in memories:
     decision = classify_memory(memory)

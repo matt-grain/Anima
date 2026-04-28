@@ -291,7 +291,11 @@ class DissonanceStore:
                 SELECT * FROM dissonance_queue
                 WHERE agent_id = ? AND status = ? AND dissonance_type = ?
                 """,
-                (agent_id, DissonanceStatus.OPEN.value, DissonanceType.SCOPE_UNCLEAR.value),
+                (
+                    agent_id,
+                    DissonanceStatus.OPEN.value,
+                    DissonanceType.SCOPE_UNCLEAR.value,
+                ),
             ).fetchall()
 
         return [self._row_to_dissonance(row) for row in rows]

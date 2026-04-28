@@ -81,7 +81,15 @@ class TrapeziumAnimation:
 class TrapeziumPulseAnimation:
     """Repeating trapezium pulse animation."""
 
-    def __init__(self, t0: int = 0, t1: int = 1000, t2: int = 0, t3: int = 1000, t4: int = 0, speed_multiplier: float = 1.0):
+    def __init__(
+        self,
+        t0: int = 0,
+        t1: int = 1000,
+        t2: int = 0,
+        t3: int = 1000,
+        t4: int = 0,
+        speed_multiplier: float = 1.0,
+    ):
         self._t0 = t0  # Initial delay
         self._t1 = t1  # Ramp up
         self._t2 = t2  # Hold

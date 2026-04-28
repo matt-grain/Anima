@@ -18,19 +18,23 @@ class TestProjectAwareLoading:
     def setup_method(self, method):
         """Create a fresh store for each test."""
         import tempfile
+
         self.tmp_dir = tempfile.mkdtemp()
         self.db_path = Path(self.tmp_dir) / "test.db"
         self.store = MemoryStore(db_path=self.db_path)
 
         # Create agent and project
         self.agent = Agent(id="test-agent", name="Test")
-        self.project = Project(id="test-project", name="TestProject", path=Path("/test"))
+        self.project = Project(
+            id="test-project", name="TestProject", path=Path("/test")
+        )
         self.store.save_agent(self.agent)
         self.store.save_project(self.project)
 
     def teardown_method(self, method):
         """Clean up temp files."""
         import shutil
+
         shutil.rmtree(self.tmp_dir, ignore_errors=True)
 
     def _create_memory(
@@ -44,7 +48,8 @@ class TestProjectAwareLoading:
         memory = Memory(
             agent_id=self.agent.id,
             region=region,
-            project_id=project_id or (self.project.id if region == RegionType.PROJECT else None),
+            project_id=project_id
+            or (self.project.id if region == RegionType.PROJECT else None),
             kind=MemoryKind.LEARNINGS,
             content=content,
             original_content=content,
@@ -152,6 +157,7 @@ class TestPrioritization:
     def setup_method(self, method):
         """Create a fresh store for each test."""
         import tempfile
+
         self.tmp_dir = tempfile.mkdtemp()
         self.db_path = Path(self.tmp_dir) / "test.db"
         self.store = MemoryStore(db_path=self.db_path)
@@ -162,6 +168,7 @@ class TestPrioritization:
     def teardown_method(self, method):
         """Clean up temp files."""
         import shutil
+
         shutil.rmtree(self.tmp_dir, ignore_errors=True)
 
     def test_critical_memories_first(self):

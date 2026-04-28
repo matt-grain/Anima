@@ -253,8 +253,18 @@ class Face:
 
         # Create eyes with speed settings
         anim = config.animation
-        self.left_eye = Eye(anim.transition_speed, anim.look_speed, anim.blink_speed, anim.variation_speed)
-        self.right_eye = Eye(anim.transition_speed, anim.look_speed, anim.blink_speed, anim.variation_speed)
+        self.left_eye = Eye(
+            anim.transition_speed,
+            anim.look_speed,
+            anim.blink_speed,
+            anim.variation_speed,
+        )
+        self.right_eye = Eye(
+            anim.transition_speed,
+            anim.look_speed,
+            anim.blink_speed,
+            anim.variation_speed,
+        )
         self.left_eye.is_mirrored = True
 
         # Create assistants

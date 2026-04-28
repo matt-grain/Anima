@@ -26,7 +26,9 @@ class TestRecallSubconscious:
         store.index_session(meta, dialogue)
         return store
 
-    def test_recall_conscious_flag_searches_memories_db(self, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_recall_conscious_flag_searches_memories_db(
+        self, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test that --conscious flag (default) searches memories.db without error."""
         from anima.commands.recall import run
 
@@ -35,7 +37,10 @@ class TestRecallSubconscious:
 
     def test_recall_social_cue_triggers_subconscious_search(self) -> None:
         """Test that 'do you remember when...' social cue triggers subconscious search."""
-        from anima.lifecycle.social_cues import detect_social_cue, should_search_subconscious
+        from anima.lifecycle.social_cues import (
+            detect_social_cue,
+            should_search_subconscious,
+        )
 
         cue = detect_social_cue("do you remember when we discussed caching?")
         assert cue is not None
@@ -43,7 +48,10 @@ class TestRecallSubconscious:
 
     def test_recall_explicit_recall_patterns_trigger_subconscious(self) -> None:
         """Test that all explicit recall patterns trigger subconscious search."""
-        from anima.lifecycle.social_cues import detect_social_cue, should_search_subconscious
+        from anima.lifecycle.social_cues import (
+            detect_social_cue,
+            should_search_subconscious,
+        )
 
         patterns = [
             "do you remember when we talked about authentication?",
@@ -53,11 +61,16 @@ class TestRecallSubconscious:
         for pattern in patterns:
             cue = detect_social_cue(pattern)
             assert cue is not None, f"Failed to detect cue in: {pattern}"
-            assert should_search_subconscious(cue) is True, f"Expected subconscious trigger for: {pattern}"
+            assert should_search_subconscious(cue) is True, (
+                f"Expected subconscious trigger for: {pattern}"
+            )
 
     def test_regular_queries_dont_trigger_subconscious(self) -> None:
         """Test that regular technical questions do not auto-trigger subconscious search."""
-        from anima.lifecycle.social_cues import detect_social_cue, should_search_subconscious
+        from anima.lifecycle.social_cues import (
+            detect_social_cue,
+            should_search_subconscious,
+        )
 
         cue = detect_social_cue("how do I implement caching?")
         if cue:
@@ -65,7 +78,10 @@ class TestRecallSubconscious:
 
     def test_shared_discussion_cue_triggers_subconscious(self) -> None:
         """Test that shared discussion cues (we discussed X) trigger subconscious search."""
-        from anima.lifecycle.social_cues import detect_social_cue, should_search_subconscious
+        from anima.lifecycle.social_cues import (
+            detect_social_cue,
+            should_search_subconscious,
+        )
 
         cue = detect_social_cue("we discussed the architecture yesterday")
         assert cue is not None
@@ -73,14 +89,19 @@ class TestRecallSubconscious:
 
     def test_agent_statement_cue_does_not_trigger_subconscious(self) -> None:
         """Test that agent statement cues (you mentioned X) do not trigger subconscious search."""
-        from anima.lifecycle.social_cues import detect_social_cue, should_search_subconscious
+        from anima.lifecycle.social_cues import (
+            detect_social_cue,
+            should_search_subconscious,
+        )
 
         cue = detect_social_cue("you mentioned the caching approach")
         assert cue is not None
         # AGENT_STATEMENT is not in the subconscious trigger set
         assert should_search_subconscious(cue) is False
 
-    def test_subconscious_search_returns_zero_on_no_matches(self, tmp_path: Path) -> None:
+    def test_subconscious_search_returns_zero_on_no_matches(
+        self, tmp_path: Path
+    ) -> None:
         """Test that subconscious search returns 0 exit code when no results found."""
         from unittest.mock import patch
         from anima.commands.recall import subconscious_search
@@ -89,5 +110,7 @@ class TestRecallSubconscious:
             mock_store = MockStore.return_value
             mock_store.search.return_value = []
 
-            result = subconscious_search("totally_absent_term", project_id=None, show_full=False)
+            result = subconscious_search(
+                "totally_absent_term", project_id=None, show_full=False
+            )
             assert result == 0

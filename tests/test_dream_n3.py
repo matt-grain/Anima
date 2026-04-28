@@ -3,11 +3,9 @@
 
 """Tests for N3 deep processing stage (Dream Mode Phase 2)."""
 
-import pytest
 import tempfile
-from datetime import datetime, timedelta
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from anima.dream.types import DreamConfig, N3Result, GistResult, Contradiction
 from anima.dream.n3_processing import (
@@ -89,7 +87,9 @@ class TestExtractGist:
     def test_first_sentence_included(self):
         """First sentence should always be in gist."""
         memory = MagicMock()
-        memory.content = "This is the main point. Secondary info here. More details follow."
+        memory.content = (
+            "This is the main point. Secondary info here. More details follow."
+        )
 
         gist = _extract_gist(memory, DreamConfig())
 

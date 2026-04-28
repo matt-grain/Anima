@@ -63,7 +63,9 @@ class BenchmarkResult:
         )
 
 
-def benchmark(name: str, func: Callable[[], None], iterations: int = 100, warmup: int = 5) -> BenchmarkResult:
+def benchmark(
+    name: str, func: Callable[[], None], iterations: int = 100, warmup: int = 5
+) -> BenchmarkResult:
     """
     Run a benchmark and collect timing statistics.
 
@@ -129,7 +131,9 @@ class TestPerformanceBenchmarks:
         store.save_project(project)
         return project
 
-    def test_memory_creation_single(self, store: MemoryStore, agent: Agent, project: Project) -> None:
+    def test_memory_creation_single(
+        self, store: MemoryStore, agent: Agent, project: Project
+    ) -> None:
         """Benchmark: Create a single memory."""
         counter = [0]
 
@@ -151,7 +155,9 @@ class TestPerformanceBenchmarks:
         # Assert reasonable performance (< 10ms per memory)
         assert result.mean_ms < 10, f"Memory creation too slow: {result.mean_ms:.2f}ms"
 
-    def test_memory_creation_batch(self, store: MemoryStore, agent: Agent, project: Project) -> None:
+    def test_memory_creation_batch(
+        self, store: MemoryStore, agent: Agent, project: Project
+    ) -> None:
         """Benchmark: Create 100 memories in one operation."""
         batch_size = 100
         counter = [0]
@@ -181,9 +187,13 @@ class TestPerformanceBenchmarks:
 
         # Assert reasonable batch performance (< 10ms per memory in batch)
         # Note: SQLite commits per memory; batch insert optimization could help
-        assert per_memory_ms < 10, f"Batch creation too slow: {per_memory_ms:.2f}ms per memory"
+        assert per_memory_ms < 10, (
+            f"Batch creation too slow: {per_memory_ms:.2f}ms per memory"
+        )
 
-    def test_memory_recall_by_id(self, store: MemoryStore, agent: Agent, project: Project) -> None:
+    def test_memory_recall_by_id(
+        self, store: MemoryStore, agent: Agent, project: Project
+    ) -> None:
         """Benchmark: Recall memory by ID."""
         # Create memories to recall
         memory_ids = []
@@ -212,7 +222,9 @@ class TestPerformanceBenchmarks:
         # Assert fast recall (< 1ms)
         assert result.mean_ms < 1, f"Recall by ID too slow: {result.mean_ms:.2f}ms"
 
-    def test_memory_recall_by_kind(self, store: MemoryStore, agent: Agent, project: Project) -> None:
+    def test_memory_recall_by_kind(
+        self, store: MemoryStore, agent: Agent, project: Project
+    ) -> None:
         """Benchmark: Recall memories filtered by kind."""
         # Create mixed memories
         kinds = list(MemoryKind)
@@ -245,7 +257,9 @@ class TestPerformanceBenchmarks:
         # Assert reasonable filter performance (< 5ms)
         assert result.mean_ms < 5, f"Recall by kind too slow: {result.mean_ms:.2f}ms"
 
-    def test_memory_search(self, store: MemoryStore, agent: Agent, project: Project) -> None:
+    def test_memory_search(
+        self, store: MemoryStore, agent: Agent, project: Project
+    ) -> None:
         """Benchmark: Full-text search across memories."""
         # Create searchable memories
         topics = ["python", "testing", "performance", "memory", "database"]
@@ -274,7 +288,9 @@ class TestPerformanceBenchmarks:
         # Assert reasonable search performance (< 10ms)
         assert result.mean_ms < 10, f"Search too slow: {result.mean_ms:.2f}ms"
 
-    def test_injection_small_set(self, store: MemoryStore, agent: Agent, project: Project) -> None:
+    def test_injection_small_set(
+        self, store: MemoryStore, agent: Agent, project: Project
+    ) -> None:
         """Benchmark: Inject memories (small set, under budget)."""
         # Create 20 memories (typical small project)
         # Note: token_count is calculated on save, simulating real usage
@@ -303,7 +319,9 @@ class TestPerformanceBenchmarks:
         # 20 memories × 4ms = ~80ms, allow some variance
         assert result.mean_ms < 150, f"Injection too slow: {result.mean_ms:.2f}ms"
 
-    def test_injection_large_set(self, store: MemoryStore, agent: Agent, project: Project) -> None:
+    def test_injection_large_set(
+        self, store: MemoryStore, agent: Agent, project: Project
+    ) -> None:
         """Benchmark: Inject memories (large set, budget-constrained)."""
         # Create 500 memories (stress test)
         # Note: token_count is calculated on save, simulating real usage
@@ -330,18 +348,26 @@ class TestPerformanceBenchmarks:
         def inject():
             injector.inject(agent, project)
 
-        result = benchmark("Injection (500 memories, budget-limited)", inject, iterations=50)
+        result = benchmark(
+            "Injection (500 memories, budget-limited)", inject, iterations=50
+        )
         stats = injector.get_stats(agent, project)
         print(f"\n{result}")
-        print(f"  Total memories: {stats['total']} | Budget: {stats['budget_tokens']} tokens")
+        print(
+            f"  Total memories: {stats['total']} | Budget: {stats['budget_tokens']} tokens"
+        )
 
         # With 500 memories, ~80-100 fit in budget before hitting 20k tokens
         # Each injected memory triggers save_memory() for last_accessed update
         # Plus the accumulating memory count grows each iteration
         # Assert < 4 seconds for stress test (previous was ~3s with tiktoken)
-        assert result.mean_ms < 4000, f"Large injection too slow: {result.mean_ms:.2f}ms"
+        assert result.mean_ms < 4000, (
+            f"Large injection too slow: {result.mean_ms:.2f}ms"
+        )
 
-    def test_decay_processing(self, store: MemoryStore, agent: Agent, project: Project) -> None:
+    def test_decay_processing(
+        self, store: MemoryStore, agent: Agent, project: Project
+    ) -> None:
         """Benchmark: Process decay on memories."""
         # Create 100 memories with various impacts
         from datetime import datetime, timedelta
@@ -365,7 +391,9 @@ class TestPerformanceBenchmarks:
         def process_decay():
             decay.process_decay(agent.id, project.id)
 
-        result = benchmark("Decay Processing (100 memories)", process_decay, iterations=50)
+        result = benchmark(
+            "Decay Processing (100 memories)", process_decay, iterations=50
+        )
         print(f"\n{result}")
 
         # Assert reasonable decay time (< 50ms)
@@ -416,7 +444,9 @@ class TestPerformanceBenchmarks:
         # Assert very fast verification (< 0.1ms)
         assert result.mean_ms < 0.1, f"Verification too slow: {result.mean_ms:.3f}ms"
 
-    def test_full_session_simulation(self, store: MemoryStore, agent: Agent, project: Project) -> None:
+    def test_full_session_simulation(
+        self, store: MemoryStore, agent: Agent, project: Project
+    ) -> None:
         """
         Benchmark: Simulate a full session workflow.
 
@@ -473,7 +503,9 @@ class TestPerformanceBenchmarks:
             # 3. Process decay
             decay.process_decay(agent.id, project.id)
 
-        result = benchmark("Full Session Simulation", full_session, iterations=30, warmup=3)
+        result = benchmark(
+            "Full Session Simulation", full_session, iterations=30, warmup=3
+        )
         print(f"\n{result}")
 
         # Full session includes:
@@ -491,7 +523,9 @@ class TestPerformanceSummary:
         """Generate and print a comprehensive performance summary."""
         store = MemoryStore(db_path=tmp_path / "summary_test.db", limits=NO_LIMITS)
         agent = Agent(id="summary-agent", name="SummaryAgent", signing_key="key-123")
-        project = Project(id="summary-project", name="SummaryProject", path=Path("/tmp"))
+        project = Project(
+            id="summary-project", name="SummaryProject", path=Path("/tmp")
+        )
         store.save_agent(agent)
         store.save_project(project)
 
@@ -512,7 +546,9 @@ class TestPerformanceSummary:
         results.append(benchmark("Create Memory", create_memory, iterations=100))
 
         # Memory recall
-        memories = store.get_memories_for_agent(agent_id=agent.id, region=RegionType.PROJECT, project_id=project.id)
+        memories = store.get_memories_for_agent(
+            agent_id=agent.id, region=RegionType.PROJECT, project_id=project.id
+        )
         if memories:
             test_id = memories[0].id
 
@@ -561,7 +597,9 @@ class TestPerformanceSummary:
 
         for r in results:
             print(f"\n{r.name}:")
-            print(f"  Mean: {r.mean_ms:.3f}ms | Throughput: {r.ops_per_sec:.0f} ops/sec")
+            print(
+                f"  Mean: {r.mean_ms:.3f}ms | Throughput: {r.ops_per_sec:.0f} ops/sec"
+            )
 
         print("\n" + "=" * 60)
         print("VERDICT: ", end="")

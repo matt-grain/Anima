@@ -400,7 +400,13 @@ class ClaudeSetup(BasePlatformSetup):
         if project_dir is not None:
             # Use absolute path for --directory
             abs_project_dir = project_dir.resolve()
-            server_args = ["--directory", str(abs_project_dir), "run", "anima", "--server"]
+            server_args = [
+                "--directory",
+                str(abs_project_dir),
+                "run",
+                "anima",
+                "--server",
+            ]
         else:
             server_args = ["run", "anima", "--server"]
 
@@ -496,7 +502,12 @@ class ClaudeSetup(BasePlatformSetup):
             try:
                 # In local mode, pass project_dir so MCP uses --directory
                 mcp_project_dir = project_dir if local_mode else None
-                if not self.setup_mcp_server(eyes_enabled, tts_enabled, light_enabled, project_dir=mcp_project_dir):
+                if not self.setup_mcp_server(
+                    eyes_enabled,
+                    tts_enabled,
+                    light_enabled,
+                    project_dir=mcp_project_dir,
+                ):
                     success = False
                 print()
             except Exception as e:

@@ -54,7 +54,10 @@ def get_embedder(quiet: bool = False):
 
     if not quiet:
         print("\n" + "=" * 50, file=sys.stderr)
-        safe_print(f"{get_icon('☕', '[...]')} Anima is waking up... take a coffee!", file=sys.stderr)
+        safe_print(
+            f"{get_icon('☕', '[...]')} Anima is waking up... take a coffee!",
+            file=sys.stderr,
+        )
         print("=" * 50, file=sys.stderr)
 
     start = time.time()
@@ -69,7 +72,10 @@ def get_embedder(quiet: bool = False):
     _load_time = time.time() - start
 
     if not quiet:
-        safe_print(f"{get_icon('🧠', '[SEM]')} Semantic memory online! ({_load_time:.1f}s)", file=sys.stderr)
+        safe_print(
+            f"{get_icon('🧠', '[SEM]')} Semantic memory online! ({_load_time:.1f}s)",
+            file=sys.stderr,
+        )
         print("=" * 50 + "\n", file=sys.stderr)
 
     return _embedder

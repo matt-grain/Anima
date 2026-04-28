@@ -54,20 +54,26 @@ def agent_with_key() -> Agent:
 @pytest.fixture
 def agent_without_key() -> Agent:
     """Create an agent without a signing key."""
-    return Agent(id="normal-agent", name="Normal Agent", definition_path=None, signing_key=None)
+    return Agent(
+        id="normal-agent", name="Normal Agent", definition_path=None, signing_key=None
+    )
 
 
 class TestSignMemory:
     """Tests for sign_memory function."""
 
-    def test_sign_creates_signature(self, sample_memory: Memory, agent_with_key: Agent) -> None:
+    def test_sign_creates_signature(
+        self, sample_memory: Memory, agent_with_key: Agent
+    ) -> None:
         """Test that signing creates a hex signature."""
         sig = sign_memory(sample_memory, agent_with_key.signing_key)  # type: ignore
         assert sig is not None
         assert len(sig) == 64  # SHA-256 produces 64 hex chars
         assert all(c in "0123456789abcdef" for c in sig)
 
-    def test_same_memory_same_signature(self, sample_memory: Memory, agent_with_key: Agent) -> None:
+    def test_same_memory_same_signature(
+        self, sample_memory: Memory, agent_with_key: Agent
+    ) -> None:
         """Test that signing the same memory twice gives the same signature."""
         sig1 = sign_memory(sample_memory, agent_with_key.signing_key)  # type: ignore
         sig2 = sign_memory(sample_memory, agent_with_key.signing_key)  # type: ignore
@@ -101,7 +107,9 @@ class TestSignMemory:
 class TestVerifySignature:
     """Tests for verify_signature function."""
 
-    def test_verify_valid_signature(self, sample_memory: Memory, agent_with_key: Agent) -> None:
+    def test_verify_valid_signature(
+        self, sample_memory: Memory, agent_with_key: Agent
+    ) -> None:
         """Test that a valid signature verifies correctly."""
         sample_memory.signature = sign_memory(
             sample_memory,
@@ -109,12 +117,18 @@ class TestVerifySignature:
         )
         assert verify_signature(sample_memory, agent_with_key.signing_key) is True  # type: ignore
 
-    def test_verify_invalid_signature(self, sample_memory: Memory, agent_with_key: Agent) -> None:
+    def test_verify_invalid_signature(
+        self, sample_memory: Memory, agent_with_key: Agent
+    ) -> None:
         """Test that an invalid signature fails verification."""
-        sample_memory.signature = "invalid-signature-000000000000000000000000000000000000000000000000000"
+        sample_memory.signature = (
+            "invalid-signature-000000000000000000000000000000000000000000000000000"
+        )
         assert verify_signature(sample_memory, agent_with_key.signing_key) is False  # type: ignore
 
-    def test_verify_tampered_content(self, sample_memory: Memory, agent_with_key: Agent) -> None:
+    def test_verify_tampered_content(
+        self, sample_memory: Memory, agent_with_key: Agent
+    ) -> None:
         """Test that tampering with content fails verification."""
         sample_memory.signature = sign_memory(
             sample_memory,
@@ -124,7 +138,9 @@ class TestVerifySignature:
         sample_memory.original_content = "TAMPERED CONTENT"
         assert verify_signature(sample_memory, agent_with_key.signing_key) is False  # type: ignore
 
-    def test_verify_wrong_key(self, sample_memory: Memory, agent_with_key: Agent) -> None:
+    def test_verify_wrong_key(
+        self, sample_memory: Memory, agent_with_key: Agent
+    ) -> None:
         """Test that wrong key fails verification."""
         sample_memory.signature = sign_memory(
             sample_memory,
@@ -132,7 +148,9 @@ class TestVerifySignature:
         )
         assert verify_signature(sample_memory, "wrong-key") is False
 
-    def test_verify_no_signature(self, sample_memory: Memory, agent_with_key: Agent) -> None:
+    def test_verify_no_signature(
+        self, sample_memory: Memory, agent_with_key: Agent
+    ) -> None:
         """Test that missing signature fails verification."""
         sample_memory.signature = None
         assert verify_signature(sample_memory, agent_with_key.signing_key) is False  # type: ignore
@@ -158,17 +176,23 @@ class TestShouldSign:
 class TestShouldVerify:
     """Tests for should_verify function."""
 
-    def test_should_verify_signed_memory(self, sample_memory: Memory, agent_with_key: Agent) -> None:
+    def test_should_verify_signed_memory(
+        self, sample_memory: Memory, agent_with_key: Agent
+    ) -> None:
         """Test that signed memories should be verified when agent has key."""
         sample_memory.signature = "some-signature"
         assert should_verify(sample_memory, agent_with_key) is True
 
-    def test_should_not_verify_unsigned_memory(self, sample_memory: Memory, agent_with_key: Agent) -> None:
+    def test_should_not_verify_unsigned_memory(
+        self, sample_memory: Memory, agent_with_key: Agent
+    ) -> None:
         """Test that unsigned memories should not be verified."""
         sample_memory.signature = None
         assert should_verify(sample_memory, agent_with_key) is False
 
-    def test_should_not_verify_without_agent_key(self, sample_memory: Memory, agent_without_key: Agent) -> None:
+    def test_should_not_verify_without_agent_key(
+        self, sample_memory: Memory, agent_without_key: Agent
+    ) -> None:
         """Test that memories should not be verified if agent has no key."""
         sample_memory.signature = "some-signature"
         assert should_verify(sample_memory, agent_without_key) is False
@@ -197,7 +221,9 @@ class TestMemoryDSLWithSignature:
         assert dsl == "⚠~LEARN:HIGH| Test content"
         assert dsl.startswith("⚠")
 
-    def test_dsl_low_confidence_and_invalid_signature(self, sample_memory: Memory) -> None:
+    def test_dsl_low_confidence_and_invalid_signature(
+        self, sample_memory: Memory
+    ) -> None:
         """Test DSL output with both low confidence and invalid signature."""
         sample_memory.confidence = 0.5
         sample_memory.signature_valid = False

@@ -66,7 +66,9 @@ def temp_db():
         )
     """)
     conn.execute("INSERT INTO agents (id, name) VALUES ('test-agent', 'Test Agent')")
-    conn.execute("INSERT INTO projects (id, name, path) VALUES ('test-project', 'Test Project', '/test')")
+    conn.execute(
+        "INSERT INTO projects (id, name, path) VALUES ('test-project', 'Test Project', '/test')"
+    )
     conn.commit()
     conn.close()
 

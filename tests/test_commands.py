@@ -45,7 +45,9 @@ class TestRememberCommand:
             mock_store.get_latest_memory_of_kind.return_value = None
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -58,7 +60,9 @@ class TestRememberCommand:
             assert result == 0
             mock_store.save_memory.assert_called_once()
 
-    def test_remember_infers_critical_impact(self, temp_db_path: Path, temp_project_dir: Path) -> None:
+    def test_remember_infers_critical_impact(
+        self, temp_db_path: Path, temp_project_dir: Path
+    ) -> None:
         """Test remember infers CRITICAL impact from keywords."""
         with (
             patch("anima.commands.remember.MemoryStore") as MockStore,
@@ -68,7 +72,9 @@ class TestRememberCommand:
             mock_store.get_latest_memory_of_kind.return_value = None
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -84,7 +90,9 @@ class TestRememberCommand:
             saved_memory = call_args[0][0]
             assert saved_memory.impact == ImpactLevel.CRITICAL
 
-    def test_remember_infers_architectural_kind(self, temp_db_path: Path, temp_project_dir: Path) -> None:
+    def test_remember_infers_architectural_kind(
+        self, temp_db_path: Path, temp_project_dir: Path
+    ) -> None:
         """Test remember infers ARCHITECTURAL kind from keywords."""
         with (
             patch("anima.commands.remember.MemoryStore") as MockStore,
@@ -94,7 +102,9 @@ class TestRememberCommand:
             mock_store.get_latest_memory_of_kind.return_value = None
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -110,7 +120,9 @@ class TestRememberCommand:
             saved_memory = call_args[0][0]
             assert saved_memory.kind == MemoryKind.ARCHITECTURAL
 
-    def test_remember_explicit_region_flag(self, temp_db_path: Path, temp_project_dir: Path) -> None:
+    def test_remember_explicit_region_flag(
+        self, temp_db_path: Path, temp_project_dir: Path
+    ) -> None:
         """Test remember with explicit --region agent flag."""
         with (
             patch("anima.commands.remember.MemoryStore") as MockStore,
@@ -120,7 +132,9 @@ class TestRememberCommand:
             mock_store.get_latest_memory_of_kind.return_value = None
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -136,7 +150,9 @@ class TestRememberCommand:
             saved_memory = call_args[0][0]
             assert saved_memory.region == RegionType.AGENT
 
-    def test_remember_explicit_kind_and_impact_flags(self, temp_db_path: Path, temp_project_dir: Path) -> None:
+    def test_remember_explicit_kind_and_impact_flags(
+        self, temp_db_path: Path, temp_project_dir: Path
+    ) -> None:
         """Test remember with explicit --kind and --impact flags."""
         with (
             patch("anima.commands.remember.MemoryStore") as MockStore,
@@ -146,7 +162,9 @@ class TestRememberCommand:
             mock_store.get_latest_memory_of_kind.return_value = None
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -155,7 +173,9 @@ class TestRememberCommand:
             MockResolver.return_value = mock_resolver
 
             # Explicit flags should override inference
-            result = remember.run(["--kind", "achievements", "--impact", "critical", "Some test content"])
+            result = remember.run(
+                ["--kind", "achievements", "--impact", "critical", "Some test content"]
+            )
 
             assert result == 0
             call_args = mock_store.save_memory.call_args
@@ -186,8 +206,12 @@ class TestRememberCommand:
             mock_store.get_latest_memory_of_kind.return_value = None
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
-            mock_project = Project(id="test-proj", name="TestProject", path=temp_project_dir)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
+            mock_project = Project(
+                id="test-proj", name="TestProject", path=temp_project_dir
+            )
 
             mock_resolver = MagicMock()
             mock_resolver.resolve.return_value = mock_agent
@@ -214,8 +238,12 @@ class TestRememberCommand:
             mock_store = MagicMock()
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
-            mock_project = Project(id="test-proj", name="TestProject", path=temp_project_dir)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
+            mock_project = Project(
+                id="test-proj", name="TestProject", path=temp_project_dir
+            )
 
             mock_resolver = MagicMock()
             mock_resolver.resolve.return_value = mock_agent
@@ -248,8 +276,12 @@ class TestRememberCommand:
             mock_store = MagicMock()
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
-            mock_project = Project(id="test-proj", name="TestProject", path=temp_project_dir)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
+            mock_project = Project(
+                id="test-proj", name="TestProject", path=temp_project_dir
+            )
 
             mock_resolver = MagicMock()
             mock_resolver.resolve.return_value = mock_agent
@@ -285,7 +317,9 @@ class TestRecallCommand:
         assert "Usage:" in captured.out
         assert "--full" in captured.out
 
-    def test_recall_success(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_recall_success(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test successful recall."""
         with (
             patch("anima.commands.recall.MemoryStore") as MockStore,
@@ -303,7 +337,9 @@ class TestRecallCommand:
             mock_store.search_memories.return_value = [mock_memory]
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -321,7 +357,9 @@ class TestRecallCommand:
             assert "Found 1 memories" in captured.out
             assert "pytest" in captured.out
 
-    def test_recall_no_matches(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_recall_no_matches(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test recall with no matches."""
         with (
             patch("anima.commands.recall.MemoryStore") as MockStore,
@@ -332,7 +370,9 @@ class TestRecallCommand:
             mock_store.search_memories.return_value = []
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -349,7 +389,9 @@ class TestRecallCommand:
             assert result == 0
             assert "No memories found" in captured.out
 
-    def test_recall_with_full_flag(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_recall_with_full_flag(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test recall with --full flag."""
         with (
             patch("anima.commands.recall.MemoryStore") as MockStore,
@@ -367,7 +409,9 @@ class TestRecallCommand:
             mock_store.search_memories.return_value = [mock_memory]
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -397,7 +441,9 @@ class TestForgetCommand:
         assert result == 1
         assert "Usage:" in captured.out
 
-    def test_forget_memory_not_found(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_forget_memory_not_found(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test forget with non-existent memory."""
         with (
             patch("anima.commands.forget.MemoryStore") as MockStore,
@@ -407,7 +453,9 @@ class TestForgetCommand:
             mock_store.get_memories_for_agent.return_value = []  # No memories found
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
 
             mock_resolver = MagicMock()
             mock_resolver.resolve.return_value = mock_agent
@@ -417,13 +465,18 @@ class TestForgetCommand:
             captured = capsys.readouterr()
 
             assert result == 1
-            assert "not found" in captured.out.lower() or "no memory" in captured.out.lower()
+            assert (
+                "not found" in captured.out.lower()
+                or "no memory" in captured.out.lower()
+            )
 
 
 class TestMemoriesCommand:
     """Tests for the memories command."""
 
-    def test_memories_empty(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_memories_empty(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test memories with no memories."""
         with (
             patch("anima.commands.memories.MemoryStore") as MockStore,
@@ -434,7 +487,9 @@ class TestMemoriesCommand:
             mock_store.get_memories_for_agent.return_value = []
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -450,7 +505,9 @@ class TestMemoriesCommand:
             assert result == 0
             assert "No memories found" in captured.out
 
-    def test_memories_with_data(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_memories_with_data(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test memories with data."""
         with (
             patch("anima.commands.memories.MemoryStore") as MockStore,
@@ -478,8 +535,12 @@ class TestMemoriesCommand:
             mock_store.get_memories_for_agent.return_value = mock_memories
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test Agent", definition_path=None, signing_key=None)
-            mock_project = Project(id="test-proj", name="Test Project", path=temp_project_dir)
+            mock_agent = Agent(
+                id="test", name="Test Agent", definition_path=None, signing_key=None
+            )
+            mock_project = Project(
+                id="test-proj", name="Test Project", path=temp_project_dir
+            )
 
             mock_resolver = MagicMock()
             mock_resolver.resolve.return_value = mock_agent
@@ -508,7 +569,9 @@ class TestMemoriesCommand:
             mock_store.get_memories_for_agent.return_value = []
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -536,7 +599,9 @@ class TestStatsCommand:
         assert result == 0
         assert "Usage:" in captured.out
 
-    def test_stats_empty(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_stats_empty(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test stats with no memories."""
         with (
             patch("anima.commands.stats.MemoryStore") as MockStore,
@@ -547,7 +612,9 @@ class TestStatsCommand:
             mock_store.get_memories_for_agent.return_value = []
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -563,7 +630,9 @@ class TestStatsCommand:
             assert result == 0
             assert "No memories found" in captured.out
 
-    def test_stats_with_data(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_stats_with_data(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test stats with memories."""
         with (
             patch("anima.commands.stats.MemoryStore") as MockStore,
@@ -591,7 +660,9 @@ class TestStatsCommand:
             mock_store.get_memories_for_agent.return_value = mock_memories
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test Agent", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test Agent", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -625,7 +696,9 @@ class TestGraphCommand:
         assert "Usage:" in captured.out
         assert "--all" in captured.out
 
-    def test_graph_empty(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_graph_empty(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test graph with no memories."""
         with (
             patch("anima.commands.graph.MemoryStore") as MockStore,
@@ -636,7 +709,9 @@ class TestGraphCommand:
             mock_store.get_memories_for_agent.return_value = []
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -652,7 +727,9 @@ class TestGraphCommand:
             assert result == 0
             assert "No memories found" in captured.out
 
-    def test_graph_with_chain(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_graph_with_chain(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test graph with a memory chain."""
         with (
             patch("anima.commands.graph.MemoryStore") as MockStore,
@@ -683,7 +760,9 @@ class TestGraphCommand:
             mock_store.get_memories_for_agent.return_value = [mem1, mem2]
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test Agent", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test Agent", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -701,7 +780,9 @@ class TestGraphCommand:
             assert "Chains" in captured.out
             assert "In chains: 2" in captured.out
 
-    def test_graph_standalone_hidden_by_default(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_graph_standalone_hidden_by_default(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test that standalone memories are hidden without --all."""
         with (
             patch("anima.commands.graph.MemoryStore") as MockStore,
@@ -722,7 +803,9 @@ class TestGraphCommand:
             mock_store.get_memories_for_agent.return_value = [mem]
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -739,7 +822,9 @@ class TestGraphCommand:
             assert "Standalone: 1" in captured.out
             assert "Use --all to show" in captured.out
 
-    def test_graph_with_all_flag(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_graph_with_all_flag(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test graph with --all shows standalone memories."""
         with (
             patch("anima.commands.graph.MemoryStore") as MockStore,
@@ -759,7 +844,9 @@ class TestGraphCommand:
             mock_store.get_memories_for_agent.return_value = [mem]
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -789,7 +876,9 @@ class TestExportCommand:
         assert "Usage:" in captured.out
         assert "--agent-only" in captured.out
 
-    def test_export_empty(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_export_empty(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test export with no memories."""
         with (
             patch("anima.commands.export_memories.MemoryStore") as MockStore,
@@ -800,7 +889,9 @@ class TestExportCommand:
             mock_store.get_memories_for_agent.return_value = []
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -816,7 +907,9 @@ class TestExportCommand:
             assert result == 0
             assert "No memories to export" in captured.err
 
-    def test_export_to_stdout(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_export_to_stdout(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test export to stdout as JSON."""
         import json
 
@@ -839,7 +932,9 @@ class TestExportCommand:
             mock_store.get_memories_for_agent.return_value = mock_memories
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test Agent", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test Agent", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -859,7 +954,9 @@ class TestExportCommand:
             assert len(data["memories"]) == 1
             assert data["memories"][0]["content"] == "Test learning"
 
-    def test_export_agent_only_filter(self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_export_agent_only_filter(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test export with --agent-only filter."""
         import json
 
@@ -891,7 +988,9 @@ class TestExportCommand:
             mock_store.get_memories_for_agent.return_value = mock_memories
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -938,7 +1037,9 @@ class TestImportCommand:
         assert result == 1
         assert "not found" in captured.out
 
-    def test_import_dry_run(self, tmp_path: Path, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_import_dry_run(
+        self, tmp_path: Path, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test import with --dry-run."""
         import json
 
@@ -969,7 +1070,9 @@ class TestImportCommand:
             mock_store.get_memory.return_value = None  # Not already imported
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()
@@ -991,7 +1094,9 @@ class TestImportCommand:
             # Should not have saved anything
             mock_store.save_memory.assert_not_called()
 
-    def test_import_merge_skips_existing(self, tmp_path: Path, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_import_merge_skips_existing(
+        self, tmp_path: Path, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test import with --merge skips existing memories."""
         import json
 
@@ -1022,7 +1127,9 @@ class TestImportCommand:
             mock_store.get_memory.return_value = MagicMock()
             MockStore.return_value = mock_store
 
-            mock_agent = Agent(id="test", name="Test", definition_path=None, signing_key=None)
+            mock_agent = Agent(
+                id="test", name="Test", definition_path=None, signing_key=None
+            )
             mock_project = Project(id="test-proj", name="Test", path=temp_project_dir)
 
             mock_resolver = MagicMock()

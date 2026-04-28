@@ -4,13 +4,11 @@
 """Tests for Dream Mode FSM crash recovery."""
 
 import tempfile
-from datetime import datetime
 from pathlib import Path
 
 from anima.dream.types import (
     DreamState,
     DreamSession,
-    DreamConfig,
     N2Result,
     N3Result,
     REMResult,
@@ -131,9 +129,7 @@ class TestDreamStateStore:
                 memories_processed=10,
             )
 
-            store.update_state(
-                session.id, DreamState.N2_COMPLETE, n2_result=n2_result
-            )
+            store.update_state(session.id, DreamState.N2_COMPLETE, n2_result=n2_result)
 
             retrieved = store.get_session(session.id)
 
@@ -253,8 +249,13 @@ class TestResultSerialization:
         original = REMResult(
             distant_associations=[
                 DistantAssociation(
-                    "mem-1", "mem-2", "content a", "content b",
-                    "Both about patterns", 0.25, UrgencyLevel.WORTH_MENTIONING
+                    "mem-1",
+                    "mem-2",
+                    "content a",
+                    "content b",
+                    "Both about patterns",
+                    0.25,
+                    UrgencyLevel.WORTH_MENTIONING,
                 ),
             ],
             generated_questions=[
