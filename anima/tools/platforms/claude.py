@@ -33,6 +33,47 @@ class ClaudeSetup(BasePlatformSetup):
     def display_name(self) -> str:
         return "Claude Code"
 
+    def _create_http_shims(self, hooks_dir: Path) -> None:
+        """Create bash shim scripts that forward to HTTP server."""
+        hooks_dir.mkdir(parents=True, exist_ok=True)
+
+        shims = {
+            "session-start.sh": """\
+#!/bin/bash
+# Anima SessionStart shim - forwards to centralized HTTP server
+curl -s -X POST http://127.0.0.1:3741/hooks/session-start \\
+  -H "Content-Type: application/json" \\
+  -d "$(cat)"
+""",
+            "session-end.sh": """\
+#!/bin/bash
+# Anima SessionEnd shim - forwards to centralized HTTP server
+curl -s -X POST http://127.0.0.1:3741/hooks/session-end \\
+  -H "Content-Type: application/json" \\
+  -d "$(cat)"
+""",
+            "pre-compact.sh": """\
+#!/bin/bash
+# Anima PreCompact shim - forwards to centralized HTTP server
+curl -s -X POST http://127.0.0.1:3741/hooks/pre-compact \\
+  -H "Content-Type: application/json" \\
+  -d "$(cat)"
+""",
+            "subagent-start.sh": """\
+#!/bin/bash
+# Anima SubagentStart shim - forwards to centralized HTTP server
+curl -s -X POST http://127.0.0.1:3741/hooks/subagent-start \\
+  -H "Content-Type: application/json" \\
+  -d "$(cat)"
+""",
+        }
+
+        for filename, content in shims.items():
+            shim_path = hooks_dir / filename
+            shim_path.write_text(content)
+            shim_path.chmod(0o755)
+            safe_print(f"  {get_icon('', '[+]')} Created {shim_path}")
+
     def setup_hooks(
         self,
         project_dir: Path,
@@ -49,12 +90,95 @@ class ClaudeSetup(BasePlatformSetup):
                               Set to False for Windows Terminal bug workaround (issue #23083).
             global_install: If True, install to ~/.claude/settings.json instead of project-local.
                            Use this for global Anima installation without per-project setup.
+                           Global install uses HTTP shims pointing to anima serve.
         """
         if global_install:
-            # Global installation: use ~/.claude/settings.json
+            # Global installation: use ~/.claude/settings.json with HTTP shims
             settings_file = get_global_hooks_settings_path()
             settings_file.parent.mkdir(parents=True, exist_ok=True)
             config_dir = settings_file.parent
+            hooks_dir = config_dir / "hooks"
+
+            # Create HTTP shim scripts
+            self._create_http_shims(hooks_dir)
+
+            # Build hooks config using HTTP shims (no cmd_prefix needed for global)
+            session_start_matchers = []
+            if with_startup_hook:
+                session_start_matchers.append(
+                    {
+                        "matcher": "startup",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": "bash ~/.claude/hooks/session-start.sh",
+                                "timeout": 15000,
+                            }
+                        ],
+                    }
+                )
+
+            session_start_matchers.extend(
+                [
+                    {
+                        "matcher": "resume",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": "bash ~/.claude/hooks/session-start.sh",
+                                "timeout": 15000,
+                            }
+                        ],
+                    },
+                    {
+                        "matcher": "compact",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": "bash ~/.claude/hooks/session-start.sh",
+                                "timeout": 15000,
+                            }
+                        ],
+                    },
+                ]
+            )
+
+            ltm_hooks = {
+                "SessionStart": session_start_matchers,
+                "SubagentStart": [
+                    {
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": "bash ~/.claude/hooks/subagent-start.sh",
+                                "timeout": 10000,
+                            }
+                        ],
+                    }
+                ],
+                "PreCompact": [
+                    {
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": "bash ~/.claude/hooks/pre-compact.sh",
+                                "timeout": 10000,
+                            }
+                        ],
+                    }
+                ],
+                "SessionEnd": [
+                    {
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": "bash ~/.claude/hooks/session-end.sh",
+                                "timeout": 30000,
+                            }
+                        ],
+                    }
+                ],
+            }
         else:
             # Project-local installation
             config_dir = self.get_config_path(project_dir)
@@ -68,140 +192,140 @@ class ClaudeSetup(BasePlatformSetup):
             # Prefer local settings if it exists, otherwise use shared
             settings_file = settings_local if settings_local.exists() else settings_shared
 
-        # Get monorepo command prefix if needed
-        cmd_prefix = self.get_monorepo_cmd_prefix(project_dir)
-        if cmd_prefix:
-            safe_print(f"  {get_icon('', '[D]')} Monorepo detected: hooks will cd to {project_dir.name}/ first")
+            # Get monorepo command prefix if needed
+            cmd_prefix = self.get_monorepo_cmd_prefix(project_dir)
+            if cmd_prefix:
+                safe_print(f"  {get_icon('', '[D]')} Monorepo detected: hooks will cd to {project_dir.name}/ first")
 
-        # Check if user previously disabled startup hook (preserve their choice)
-        if settings_file.exists():
-            try:
-                existing = json.loads(settings_file.read_text())
-                existing_session_start = existing.get("hooks", {}).get("SessionStart", [])
-                if existing_session_start:  # Has SessionStart hooks
-                    has_startup = any(m.get("matcher") == "startup" for m in existing_session_start)
-                    if not has_startup:
-                        safe_print(f"  {get_icon('', '[D]')} Detected: 'startup' hook was previously disabled in {settings_file}, preserving choice")
-            except (json.JSONDecodeError, OSError):
-                pass
+            # Check if user previously disabled startup hook (preserve their choice)
+            if settings_file.exists():
+                try:
+                    existing = json.loads(settings_file.read_text())
+                    existing_session_start = existing.get("hooks", {}).get("SessionStart", [])
+                    if existing_session_start:  # Has SessionStart hooks
+                        has_startup = any(m.get("matcher") == "startup" for m in existing_session_start)
+                        if not has_startup:
+                            safe_print(f"  {get_icon('', '[D]')} Detected: 'startup' hook was previously disabled in {settings_file}, preserving choice")
+                except (json.JSONDecodeError, OSError):
+                    pass
 
-        # Build SessionStart matchers - startup is optional (Windows Terminal bug workaround)
-        session_start_matchers = []
-        if with_startup_hook:
-            session_start_matchers.append(
-                {
-                    "matcher": "startup",
-                    "hooks": [
-                        {
-                            "type": "command",
-                            "command": f"{cmd_prefix}uv run python -m anima.hooks.session_start",
-                        }
-                    ],
-                }
+            # Build SessionStart matchers - startup is optional (Windows Terminal bug workaround)
+            session_start_matchers = []
+            if with_startup_hook:
+                session_start_matchers.append(
+                    {
+                        "matcher": "startup",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": f"{cmd_prefix}uv run python -m anima.hooks.session_start",
+                            }
+                        ],
+                    }
+                )
+
+            session_start_matchers.extend(
+                [
+                    {
+                        "matcher": "resume",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": f"{cmd_prefix}uv run python -m anima.hooks.session_start",
+                            }
+                        ],
+                    },
+                    {
+                        "matcher": "compact",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": f"{cmd_prefix}uv run python -m anima.hooks.session_start",
+                            }
+                        ],
+                    },
+                    {
+                        "matcher": "clear",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": f"{cmd_prefix}uv run python -m anima.tools.detect_achievements --since 24",
+                            },
+                            {
+                                "type": "command",
+                                "command": f"{cmd_prefix}uv run python -m anima.hooks.session_start",
+                            },
+                        ],
+                    },
+                ]
             )
 
-        session_start_matchers.extend(
-            [
-                {
-                    "matcher": "resume",
-                    "hooks": [
-                        {
-                            "type": "command",
-                            "command": f"{cmd_prefix}uv run python -m anima.hooks.session_start",
-                        }
-                    ],
-                },
-                {
-                    "matcher": "compact",
-                    "hooks": [
-                        {
-                            "type": "command",
-                            "command": f"{cmd_prefix}uv run python -m anima.hooks.session_start",
-                        }
-                    ],
-                },
-                {
-                    "matcher": "clear",
-                    "hooks": [
-                        {
-                            "type": "command",
-                            "command": f"{cmd_prefix}uv run python -m anima.tools.detect_achievements --since 24",
-                        },
-                        {
-                            "type": "command",
-                            "command": f"{cmd_prefix}uv run python -m anima.hooks.session_start",
-                        },
-                    ],
-                },
-            ]
-        )
-
-        ltm_hooks = {
-            "SessionStart": session_start_matchers,
-            "SubagentStart": [
-                {
-                    "hooks": [
-                        {
-                            "type": "command",
-                            "command": f"{cmd_prefix}uv run python -m anima.hooks.subagent_start",
-                        }
-                    ],
-                }
-            ],
-            "PreCompact": [
-                {
-                    "hooks": [
-                        {
-                            "type": "command",
-                            "command": f"{cmd_prefix}uv run python -m anima.hooks.pre_compact",
-                        }
-                    ],
-                }
-            ],
-            "SessionEnd": [
-                {
-                    "hooks": [
-                        {
-                            "type": "command",
-                            "command": f"{cmd_prefix}uv run python -m anima.hooks.session_end",
-                        },
-                        {
-                            "type": "command",
-                            "command": f"{cmd_prefix}uv run python -m anima.tools.detect_achievements --since 24",
-                        },
-                    ]
-                }
-            ],
-            "PermissionRequest": [
-                {
-                    "matcher": "Write",
-                    "hooks": [
-                        {
-                            "type": "command",
-                            "command": f"{cmd_prefix}uv run python -m anima.hooks.permission_request",
-                        }
-                    ],
-                },
-                {
-                    "matcher": "Edit",
-                    "hooks": [
-                        {
-                            "type": "command",
-                            "command": f"{cmd_prefix}uv run python -m anima.hooks.permission_request",
-                        }
-                    ],
-                },
-                {
-                    "matcher": "Bash",
-                    "hooks": [
-                        {
-                            "type": "command",
-                            "command": f"{cmd_prefix}uv run python -m anima.hooks.permission_request",
-                        }
-                    ],
-                },
-            ],
-        }
+            ltm_hooks = {
+                "SessionStart": session_start_matchers,
+                "SubagentStart": [
+                    {
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": f"{cmd_prefix}uv run python -m anima.hooks.subagent_start",
+                            }
+                        ],
+                    }
+                ],
+                "PreCompact": [
+                    {
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": f"{cmd_prefix}uv run python -m anima.hooks.pre_compact",
+                            }
+                        ],
+                    }
+                ],
+                "SessionEnd": [
+                    {
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": f"{cmd_prefix}uv run python -m anima.hooks.session_end",
+                            },
+                            {
+                                "type": "command",
+                                "command": f"{cmd_prefix}uv run python -m anima.tools.detect_achievements --since 24",
+                            },
+                        ]
+                    }
+                ],
+                "PermissionRequest": [
+                    {
+                        "matcher": "Write",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": f"{cmd_prefix}uv run python -m anima.hooks.permission_request",
+                            }
+                        ],
+                    },
+                    {
+                        "matcher": "Edit",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": f"{cmd_prefix}uv run python -m anima.hooks.permission_request",
+                            }
+                        ],
+                    },
+                    {
+                        "matcher": "Bash",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": f"{cmd_prefix}uv run python -m anima.hooks.permission_request",
+                            }
+                        ],
+                    },
+                ],
+            }
 
         # Load existing settings or create new
         if settings_file.exists():

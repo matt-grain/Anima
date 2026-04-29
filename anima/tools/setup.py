@@ -220,138 +220,6 @@ def setup_global_skills() -> tuple[int, int]:
     return (copied, skipped)
 
 
-def setup_global_hooks() -> bool:
-    """Set up global HTTP hooks for Claude Code.
-
-    Creates shim scripts in ~/.claude/hooks/ that forward to the HTTP server.
-    Installs skills to ~/.claude/skills/ for global availability.
-    No per-project install needed - just run `anima serve` once.
-
-    Returns:
-        True if successful
-    """
-    from anima.utils.terminal import safe_print, get_icon
-
-    hooks_dir = Path.home() / ".claude" / "hooks"
-    settings_file = Path.home() / ".claude" / "settings.json"
-
-    # Create hooks directory
-    hooks_dir.mkdir(parents=True, exist_ok=True)
-
-    # Create shim scripts
-    shims = {
-        "session-start.sh": """\
-#!/bin/bash
-# Anima SessionStart shim - forwards to centralized HTTP server
-curl -s -X POST http://127.0.0.1:3741/hooks/session-start \\
-  -H "Content-Type: application/json" \\
-  -d "$(cat)"
-""",
-        "session-end.sh": """\
-#!/bin/bash
-# Anima SessionEnd shim - forwards to centralized HTTP server
-curl -s -X POST http://127.0.0.1:3741/hooks/session-end \\
-  -H "Content-Type: application/json" \\
-  -d "$(cat)"
-""",
-        "pre-compact.sh": """\
-#!/bin/bash
-# Anima PreCompact shim - forwards to centralized HTTP server
-curl -s -X POST http://127.0.0.1:3741/hooks/pre-compact \\
-  -H "Content-Type: application/json" \\
-  -d "$(cat)"
-""",
-    }
-
-    for filename, content in shims.items():
-        shim_path = hooks_dir / filename
-        shim_path.write_text(content)
-        safe_print(f"  {get_icon('', '[+]')} Created {shim_path}")
-
-    # Update global settings.json
-    settings = {}
-    if settings_file.exists():
-        try:
-            settings = json.loads(settings_file.read_text())
-        except json.JSONDecodeError:
-            pass
-
-    if "hooks" not in settings:
-        settings["hooks"] = {}
-
-    # Add HTTP shim hooks
-    settings["hooks"]["SessionStart"] = [
-        {
-            "matcher": "startup",
-            "hooks": [
-                {
-                    "type": "command",
-                    "command": "bash ~/.claude/hooks/session-start.sh",
-                    "timeout": 15000,
-                }
-            ],
-        },
-        {
-            "matcher": "resume",
-            "hooks": [
-                {
-                    "type": "command",
-                    "command": "bash ~/.claude/hooks/session-start.sh",
-                    "timeout": 15000,
-                }
-            ],
-        },
-        {
-            "matcher": "compact",
-            "hooks": [
-                {
-                    "type": "command",
-                    "command": "bash ~/.claude/hooks/session-start.sh",
-                    "timeout": 15000,
-                }
-            ],
-        },
-    ]
-    settings["hooks"]["SessionEnd"] = [
-        {
-            "hooks": [
-                {
-                    "type": "command",
-                    "command": "bash ~/.claude/hooks/session-end.sh",
-                    "timeout": 30000,
-                }
-            ],
-        }
-    ]
-    settings["hooks"]["PreCompact"] = [
-        {
-            "hooks": [
-                {
-                    "type": "command",
-                    "command": "bash ~/.claude/hooks/pre-compact.sh",
-                    "timeout": 10000,
-                }
-            ],
-        }
-    ]
-
-    settings_file.write_text(json.dumps(settings, indent=2) + "\n")
-    safe_print(f"  {get_icon('', '[+]')} Updated {settings_file}")
-
-    # Install skills globally
-    print()
-    print("Installing global skills...")
-    copied, _ = setup_global_skills()
-    print(f"  Skills: {copied} installed")
-
-    print()
-    safe_print(f"{get_icon('', '[!]')} Global setup complete!")
-    safe_print("    Start the HTTP server: anima serve")
-    safe_print("    Works with ANY project - no per-project install needed")
-
-    return True
-
-
 def run(args: list[str]) -> int:
     """
     Run the setup tool.
@@ -360,8 +228,6 @@ def run(args: list[str]) -> int:
         ltm setup [options] [project-dir]
 
     Options:
-        --global            Install to ~/.claude/ (global) instead of project-local.
-                           Use this to set up Anima once for all projects.
         --local             Set up for local Anima development (MCP with --directory)
         --hooks             Configure hooks only (HTTP mode by default, local if --local)
         --platform <p>      Target platform: claude, antigravity, opencode, copilot
@@ -375,8 +241,7 @@ def run(args: list[str]) -> int:
         --force             Overwrite existing files
         --help              Show this help
 
-    By default (no --mode), sets up HTTP hooks for use with `anima serve`.
-    Use --global --mode mcp for global MCP installation to ~/.claude/.
+    By default, sets up global installation with HTTP hooks for use with `anima serve`.
     Use --local for Anima development repos where MCP server needs --directory.
     """
     # Parse arguments
@@ -390,22 +255,8 @@ def run(args: list[str]) -> int:
     tts_enabled = "--tts" in args
     light_enabled = "--light" in args
     local_mode = "--local" in args
-    global_install = "--global" in args
-
-    # If --global is specified with --mode, use global MCP setup
-    # This installs hooks/skills/commands to ~/.claude/ instead of project-local
-    if global_install and "--mode" in args:
-        # Fall through to the full setup path, which will use global_install=True
-        pass
-    # Default behavior (no --local, no --global, no --mode, no --help): Set up global HTTP hooks
-    # This enables centralized Anima server without per-project installs
-    elif not show_help and not local_mode and not global_install and not commands_only and not hooks_only and "--platform" not in args and "--mode" not in args:
-        print("Setting up global HTTP hooks for Claude Code...")
-        print("(Use --local for Anima development with MCP server)")
-        print()
-        if setup_global_hooks():
-            return 0
-        return 1
+    # Default to global install unless --local is specified
+    global_install = not local_mode
 
     # Mode selection
     selected_mode = None
@@ -471,26 +322,21 @@ Usage:
     uv run anima setup [options] [project-dir]
 
 Default Behavior:
-    Without --mode or --global, sets up global HTTP hooks for use with `anima serve`.
-    This enables centralized Anima without per-project installs.
+    Installs Anima globally to ~/.claude/ with interactive prompts for mode/eyes/TTS.
+    Uses HTTP hooks pointing to `anima serve` (no per-project setup needed).
 
 Options:
-    --global            Install to ~/.claude/ (global) instead of project-local.
-                        Use with --mode mcp to set up Anima once for all projects.
-                        Installs: hooks to ~/.claude/settings.json,
-                                  skills to ~/.claude/skills/,
-                                  commands to ~/.claude/commands/
     --local             Set up for local Anima development:
                         - Configures MCP server with --directory to current repo
                         - Installs local hooks (uv run python -m anima.hooks.*)
                         - Required when working ON Anima itself
     --platform <p>      Target platform (see list below)
-    --mode <m>          Interaction mode: mcp, skill, or both
+    --mode <m>          Interaction mode: mcp, skill, or both (skip prompt)
                         - mcp:   MCP server tools (remember(), recall(), etc.)
                         - skill: Slash commands (/remember, /recall)
                         - both:  MCP tools + skills as fallback
-    --eyes              Enable eyes (visual expression window)
-    --tts               Enable TTS (text-to-speech with Piper voices)
+    --eyes              Enable eyes without prompting
+    --tts               Enable TTS without prompting
     --light             Enable i-Buddy USB light control
     --commands          Install slash commands/workflows only
     --hooks             Configure hooks/plugins only
@@ -503,17 +349,14 @@ Platforms:
 {platforms_help}
 
 Examples:
-    # Default: Set up global HTTP hooks (for any project)
+    # Interactive setup (asks about mode, eyes, TTS)
     uv run anima setup
 
-    # Global MCP mode: Install Anima globally with MCP server
-    uv run anima setup --global --mode mcp --eyes --tts
+    # Non-interactive with all options specified
+    uv run anima setup --mode mcp --eyes --tts
 
     # Local development: Configure MCP with --directory to this repo
     uv run anima setup --local --mode mcp --eyes --tts
-
-    # Force specific platform setup (project-local)
-    uv run anima setup --local --platform claude
 
     # Install only hooks (HTTP mode)
     uv run anima setup --hooks
@@ -579,16 +422,16 @@ Examples:
             if selected_mode is None:
                 return 1  # User cancelled
 
-            # If MCP mode, ask about eyes and TTS separately
-            if selected_mode in (MODE_MCP, MODE_BOTH):
-                if not eyes_enabled:
-                    eyes_enabled = prompt_eyes_choice()
-                if not tts_enabled:
-                    tts_enabled = prompt_tts_choice()
-
         # Default to skill mode for non-Claude platforms (they don't support MCP)
         if selected_mode is None:
             selected_mode = MODE_SKILL
+
+        # Ask about eyes and TTS if not already specified via flags
+        # These work with both MCP server and HTTP server (anima serve)
+        if not eyes_enabled:
+            eyes_enabled = prompt_eyes_choice()
+        if not tts_enabled:
+            tts_enabled = prompt_tts_choice()
 
         # Save mode choice to config
         config = load_anima_config()

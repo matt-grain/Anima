@@ -4,4 +4,6 @@
 # LTM - Long Term Memory for Claude and Antigravity
 # A human-like persistent memory system across sessions.
 
-__version__ = "0.14.0"
+from importlib.metadata import version
+
+__version__ = version("anima")
