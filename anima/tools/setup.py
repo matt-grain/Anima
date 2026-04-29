@@ -360,6 +360,8 @@ def run(args: list[str]) -> int:
         ltm setup [options] [project-dir]
 
     Options:
+        --global            Install to ~/.claude/ (global) instead of project-local.
+                           Use this to set up Anima once for all projects.
         --local             Set up for local Anima development (MCP with --directory)
         --hooks             Configure hooks only (HTTP mode by default, local if --local)
         --platform <p>      Target platform: claude, antigravity, opencode, copilot
@@ -373,7 +375,8 @@ def run(args: list[str]) -> int:
         --force             Overwrite existing files
         --help              Show this help
 
-    By default, sets up HTTP hooks for use with `anima serve`.
+    By default (no --mode), sets up HTTP hooks for use with `anima serve`.
+    Use --global --mode mcp for global MCP installation to ~/.claude/.
     Use --local for Anima development repos where MCP server needs --directory.
     """
     # Parse arguments
@@ -387,10 +390,16 @@ def run(args: list[str]) -> int:
     tts_enabled = "--tts" in args
     light_enabled = "--light" in args
     local_mode = "--local" in args
+    global_install = "--global" in args
 
-    # Default behavior (no --local): Set up global HTTP hooks
+    # If --global is specified with --mode, use global MCP setup
+    # This installs hooks/skills/commands to ~/.claude/ instead of project-local
+    if global_install and "--mode" in args:
+        # Fall through to the full setup path, which will use global_install=True
+        pass
+    # Default behavior (no --local, no --global, no --mode, no --help): Set up global HTTP hooks
     # This enables centralized Anima server without per-project installs
-    if not local_mode and not commands_only and not hooks_only and "--platform" not in args:
+    elif not show_help and not local_mode and not global_install and not commands_only and not hooks_only and "--platform" not in args and "--mode" not in args:
         print("Setting up global HTTP hooks for Claude Code...")
         print("(Use --local for Anima development with MCP server)")
         print()
@@ -437,6 +446,7 @@ def run(args: list[str]) -> int:
         "--tts",
         "--light",
         "--local",
+        "--global",
     }
     project_args = []
     skip_next = False
@@ -461,10 +471,15 @@ Usage:
     uv run anima setup [options] [project-dir]
 
 Default Behavior:
-    Without --local, sets up global HTTP hooks for use with `anima serve`.
+    Without --mode or --global, sets up global HTTP hooks for use with `anima serve`.
     This enables centralized Anima without per-project installs.
 
 Options:
+    --global            Install to ~/.claude/ (global) instead of project-local.
+                        Use with --mode mcp to set up Anima once for all projects.
+                        Installs: hooks to ~/.claude/settings.json,
+                                  skills to ~/.claude/skills/,
+                                  commands to ~/.claude/commands/
     --local             Set up for local Anima development:
                         - Configures MCP server with --directory to current repo
                         - Installs local hooks (uv run python -m anima.hooks.*)
@@ -491,13 +506,13 @@ Examples:
     # Default: Set up global HTTP hooks (for any project)
     uv run anima setup
 
+    # Global MCP mode: Install Anima globally with MCP server
+    uv run anima setup --global --mode mcp --eyes --tts
+
     # Local development: Configure MCP with --directory to this repo
     uv run anima setup --local --mode mcp --eyes --tts
 
-    # MCP mode with eyes and TTS (requires --local for MCP)
-    uv run anima setup --local --mode mcp --eyes --tts
-
-    # Force specific platform setup
+    # Force specific platform setup (project-local)
     uv run anima setup --local --platform claude
 
     # Install only hooks (HTTP mode)
@@ -602,6 +617,7 @@ Examples:
             tts_enabled=tts_enabled,
             light_enabled=light_enabled,
             local_mode=local_mode,
+            global_install=global_install,
         )
 
     if success:

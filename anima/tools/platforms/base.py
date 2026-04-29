@@ -279,6 +279,7 @@ class BasePlatformSetup(ABC):
         tts_enabled: bool = False,
         light_enabled: bool = False,
         local_mode: bool = False,
+        global_install: bool = False,
     ) -> bool:
         """Run the complete setup for this platform.
 
@@ -292,6 +293,7 @@ class BasePlatformSetup(ABC):
             tts_enabled: Enable TTS (text-to-speech)
             light_enabled: Enable USB light (i-Buddy)
             local_mode: If True, configure for local Anima development (MCP uses --directory)
+            global_install: If True, install to global ~/.claude/ instead of project-local
 
         Returns:
             True if all setup steps succeeded

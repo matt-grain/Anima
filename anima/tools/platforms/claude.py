@@ -13,8 +13,13 @@ from anima.utils.terminal import safe_print, get_icon
 
 
 def get_global_claude_settings_path() -> Path:
-    """Get the global Claude settings path (~/.claude.json)."""
+    """Get the global Claude settings path (~/.claude.json) for MCP servers."""
     return Path.home() / ".claude.json"
+
+
+def get_global_hooks_settings_path() -> Path:
+    """Get the global hooks settings path (~/.claude/settings.json)."""
+    return Path.home() / ".claude" / "settings.json"
 
 
 class ClaudeSetup(BasePlatformSetup):
@@ -28,7 +33,13 @@ class ClaudeSetup(BasePlatformSetup):
     def display_name(self) -> str:
         return "Claude Code"
 
-    def setup_hooks(self, project_dir: Path, force: bool = False, with_startup_hook: bool = True) -> bool:
+    def setup_hooks(
+        self,
+        project_dir: Path,
+        force: bool = False,
+        with_startup_hook: bool = True,
+        global_install: bool = False,
+    ) -> bool:
         """Add LTM hooks to Claude's settings.json or settings.local.json.
 
         Args:
@@ -36,17 +47,26 @@ class ClaudeSetup(BasePlatformSetup):
             force: Overwrite existing files
             with_startup_hook: Include SessionStart "startup" matcher.
                               Set to False for Windows Terminal bug workaround (issue #23083).
+            global_install: If True, install to ~/.claude/settings.json instead of project-local.
+                           Use this for global Anima installation without per-project setup.
         """
-        config_dir = self.get_config_path(project_dir)
-        if not config_dir:
-            safe_print(f"  {get_icon('', '[!]')}  No .claude directory found (checked current and parent dir)")
-            return False
+        if global_install:
+            # Global installation: use ~/.claude/settings.json
+            settings_file = get_global_hooks_settings_path()
+            settings_file.parent.mkdir(parents=True, exist_ok=True)
+            config_dir = settings_file.parent
+        else:
+            # Project-local installation
+            config_dir = self.get_config_path(project_dir)
+            if not config_dir:
+                safe_print(f"  {get_icon('', '[!]')}  No .claude directory found (checked current and parent dir)")
+                return False
 
-        settings_local = config_dir / "settings.local.json"
-        settings_shared = config_dir / "settings.json"
+            settings_local = config_dir / "settings.local.json"
+            settings_shared = config_dir / "settings.json"
 
-        # Prefer local settings if it exists, otherwise use shared
-        settings_file = settings_local if settings_local.exists() else settings_shared
+            # Prefer local settings if it exists, otherwise use shared
+            settings_file = settings_local if settings_local.exists() else settings_shared
 
         # Get monorepo command prefix if needed
         cmd_prefix = self.get_monorepo_cmd_prefix(project_dir)
@@ -354,6 +374,78 @@ class ClaudeSetup(BasePlatformSetup):
 
         return (patched, skipped)
 
+    def _setup_global_commands(self, force: bool = False) -> tuple[int, int]:
+        """Install commands to global ~/.claude/commands/ directory.
+
+        Returns:
+            Tuple of (copied_count, skipped_count)
+        """
+        from anima.tools.platforms.base import get_package_commands_dir
+
+        try:
+            src_dir = get_package_commands_dir(self.name)
+        except FileNotFoundError as e:
+            safe_print(f"  {get_icon('', '[!]')}  {e}")
+            return (0, 0)
+
+        dest_dir = Path.home() / ".claude" / "commands"
+        dest_dir.mkdir(parents=True, exist_ok=True)
+
+        copied = 0
+        skipped = 0
+
+        for src_file in src_dir.glob("*.md"):
+            dest_file = dest_dir / src_file.name
+            is_update = dest_file.exists()
+
+            shutil.copy2(src_file, dest_file)
+            status = "updated" if is_update else "installed"
+            safe_print(f"  {get_icon('', '[OK]')} {src_file.name} ({status})")
+            copied += 1
+
+        return (copied, skipped)
+
+    def _setup_global_skills(self, force: bool = False) -> tuple[int, int]:
+        """Install skills to global ~/.claude/skills/ directory.
+
+        Returns:
+            Tuple of (copied_count, skipped_count)
+        """
+        from anima.tools.platforms.base import get_package_skills_dir
+
+        try:
+            src_dir = get_package_skills_dir()
+        except FileNotFoundError as e:
+            safe_print(f"  {get_icon('', '[!]')}  {e}")
+            return (0, 0)
+
+        dest_dir = Path.home() / ".claude" / "skills"
+        dest_dir.mkdir(parents=True, exist_ok=True)
+
+        copied = 0
+        skipped = 0
+
+        for skill_dir in src_dir.iterdir():
+            if not skill_dir.is_dir():
+                continue
+
+            skill_md = skill_dir / "SKILL.md"
+            if not skill_md.exists():
+                continue
+
+            dest_skill_dir = dest_dir / skill_dir.name
+            is_update = dest_skill_dir.exists()
+
+            # Copy entire skill directory (replace if exists)
+            if is_update:
+                shutil.rmtree(dest_skill_dir)
+            shutil.copytree(skill_dir, dest_skill_dir)
+            status = "updated" if is_update else "installed"
+            safe_print(f"  {get_icon('', '[OK]')} {skill_dir.name}/ ({status})")
+            copied += 1
+
+        return (copied, skipped)
+
     def setup_mcp_server(
         self,
         eyes_enabled: bool = False,
@@ -485,6 +577,7 @@ class ClaudeSetup(BasePlatformSetup):
         tts_enabled: bool = False,
         light_enabled: bool = False,
         local_mode: bool = False,
+        global_install: bool = False,
     ) -> bool:
         """Run the complete setup for Claude Code.
 
@@ -493,6 +586,8 @@ class ClaudeSetup(BasePlatformSetup):
         Args:
             local_mode: If True, configure MCP server with --directory pointing
                         to project_dir. This is for Anima development.
+            global_install: If True, install hooks to ~/.claude/settings.json
+                           and skills to ~/.claude/skills/ for global availability.
         """
         success = True
 
@@ -514,33 +609,55 @@ class ClaudeSetup(BasePlatformSetup):
                 print(f"  Error configuring MCP server: {e}\n")
                 success = False
 
-        # Commands - always install (needed as fallback even in MCP mode,
-        # and some commands like /refresh-memories are essential at startup)
-        print(f"Installing commands ({self.name})...")
-        try:
-            copied, skipped = self.setup_commands(project_dir, force)
-            print(f"  Commands: {copied} installed, {skipped} skipped\n")
-        except Exception as e:
-            print(f"  Error installing commands: {e}\n")
-            success = False
+        # Commands - install to project or global depending on mode
+        if global_install:
+            print("Installing global commands...")
+            try:
+                copied, skipped = self._setup_global_commands(force)
+                print(f"  Commands: {copied} installed, {skipped} skipped\n")
+            except Exception as e:
+                print(f"  Error installing commands: {e}\n")
+                success = False
+        else:
+            print(f"Installing commands ({self.name})...")
+            try:
+                copied, skipped = self.setup_commands(project_dir, force)
+                print(f"  Commands: {copied} installed, {skipped} skipped\n")
+            except Exception as e:
+                print(f"  Error installing commands: {e}\n")
+                success = False
 
-        # Skills - always install (many skills like /dream, /curious
-        # don't have MCP equivalents, so they're needed even in MCP mode)
-        print("Installing skills...")
-        try:
-            copied, skipped = self.setup_skills(project_dir, force)
-            if copied > 0 or skipped > 0:
-                print(f"  Skills: {copied} installed, {skipped} skipped\n")
-            else:
-                print("  No skills found in package\n")
-        except Exception as e:
-            print(f"  Error installing skills: {e}\n")
-            success = False
+        # Skills - install to project or global depending on mode
+        if global_install:
+            print("Installing global skills...")
+            try:
+                copied, skipped = self._setup_global_skills(force)
+                if copied > 0 or skipped > 0:
+                    print(f"  Skills: {copied} installed, {skipped} skipped\n")
+                else:
+                    print("  No skills found in package\n")
+            except Exception as e:
+                print(f"  Error installing skills: {e}\n")
+                success = False
+        else:
+            print("Installing skills...")
+            try:
+                copied, skipped = self.setup_skills(project_dir, force)
+                if copied > 0 or skipped > 0:
+                    print(f"  Skills: {copied} installed, {skipped} skipped\n")
+                else:
+                    print("  No skills found in package\n")
+            except Exception as e:
+                print(f"  Error installing skills: {e}\n")
+                success = False
 
-        # Hooks (always configure)
-        print(f"Configuring {self.display_name} hooks...")
+        # Hooks (configure to project or global depending on mode)
+        if global_install:
+            print(f"Configuring global {self.display_name} hooks...")
+        else:
+            print(f"Configuring {self.display_name} hooks...")
         try:
-            if not self.setup_hooks(project_dir, force, with_startup_hook):
+            if not self.setup_hooks(project_dir, force, with_startup_hook, global_install=global_install):
                 pass  # Warning already printed
             if not with_startup_hook:
                 safe_print(f"  {get_icon('', '[!]')} SessionStart 'startup' hook DISABLED (Windows Terminal workaround)")
