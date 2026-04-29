@@ -11,7 +11,13 @@ Model is loaded lazily on first use with a friendly "waking up" message.
 import os
 import sys
 import time
+from pathlib import Path
 from typing import Any, Optional
+
+from anima.utils.terminal import get_icon, safe_print
+
+# Persistent cache directory (not /tmp which gets cleaned)
+CACHE_DIR = Path.home() / ".cache" / "fastembed"
 
 # Disable tqdm progress bars - they cause hangs in non-TTY environments
 # (e.g., Claude Code hooks without --debug mode)
@@ -20,8 +26,6 @@ os.environ["TQDM_DISABLE"] = "1"  # Force disable, don't use setdefault
 # Disable ONNX Runtime logging (fastembed uses ONNX)
 os.environ.setdefault("ORT_DISABLE_PROGRESS_BAR", "1")
 os.environ.setdefault("ONNXRUNTIME_LOG_SEVERITY_LEVEL", "3")  # ERROR only
-
-from anima.utils.terminal import safe_print, get_icon
 
 # Model configuration
 MODEL_NAME = "BAAI/bge-small-en-v1.5"  # Fast, good quality, MTEB top performer
@@ -65,7 +69,18 @@ def get_embedder(quiet: bool = False):
     try:
         from fastembed import TextEmbedding
 
-        _embedder = TextEmbedding(model_name=MODEL_NAME)
+        # Use persistent cache dir and avoid network calls if model already cached
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+        # Check if model is already cached - use local_files_only to prevent network hangs
+        # Model folder is named like "models--qdrant--bge-small-en-v1.5-onnx-q"
+        model_cached = any(CACHE_DIR.glob("models--*bge-small*"))
+
+        _embedder = TextEmbedding(
+            model_name=MODEL_NAME,
+            cache_dir=str(CACHE_DIR),
+            local_files_only=model_cached,
+        )
     except ImportError as e:
         raise ImportError("FastEmbed not installed. Run: uv add fastembed") from e
 

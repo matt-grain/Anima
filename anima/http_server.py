@@ -36,6 +36,7 @@ from starlette.routing import Route
 from anima.hooks.session_start import run as run_session_start
 from anima.hooks.session_end import run as run_session_end
 from anima.hooks.pre_compact import run as run_pre_compact
+from anima.embeddings.embedder import is_model_loaded, CACHE_DIR
 
 DEFAULT_PORT = 3741
 
@@ -110,6 +111,7 @@ async def hook_session_start(request: Request) -> JSONResponse:
     except json.JSONDecodeError:
         body = {}
 
+    model_was_loaded = is_model_loaded()
     try:
         output = await _run_hook_in_thread(
             run_session_start,
@@ -117,6 +119,13 @@ async def hook_session_start(request: Request) -> JSONResponse:
             hook_args=["--format", "json"],
             capture_stdout=True,
         )
+
+        # Log embedding model status
+        if is_model_loaded():
+            status = "already loaded" if model_was_loaded else "loaded now"
+            print(f"[session-start] Embedding model {status} (cache: {CACHE_DIR})", file=sys.stderr)
+        else:
+            print(f"[session-start] Embedding model not loaded (cache: {CACHE_DIR})", file=sys.stderr)
 
         # Parse the JSON output
         try:
