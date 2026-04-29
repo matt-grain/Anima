@@ -719,13 +719,12 @@ curl -s -X POST http://127.0.0.1:3741/hooks/subagent-start \\
         if mode in ("mcp", "both"):
             print("Configuring MCP server...")
             try:
-                # In local mode, pass project_dir so MCP uses --directory
-                mcp_project_dir = project_dir if local_mode else None
+                # Always pass project_dir so MCP uses --directory (required for uv)
                 if not self.setup_mcp_server(
                     eyes_enabled,
                     tts_enabled,
                     light_enabled,
-                    project_dir=mcp_project_dir,
+                    project_dir=project_dir,
                 ):
                     success = False
                 print()
