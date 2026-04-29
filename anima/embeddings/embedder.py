@@ -74,12 +74,7 @@ def get_embedder(quiet: bool = False):
 
         # Check if model is already cached - use local_files_only to prevent network hangs
         # Model folder is named like "models--qdrant--bge-small-en-v1.5-onnx-q"
-        cached_models = list(CACHE_DIR.glob("models--*bge-small*"))
-        model_cached = len(cached_models) > 0
-
-        print(f"[embedder] Cache dir: {CACHE_DIR}", file=sys.stderr)
-        print(f"[embedder] Cached models: {cached_models}", file=sys.stderr)
-        print(f"[embedder] local_files_only={model_cached}", file=sys.stderr)
+        model_cached = any(CACHE_DIR.glob("models--*bge-small*"))
 
         _embedder = TextEmbedding(
             model_name=MODEL_NAME,

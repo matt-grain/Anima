@@ -20,6 +20,7 @@ from anima.tools.platforms import (
     detect_platforms,
 )
 from anima.utils.terminal import safe_print, get_icon
+from anima.embeddings.embedder import CACHE_DIR, MODEL_NAME
 
 
 # Interaction mode constants
@@ -174,6 +175,37 @@ def prompt_platform_choice(found_configs: list[str]) -> str | None:
     except (EOFError, KeyboardInterrupt):
         print("\nSetup cancelled.")
         return None
+
+
+def download_embedding_model() -> bool:
+    """Download the fastembed model to persistent cache.
+
+    This ensures the model is available offline and prevents network hangs
+    during session-start hooks.
+
+    Returns:
+        True if model is ready (already cached or downloaded successfully)
+    """
+    # Check if already cached
+    cached_models = list(CACHE_DIR.glob("models--*bge-small*"))
+    if cached_models:
+        safe_print(f"  {get_icon('', '[OK]')} Embedding model already cached")
+        return True
+
+    safe_print(f"  {get_icon('', '[...]')} Downloading embedding model ({MODEL_NAME})...")
+    safe_print(f"       Cache location: {CACHE_DIR}")
+
+    try:
+        from fastembed import TextEmbedding
+
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        TextEmbedding(model_name=MODEL_NAME, cache_dir=str(CACHE_DIR))
+        safe_print(f"  {get_icon('', '[OK]')} Embedding model downloaded successfully")
+        return True
+    except Exception as e:
+        safe_print(f"  {get_icon('', '[!]')} Failed to download model: {e}")
+        safe_print("       You can retry later or copy the model manually.")
+        return False
 
 
 def setup_global_skills() -> tuple[int, int]:
@@ -462,6 +494,12 @@ Examples:
             local_mode=local_mode,
             global_install=global_install,
         )
+
+        # Download embedding model to ensure offline functionality
+        if success:
+            print("Preparing semantic memory...")
+            download_embedding_model()
+            print()
 
     if success:
         print("Setup complete!")
