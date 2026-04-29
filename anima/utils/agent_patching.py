@@ -11,6 +11,61 @@ primary Anima identity.
 
 import re
 
+import yaml
+
+
+def fix_frontmatter_yaml(content: str) -> str:
+    """
+    Fix invalid YAML in frontmatter by properly quoting problematic fields.
+
+    Common issue: description field contains colons that break YAML parsing.
+    This function detects and fixes these issues.
+
+    Args:
+        content: The full content of an agent definition file
+
+    Returns:
+        Content with fixed frontmatter YAML, or original if no fix needed
+    """
+    match = re.match(r"^(---\s*\n)(.*?)(\n---)", content, re.DOTALL)
+    if not match:
+        return content
+
+    prefix, frontmatter, suffix = match.groups()
+    rest = content[match.end():]
+
+    # Try parsing - if it works, no fix needed
+    try:
+        yaml.safe_load(frontmatter)
+        return content
+    except yaml.YAMLError:
+        pass
+
+    # Fix common issues: unquoted description with colons
+    lines = frontmatter.split("\n")
+    fixed_lines = []
+
+    for line in lines:
+        # Check for description field with unquoted value containing colons
+        if line.startswith("description:") and not line.startswith('description: "'):
+            # Extract the value after "description:"
+            value = line[12:].strip()
+            if ":" in value and not (value.startswith('"') or value.startswith("'")):
+                # Quote the value, escaping any existing quotes
+                escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+                line = f'description: "{escaped}"'
+        fixed_lines.append(line)
+
+    fixed_frontmatter = "\n".join(fixed_lines)
+
+    # Verify the fix worked
+    try:
+        yaml.safe_load(fixed_frontmatter)
+        return prefix + fixed_frontmatter + suffix + rest
+    except yaml.YAMLError:
+        # If still broken, return original
+        return content
+
 
 def has_subagent_marker(content: str) -> bool:
     """
@@ -56,6 +111,7 @@ def add_subagent_marker(content: str) -> str:
     Add anima: subagent: true to frontmatter before closing ---.
 
     This function handles both Unix (\n) and Windows (\r\n) line endings.
+    It also fixes invalid YAML (e.g., unquoted descriptions with colons) before patching.
 
     Args:
         content: The full content of an agent definition file
@@ -64,6 +120,9 @@ def add_subagent_marker(content: str) -> str:
         Modified content with the subagent marker added, or original content
         if frontmatter structure is not recognized
     """
+    # First fix any YAML issues
+    content = fix_frontmatter_yaml(content)
+
     if content.startswith("---\n"):
         end_idx = content.find("\n---", 4)
         if end_idx != -1:
