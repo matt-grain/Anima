@@ -140,6 +140,18 @@ curl -s -X POST http://127.0.0.1:3741/hooks/subagent-start \\
                             }
                         ],
                     },
+                    {
+                        # Re-inject memories after /clear (global). Achievement
+                        # detection on clear is local-only for now (no HTTP route yet).
+                        "matcher": "clear",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": "bash ~/.claude/hooks/session-start.sh",
+                                "timeout": 15000,
+                            }
+                        ],
+                    },
                 ]
             )
 

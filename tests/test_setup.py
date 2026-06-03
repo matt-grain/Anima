@@ -521,17 +521,16 @@ class TestSetupConfigMatrix:
 
     # --- Consistency: global and local must wire the SAME SessionStart matchers ---
 
-    def test_global_vs_local_session_start_matchers_known_divergence(self, fake_home, tmp_path):
-        """KNOWN GAP (tracked in TECH_DEBT.md): the global install omits the
-        SessionStart 'clear' matcher that the local install has — 'clear' runs
-        detect_achievements, and the global (HTTP-shim) model has no
-        detect-achievements route, so /clear achievement detection is local-only.
+    def test_global_and_local_session_start_matchers_are_consistent(self, fake_home, tmp_path):
+        """Global and local installs must wire the SAME SessionStart matchers, so
+        memories re-inject on startup/resume/compact/clear regardless of how Anima
+        was installed.
 
-        This pins the *exact* difference: the ONLY allowed divergence is the
-        local-only 'clear' matcher. Any other drift between global and local
-        SessionStart wiring will fail this test.
+        (Achievement detection on /clear is still local-only — a *content*
+        difference inside the 'clear' matcher, not a matcher-set difference;
+        tracked in TECH_DEBT.md / #23.)
         """
         g = self._matchers(self._global_hooks(fake_home))
         local = self._matchers(self._local_hooks(tmp_path / "proj"))
-        assert local - g == {"clear"}, f"unexpected local-only matchers: {local - g}"
-        assert g - local == set(), f"unexpected global-only matchers: {g - local}"
+        assert g == local, f"global {g} != local {local}"
+        assert "clear" in g, "global must re-inject memories after /clear"
