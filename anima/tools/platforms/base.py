@@ -15,6 +15,7 @@ from importlib import resources
 from pathlib import Path
 
 from anima.utils.terminal import safe_print, get_icon
+from anima.utils.agent_patching import has_subagent_marker, add_subagent_marker
 from anima.tools.version import get_installed_version
 
 # Marker file name for setup version tracking
@@ -211,6 +212,54 @@ class BasePlatformSetup(ABC):
             True if successful or no hooks needed, False on error.
         """
         return True
+
+    def _patch_subagents(self, project_dir: Path) -> tuple[int, int, int]:
+        """Patch agent definition files to add subagent: true marker.
+
+        Returns:
+            Tuple of (patched_count, skipped_count, disabled_count)
+        """
+        config_dir = self.get_config_path(project_dir)
+        if not config_dir:
+            return (0, 0, 0)
+
+        agents_dir = config_dir / "agents"
+        if not agents_dir.exists():
+            return (0, 0, 0)
+
+        patched = 0
+        skipped = 0
+        disabled = 0
+
+        for agent_file in sorted(agents_dir.glob("*.md")):
+            content = agent_file.read_text(encoding="utf-8")
+
+            # Check if it already has ltm: subagent: true
+            if has_subagent_marker(content):
+                skipped += 1
+                continue
+
+            # Check if it has frontmatter at all
+            if not content.startswith("---"):
+                # Incompatible format - disable by renaming
+                disabled_path = agent_file.with_suffix(".md.disabled")
+                agent_file.rename(disabled_path)
+                print(f"  {get_icon('', '[!]')}  {agent_file.name} -> {disabled_path.name} (missing frontmatter, disabled)")
+                print('      To fix: add ---\\nname: "AgentName"\\nltm: subagent: true\\n--- at top')
+                disabled += 1
+                continue
+
+            # Add ltm: subagent: true after the opening ---
+            new_content = add_subagent_marker(content)
+
+            if new_content != content:
+                agent_file.write_text(new_content, encoding="utf-8")
+                safe_print(f"  {get_icon('', '[OK]')} {agent_file.name} (marked as subagent)")
+                patched += 1
+            else:
+                skipped += 1
+
+        return (patched, skipped, disabled)
 
     def setup_extras(self, project_dir: Path, force: bool = False) -> bool:
         """Perform any additional platform-specific setup.
