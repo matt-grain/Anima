@@ -8,6 +8,7 @@ Tests the installation of commands, skills, and hook configuration.
 """
 
 import json
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -447,3 +448,90 @@ class TestFindConfigDir:
         result = find_config_dir(temp_project, ".nonexistent")
 
         assert result is None
+
+
+class TestSetupConfigMatrix:
+    """Pin setup config across the parameter matrix and verify consistency.
+
+    These exercise the real config-writing methods with ``Path.home()``
+    redirected to a temp dir, so we assert exactly what lands on disk for
+    {MCP config} x {global/local hooks} x {flags}. The point is to make setup
+    behavior explicit and catch silent drift between combinations.
+    """
+
+    LIFECYCLE = {"SessionStart", "SubagentStart", "SessionEnd", "PreCompact"}
+
+    @pytest.fixture
+    def fake_home(self, tmp_path, monkeypatch):
+        home = tmp_path / "home"
+        home.mkdir()
+        monkeypatch.setattr(Path, "home", lambda: home)
+        return home
+
+    def _global_hooks(self, fake_home):
+        get_platform("claude").setup_hooks(fake_home, global_install=True)
+        return json.loads((fake_home / ".claude" / "settings.json").read_text())["hooks"]
+
+    def _local_hooks(self, project):
+        (project / ".claude").mkdir(parents=True, exist_ok=True)
+        get_platform("claude").setup_hooks(project, global_install=False)
+        return json.loads((project / ".claude" / "settings.json").read_text())["hooks"]
+
+    @staticmethod
+    def _matchers(hooks):
+        return {m.get("matcher") for m in hooks["SessionStart"]}
+
+    # --- MCP config: always HTTP, embodiment never leaks into it ---
+
+    @pytest.mark.parametrize(
+        "eyes,tts,light",
+        [(False, False, False), (True, True, True), (True, False, False)],
+    )
+    def test_mcp_config_is_http_regardless_of_embodiment(self, fake_home, eyes, tts, light):
+        get_platform("claude").setup_mcp_server(eyes_enabled=eyes, tts_enabled=tts, light_enabled=light)
+        anima = json.loads((fake_home / ".claude.json").read_text())["mcpServers"]["anima"]
+        assert anima["type"] == "http"
+        assert anima["url"] == "http://127.0.0.1:3741/mcp"
+        # eyes/tts/light are launch concerns — they must NOT change the client config
+        assert "command" not in anima and "args" not in anima
+
+    # --- Lifecycle events present in BOTH install types ---
+
+    def test_global_install_wires_all_lifecycle_events(self, fake_home):
+        assert self.LIFECYCLE.issubset(self._global_hooks(fake_home).keys())
+
+    def test_local_install_wires_all_lifecycle_events(self, fake_home, tmp_path):
+        assert self.LIFECYCLE.issubset(self._local_hooks(tmp_path / "proj").keys())
+
+    def test_subagent_start_wired_in_both_install_types(self, fake_home, tmp_path):
+        assert "SubagentStart" in self._global_hooks(fake_home)
+        assert "SubagentStart" in self._local_hooks(tmp_path / "proj")
+
+    # --- Flag behavior ---
+
+    def test_startup_hook_can_be_disabled(self, fake_home):
+        get_platform("claude").setup_hooks(fake_home, global_install=True, with_startup_hook=False)
+        hooks = json.loads((fake_home / ".claude" / "settings.json").read_text())["hooks"]
+        matchers = self._matchers(hooks)
+        assert "startup" not in matchers
+        assert "resume" in matchers  # other matchers still present
+
+    def test_startup_hook_present_by_default(self, fake_home):
+        assert "startup" in self._matchers({"SessionStart": self._global_hooks(fake_home)["SessionStart"]})
+
+    # --- Consistency: global and local must wire the SAME SessionStart matchers ---
+
+    def test_global_vs_local_session_start_matchers_known_divergence(self, fake_home, tmp_path):
+        """KNOWN GAP (tracked in TECH_DEBT.md): the global install omits the
+        SessionStart 'clear' matcher that the local install has — 'clear' runs
+        detect_achievements, and the global (HTTP-shim) model has no
+        detect-achievements route, so /clear achievement detection is local-only.
+
+        This pins the *exact* difference: the ONLY allowed divergence is the
+        local-only 'clear' matcher. Any other drift between global and local
+        SessionStart wiring will fail this test.
+        """
+        g = self._matchers(self._global_hooks(fake_home))
+        local = self._matchers(self._local_hooks(tmp_path / "proj"))
+        assert local - g == {"clear"}, f"unexpected local-only matchers: {local - g}"
+        assert g - local == set(), f"unexpected global-only matchers: {g - local}"

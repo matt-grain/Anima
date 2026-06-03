@@ -19,6 +19,7 @@ thin test coverage — they deserve a dedicated PR with tests, not a release rus
 | 🔴 | **`setup_hooks` merge** (`platforms/claude.py` ↔ `gemini.py`) | ~120 lines of near-duplicate settings.json hook-building. NOT a trivial merge: Claude has an extra **global-install + HTTP-shim branch** Gemini lacks, and event names differ (`PreCompact` vs `PreCompress`). Extract a parametrized base helper. |
 | 🟡 | **`BaseCommand` adoption** (`anima/commands/*.py`) | ~21 command files hand-roll `run(args)` arg-parsing + the `resolver/agent/project/store` boilerplate. The `BaseCommand` base was *deleted* (it was unused); to remove the duplication, reintroduce a base/shared helper and adopt it across commands — large, broad diff. |
 | 🟡 | **`setup_extras`** (claude/gemini/antigravity) | Diverge per platform (not identical), so not hoisted. Revisit if they converge. |
+| 🔴 | **Global vs local hooks divergence** (claude `setup_hooks`) | The **global** install (the default) omits the SessionStart **`clear`** matcher that the **local** install wires — `clear` runs `detect_achievements`, so **global users silently get no achievement detection on `/clear`**. Global uses HTTP shims with no detect-achievements route. Fix: add a detect-achievements HTTP route + shim (or a `clear` shim) so global reaches parity. Pinned by `TestSetupConfigMatrix::test_global_vs_local_session_start_matchers_known_divergence`. |
 
 ---
 
