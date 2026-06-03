@@ -6,6 +6,14 @@
 import sys
 
 
+def _force_utf8_io() -> None:
+    """Force UTF-8 on stdout/stderr so emoji output doesn't crash on Windows cp1252 consoles."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8")
+
+
 def _run_server(args: list[str]) -> int:
     """Start the MCP server."""
     # Parse server-specific arguments
@@ -32,6 +40,8 @@ def _run_server(args: list[str]) -> int:
 
 def main() -> int:
     """Main entry point for LTM CLI."""
+    _force_utf8_io()
+
     # Handle --server flag at any position
     if "--server" in sys.argv:
         args = [a for a in sys.argv[1:] if a != "--server"]

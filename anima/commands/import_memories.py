@@ -76,7 +76,7 @@ def run(args: list[str]) -> int:
 
     # Parse JSON
     try:
-        data = json.loads(input_path.read_text())
+        data = json.loads(input_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as e:
         print(f"Invalid JSON: {e}")
         return 1

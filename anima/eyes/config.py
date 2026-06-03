@@ -106,7 +106,7 @@ class Config:
         if path is None or not Path(path).exists():
             return cls()
 
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
 
         return cls(
@@ -134,7 +134,7 @@ class Config:
             "eye_shape": asdict(self.eye_shape),
             "tts": asdict(self.tts),
         }
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
 

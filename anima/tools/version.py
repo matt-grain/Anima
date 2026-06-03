@@ -25,7 +25,7 @@ def get_installed_version() -> str:
 
         pyproject = Path(__file__).parent.parent.parent / "pyproject.toml"
         if pyproject.exists():
-            for line in pyproject.read_text().splitlines():
+            for line in pyproject.read_text(encoding="utf-8").splitlines():
                 if line.startswith("version"):
                     return line.split("=")[1].strip().strip('"')
         return "unknown"
@@ -71,7 +71,7 @@ def get_cached_update_check() -> dict | None:
         return None
 
     try:
-        data = json.loads(UPDATE_CHECK_CACHE_FILE.read_text())
+        data = json.loads(UPDATE_CHECK_CACHE_FILE.read_text(encoding="utf-8"))
         checked_at = datetime.fromisoformat(data.get("checked_at", ""))
         days_since = (datetime.now() - checked_at).days
 
@@ -91,7 +91,7 @@ def save_update_check_cache(latest_version: str, html_url: str) -> None:
         "html_url": html_url,
         "checked_at": datetime.now().isoformat(),
     }
-    UPDATE_CHECK_CACHE_FILE.write_text(json.dumps(data))
+    UPDATE_CHECK_CACHE_FILE.write_text(json.dumps(data), encoding="utf-8")
 
 
 def check_for_update_cached() -> dict | None:

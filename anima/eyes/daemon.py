@@ -40,7 +40,7 @@ def is_daemon_running() -> bool:
         return False
 
     try:
-        lock_data = json.loads(LOCK_FILE.read_text())
+        lock_data = json.loads(LOCK_FILE.read_text(encoding="utf-8"))
         pid = lock_data.get("pid")
         if pid is None:
             return False
@@ -73,7 +73,7 @@ def get_daemon_info() -> dict | None:
     if not is_daemon_running():
         return None
     try:
-        return json.loads(LOCK_FILE.read_text())
+        return json.loads(LOCK_FILE.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return None
 
@@ -89,7 +89,7 @@ def acquire_lock() -> bool:
         "port": DAEMON_PORT,
         "started_at": datetime.now().isoformat(),
     }
-    LOCK_FILE.write_text(json.dumps(lock_data))
+    LOCK_FILE.write_text(json.dumps(lock_data), encoding="utf-8")
     return True
 
 

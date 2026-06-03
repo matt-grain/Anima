@@ -45,7 +45,7 @@ def parse_seed_file(file_path: Path) -> Optional[dict]:
 
     Returns dict with parsed fields or None if parsing fails.
     """
-    content = file_path.read_text()
+    content = file_path.read_text(encoding="utf-8")
 
     result: dict = {
         "id": None,

@@ -116,7 +116,7 @@ class CopilotSetup(BasePlatformSetup):
             shutil.copy2(hooks_file, hooks_file.with_suffix(".json.bak"))
 
         # Write hooks file
-        hooks_file.write_text(json.dumps(ltm_hooks, indent=2) + "\n")
+        hooks_file.write_text(json.dumps(ltm_hooks, indent=2) + "\n", encoding="utf-8")
         safe_print(f"  {get_icon('', '[OK]')} Hooks configured in {hooks_file}")
 
         return True

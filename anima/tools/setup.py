@@ -39,7 +39,7 @@ def load_anima_config() -> dict:
     config_path = get_anima_config_path()
     if config_path.exists():
         try:
-            return json.loads(config_path.read_text())
+            return json.loads(config_path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             pass
     return {}
@@ -49,7 +49,7 @@ def save_anima_config(config: dict) -> None:
     """Save config to ~/.anima/config.json"""
     config_path = get_anima_config_path()
     config_path.parent.mkdir(parents=True, exist_ok=True)
-    config_path.write_text(json.dumps(config, indent=2) + "\n")
+    config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 
 
 def prompt_mode_choice() -> str | None:

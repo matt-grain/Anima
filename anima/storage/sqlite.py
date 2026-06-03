@@ -80,7 +80,7 @@ class MemoryStore(MemoryStoreProtocol):
 
         # Apply schema (CREATE IF NOT EXISTS is safe for existing tables)
         schema_path = Path(__file__).parent / "schema.sql"
-        schema = schema_path.read_text()
+        schema = schema_path.read_text(encoding="utf-8")
 
         with self._connect() as conn:
             conn.executescript(schema)

@@ -128,7 +128,7 @@ class LTMConfig:
             return cls()
 
         try:
-            with open(path) as f:
+            with open(path, encoding="utf-8") as f:
                 data = json.load(f)
         except (json.JSONDecodeError, IOError):
             # Invalid or unreadable file - use defaults
@@ -259,7 +259,7 @@ class LTMConfig:
         # Ensure directory exists
         path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(self.to_dict(), f, indent=2)
 
 

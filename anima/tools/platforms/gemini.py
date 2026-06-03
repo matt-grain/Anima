@@ -137,7 +137,7 @@ class GeminiSetup(BasePlatformSetup):
         # Load existing settings or create new
         if settings_file.exists():
             try:
-                settings = json.loads(settings_file.read_text())
+                settings = json.loads(settings_file.read_text(encoding="utf-8"))
             except json.JSONDecodeError:
                 safe_print(f"  {get_icon('', '[!]')}  Invalid JSON in {settings_file}, creating backup")
                 shutil.copy2(settings_file, settings_file.with_suffix(".json.bak"))
@@ -154,7 +154,7 @@ class GeminiSetup(BasePlatformSetup):
         settings["hooks"].update(ltm_hooks)
 
         # Write back
-        settings_file.write_text(json.dumps(settings, indent=2) + "\n")
+        settings_file.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
         safe_print(f"  {get_icon('', '[OK]')} Hooks configured in {settings_file}")
         return True
 

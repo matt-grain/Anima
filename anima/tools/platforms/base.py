@@ -250,7 +250,7 @@ class BasePlatformSetup(ABC):
             "platform": self.name,
             "setup_at": datetime.now().isoformat(),
         }
-        marker_file.write_text(json.dumps(marker_data, indent=2) + "\n")
+        marker_file.write_text(json.dumps(marker_data, indent=2) + "\n", encoding="utf-8")
 
     @staticmethod
     def read_setup_version_marker(config_dir: Path) -> dict | None:
@@ -264,7 +264,7 @@ class BasePlatformSetup(ABC):
             return None
 
         try:
-            return json.loads(marker_file.read_text())
+            return json.loads(marker_file.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             return None
 

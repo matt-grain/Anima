@@ -183,7 +183,7 @@ def check_setup_version(project_dir: Path) -> str | None:
             marker_file = config_dir / SETUP_VERSION_MARKER
             if marker_file.exists():
                 try:
-                    marker = json.loads(marker_file.read_text())
+                    marker = json.loads(marker_file.read_text(encoding="utf-8"))
                     setup_version = marker.get("version", "")
                     installed_version = get_installed_version()
 

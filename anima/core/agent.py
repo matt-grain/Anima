@@ -204,7 +204,7 @@ class AgentResolver:
             return None
 
         for agent_file in sorted(agents_dir.glob("*.md")):
-            content = agent_file.read_text()
+            content = agent_file.read_text(encoding="utf-8")
             frontmatter = parse_agent_frontmatter(content)
 
             # Skip subagents - they're invoked explicitly, not as main agent
@@ -217,7 +217,7 @@ class AgentResolver:
 
     def _load_agent_from_file(self, path: Path) -> Agent:
         """Load an agent from a definition file."""
-        content = path.read_text()
+        content = path.read_text(encoding="utf-8")
         frontmatter = parse_agent_frontmatter(content)
 
         # Use frontmatter ID or filename as ID

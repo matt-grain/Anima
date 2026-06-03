@@ -70,7 +70,7 @@ curl -s -X POST http://127.0.0.1:3741/hooks/subagent-start \\
 
         for filename, content in shims.items():
             shim_path = hooks_dir / filename
-            shim_path.write_text(content)
+            shim_path.write_text(content, encoding="utf-8")
             shim_path.chmod(0o755)
             safe_print(f"  {get_icon('', '[+]')} Created {shim_path}")
 
@@ -200,7 +200,7 @@ curl -s -X POST http://127.0.0.1:3741/hooks/subagent-start \\
             # Check if user previously disabled startup hook (preserve their choice)
             if settings_file.exists():
                 try:
-                    existing = json.loads(settings_file.read_text())
+                    existing = json.loads(settings_file.read_text(encoding="utf-8"))
                     existing_session_start = existing.get("hooks", {}).get("SessionStart", [])
                     if existing_session_start:  # Has SessionStart hooks
                         has_startup = any(m.get("matcher") == "startup" for m in existing_session_start)
@@ -330,7 +330,7 @@ curl -s -X POST http://127.0.0.1:3741/hooks/subagent-start \\
         # Load existing settings or create new
         if settings_file.exists():
             try:
-                settings = json.loads(settings_file.read_text())
+                settings = json.loads(settings_file.read_text(encoding="utf-8"))
             except json.JSONDecodeError:
                 safe_print(f"  {get_icon('', '[!]')}  Invalid JSON in {settings_file}, creating backup")
                 shutil.copy2(settings_file, settings_file.with_suffix(".json.bak"))
@@ -374,7 +374,7 @@ curl -s -X POST http://127.0.0.1:3741/hooks/subagent-start \\
             safe_print(f"  {get_icon('', '[OK]')} Added permissions: {', '.join(added_permissions)}")
 
         # Write back
-        settings_file.write_text(json.dumps(settings, indent=2) + "\n")
+        settings_file.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
         safe_print(f"  {get_icon('', '[OK]')} Hooks configured in {settings_file}")
         return True
 
@@ -596,7 +596,7 @@ curl -s -X POST http://127.0.0.1:3741/hooks/subagent-start \\
         settings = {}
         if settings_path.exists():
             try:
-                settings = json.loads(settings_path.read_text())
+                settings = json.loads(settings_path.read_text(encoding="utf-8"))
             except json.JSONDecodeError:
                 safe_print(f"  {get_icon('', '[!]')}  Invalid JSON in {settings_path}, creating backup")
                 shutil.copy2(settings_path, settings_path.with_suffix(".json.bak"))
@@ -677,7 +677,7 @@ curl -s -X POST http://127.0.0.1:3741/hooks/subagent-start \\
                 added_permissions.append(perm)
 
         # Write back
-        settings_path.write_text(json.dumps(settings, indent=2) + "\n")
+        settings_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
         safe_print(f"  {get_icon('', '[OK]')} MCP server configured in {settings_path}")
 
         if added_permissions:

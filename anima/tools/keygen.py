@@ -52,7 +52,7 @@ def find_agent_file(agent_id: str) -> tuple[Optional[Path], bool]:
 
 def get_key_from_agent_file(agent_file: Path) -> Optional[str]:
     """Extract signing_key from agent frontmatter (any format)."""
-    content = agent_file.read_text()
+    content = agent_file.read_text(encoding="utf-8")
     if not content.startswith("---"):
         return None
 
@@ -69,7 +69,7 @@ def add_key_to_agent_file(agent_file: Path, key: str) -> None:
 
     Handles both Claude Code format and LTM format frontmatter.
     """
-    content = agent_file.read_text()
+    content = agent_file.read_text(encoding="utf-8")
 
     if not content.startswith("---"):
         raise ValueError(f"Agent file {agent_file} has no frontmatter")
@@ -90,7 +90,7 @@ def add_key_to_agent_file(agent_file: Path, key: str) -> None:
         new_frontmatter = new_frontmatter[:-3].rstrip()
     new_frontmatter += f'\nsigning_key: "{key}"\n---\n'
 
-    agent_file.write_text(new_frontmatter + rest)
+    agent_file.write_text(new_frontmatter + rest, encoding="utf-8")
 
 
 def run(args: list[str]) -> int:

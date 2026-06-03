@@ -51,7 +51,7 @@ class SubconsciousStore:
         with self._connect() as conn:
             self._check_fts5_support(conn)
             schema_path = Path(__file__).parent / "schema_subconscious.sql"
-            conn.executescript(schema_path.read_text())
+            conn.executescript(schema_path.read_text(encoding="utf-8"))
             conn.execute("PRAGMA journal_mode=WAL")
             conn.execute("PRAGMA synchronous=NORMAL")
 

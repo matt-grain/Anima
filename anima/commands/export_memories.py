@@ -141,7 +141,7 @@ def run(args: list[str]) -> int:
     json_output = json.dumps(export_data, indent=2, ensure_ascii=False)
 
     if output_file:
-        Path(output_file).write_text(json_output)
+        Path(output_file).write_text(json_output, encoding="utf-8")
         print(f"Exported {len(all_memories)} memories to {output_file}")
     else:
         print(json_output)
