@@ -14,6 +14,7 @@ from typing import Optional, Iterator
 
 from anima.core import RegionType
 from anima.storage.sqlite import get_default_db_path
+from anima.storage._connection import connect
 
 
 class CuriosityStatus(str, Enum):
@@ -65,17 +66,9 @@ class CuriosityStore:
 
     @contextmanager
     def _connect(self) -> Iterator[sqlite3.Connection]:
-        """Context manager for database connections."""
-        conn = sqlite3.connect(self.db_path, timeout=5.0)
-        conn.row_factory = sqlite3.Row
-        try:
+        """Open a connection with Anima's standard settings (see _connection.connect)."""
+        with connect(self.db_path) as conn:
             yield conn
-            conn.commit()
-        except Exception:
-            conn.rollback()
-            raise
-        finally:
-            conn.close()
 
     def add_curiosity(
         self,

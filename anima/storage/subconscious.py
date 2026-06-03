@@ -18,6 +18,7 @@ from anima.storage.subconscious_types import (
     SessionMeta,
     SubconsciousStats,
 )
+from anima.storage._connection import connect
 
 
 def _get_default_subconscious_db_path() -> Path:
@@ -70,17 +71,9 @@ class SubconsciousStore:
 
     @contextmanager
     def _connect(self) -> Iterator[sqlite3.Connection]:
-        """Context manager for database connections."""
-        conn = sqlite3.connect(self.db_path, timeout=5.0)
-        conn.row_factory = sqlite3.Row
-        try:
+        """Open a connection with Anima's standard settings (see _connection.connect)."""
+        with connect(self.db_path) as conn:
             yield conn
-            conn.commit()
-        except Exception:
-            conn.rollback()
-            raise
-        finally:
-            conn.close()
 
     def is_session_indexed(self, file_path: str, mtime: float) -> bool:
         """

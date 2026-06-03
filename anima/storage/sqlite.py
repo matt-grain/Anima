@@ -26,6 +26,7 @@ from anima.core import (
 )
 from anima.storage.protocol import MemoryStoreProtocol
 from anima.storage.migrations import run_migrations, SCHEMA_VERSION, set_schema_version
+from anima.storage._connection import connect
 
 
 def get_default_db_path() -> Path:
@@ -89,17 +90,9 @@ class MemoryStore(MemoryStoreProtocol):
 
     @contextmanager
     def _connect(self) -> Iterator[sqlite3.Connection]:
-        """Context manager for database connections."""
-        conn = sqlite3.connect(self.db_path, timeout=5.0)
-        conn.row_factory = sqlite3.Row
-        try:
+        """Open a connection with Anima's standard settings (see _connection.connect)."""
+        with connect(self.db_path) as conn:
             yield conn
-            conn.commit()
-        except Exception:
-            conn.rollback()
-            raise
-        finally:
-            conn.close()
 
     # --- Global statistics ---
 
