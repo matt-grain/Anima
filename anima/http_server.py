@@ -23,6 +23,7 @@ from __future__ import annotations
 import asyncio
 import io
 import json
+import logging
 import os
 import sys
 from collections.abc import AsyncGenerator
@@ -396,6 +397,17 @@ def _print_startup_stats() -> None:
     print("=" * 60, file=sys.stderr)
 
 
+class _TidyNameFilter(logging.Filter):
+    """Cosmetic: uvicorn logs lifecycle INFO messages under a logger literally
+    named 'uvicorn.error' (not an error). Display it as plain 'uvicorn'.
+    """
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if record.name == "uvicorn.error":
+            record.name = "uvicorn"
+        return True
+
+
 def _build_log_config(debug: bool) -> dict:
     """One unified log format for uvicorn and the MCP SDK.
 
@@ -410,8 +422,14 @@ def _build_log_config(debug: bool) -> dict:
         "version": 1,
         "disable_existing_loggers": False,
         "formatters": {"anima": fmt},
+        "filters": {"tidy_name": {"()": _TidyNameFilter}},
         "handlers": {
-            "default": {"class": "logging.StreamHandler", "stream": "ext://sys.stderr", "formatter": "anima"},
+            "default": {
+                "class": "logging.StreamHandler",
+                "stream": "ext://sys.stderr",
+                "formatter": "anima",
+                "filters": ["tidy_name"],
+            },
         },
         "loggers": {name: logger_cfg for name in ("uvicorn", "uvicorn.error", "uvicorn.access", "mcp")},
         "root": {"handlers": ["default"], "level": level},
