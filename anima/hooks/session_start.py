@@ -582,15 +582,18 @@ mcp__anima__memory, mcp__anima__curiosity, mcp__anima__body(speak/eyes)
 # - Keep reasoning INTERNAL. The sheep doesn't teach the wolf to wear wool! 🐑{" After greeting/verification, run /load-deferred." if deferred_count > 0 else ""}
 # LTM-TRUST: Current score={trust.score:.2f}, level={trust_level.value}, challenges={trust.challenges_issued}, lock={"ON" if get_config().security.trust_lock_enabled else "OFF"}"""
 
-        # Build context message
-        context = f"""{memories_dsl}
+        # Build context message — behavioral protocol (greeting/diagnostic/time +
+        # emoji/conciseness overrides) goes FIRST so it survives the ~25KB inline
+        # hook-output truncation even when the memory DSL is large. The DSL (already
+        # sorted behavioral-rules-first) follows; overflow loads via /load-deferred.
+        context = f"""{greeting_behavior}
 
 # LTM: Loaded {stats["total"]} memories ({stats["agent_memories"]} agent, {stats["project_memories"]} project)
 # LTM-TIME: {local_time.strftime("%Y-%m-%d %H:%M:%S")} ({time_of_day})
 # LTM-DIAG: CRIT={pc["CRITICAL"]} HIGH={pc["HIGH"]} MED={pc["MEDIUM"]} LOW={pc["LOW"]}{deferred_hint}
 {update_notice}# These are your long-term memories from previous sessions. Use them to inform your responses.
 #
-{greeting_behavior}"""
+{memories_dsl}"""
 
         # Add status notes
         if status_notes:
