@@ -180,13 +180,12 @@ class TestParseSeedFile:
 class TestImportRun:
     """Tests for the import run function."""
 
-    def test_run_no_args(self, capsys: pytest.CaptureFixture[str]) -> None:
-        """Test run with no arguments shows usage."""
-        result = import_seeds.run([])
-        captured = capsys.readouterr()
-
-        assert result == 1
-        assert "Usage:" in captured.out
+    def test_run_no_args_resolves_to_bundled_seed_dir(self) -> None:
+        """With no arguments, the importer defaults to the bundled seeds/ directory."""
+        seed_dir = import_seeds.default_seed_dir()
+        assert seed_dir.exists()
+        assert (seed_dir / "STARTER_001.md").exists()
+        assert (seed_dir / "STARTER_002.md").exists()
 
     def test_run_nonexistent_directory(
         self, capsys: pytest.CaptureFixture[str]
