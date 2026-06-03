@@ -503,6 +503,7 @@ Examples:
 
     if success:
         print("Setup complete!")
+        _import_starter_seeds()
         print("\nNext steps:")
         if selected_mode in (MODE_MCP, MODE_BOTH):
             print("  1. Restart Claude Code to load MCP server")
@@ -519,12 +520,21 @@ Examples:
                 if tts_enabled:
                     print(f"  {'5' if eyes_enabled else '4'}. Voice will activate on next session")
         else:
-            print("  1. Import starter seeds:")
-            print("     uv run anima import-seeds seeds/")
-            print("  2. If using Anima, check your platform's rules/agent file is configured.")
-            print("  3. Start a new session and say 'Welcome back'")
+            print("  1. If using Anima, check your platform's rules/agent file is configured.")
+            print("  2. Start a new session and say 'Welcome back'")
 
     return 0 if success else 1
+
+
+def _import_starter_seeds() -> None:
+    """Plant the bundled starter memories. Idempotent and best-effort — never blocks setup."""
+    from anima.tools.import_seeds import run as import_seeds_run
+
+    print("\nPlanting starter memories...")
+    try:
+        import_seeds_run([])
+    except Exception as exc:  # best-effort: a seed-import failure must not fail the install
+        print(f"  (seed import skipped: {exc})")
 
 
 if __name__ == "__main__":

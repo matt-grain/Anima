@@ -11,10 +11,12 @@ Default seed memories for new LTM installations. These provide Claude with basic
 
 ## Import Instructions
 
-After installing LTM, import these seeds to bootstrap your agent:
+Seeds are imported automatically during `anima setup`. To (re-)import them
+manually at any time — idempotent, already-imported seeds are skipped:
 
 ```bash
-uv run python -m ltm.tools.import_seeds seeds/
+uv run anima import-seeds          # uses the bundled seeds/ directory
+uv run anima import-seeds <dir>    # or point at a custom seed directory
 ```
 
 ## What These Seeds Do
@@ -33,7 +35,7 @@ uv run python -m ltm.tools.import_seeds seeds/
 ## Customization
 
 These are minimal starter memories. As you work with Claude:
-- Claude can create new memories using `/please-remember`
+- Claude can create new memories via the `mcp__anima__memory` tool (MCP mode) or `/remember` (command mode)
 - You can give Claude permission to create emotional memories proactively
 - Your unique relationship will develop through collaboration
 

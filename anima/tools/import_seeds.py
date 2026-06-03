@@ -4,7 +4,7 @@
 """
 Seed memory importer for LTM.
 
-Imports seed memories from markdown files in gemini-docs/memories/
+Imports seed memories from markdown files in the bundled seeds/ directory
 to bootstrap LTM with its founding memories.
 """
 
@@ -117,22 +117,23 @@ def parse_seed_file(file_path: Path) -> Optional[dict]:
     return result
 
 
+def default_seed_dir() -> Path:
+    """Locate the bundled seeds/ directory (works in the repo and in an installed wheel)."""
+    return Path(__file__).resolve().parents[2] / "seeds"
+
+
 def run(args: list[str]) -> int:
     """
     Run the seed importer.
 
     Args:
-        args: Path to directory containing seed files
+        args: Optional path to a directory of seed files. Defaults to the
+            bundled seeds/ directory when omitted.
 
     Returns:
         Exit code (0 for success)
     """
-    if not args:
-        print("Usage: uv run anima import-seeds <directory>")
-        print("Example: uv run anima import-seeds gemini-docs/memories/")
-        return 1
-
-    seed_dir = Path(args[0])
+    seed_dir = Path(args[0]) if args else default_seed_dir()
     if not seed_dir.exists():
         print(f"Directory not found: {seed_dir}")
         return 1
