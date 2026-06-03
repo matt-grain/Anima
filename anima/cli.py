@@ -20,7 +20,8 @@ def _run_server(args: list[str]) -> int:
     eyes_enabled = "--eyes" in args
     tts_enabled = "--tts" in args
     light_enabled = "--light" in args
-    http_enabled = "--http" in args
+    # HTTP transport is the default (stdio hangs on Windows); --stdio opts out.
+    http_enabled = "--stdio" not in args
     eyes_config = None
     host = "127.0.0.1"
     port = 3737

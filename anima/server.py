@@ -1444,7 +1444,7 @@ def run_server(
     tts_enabled: bool = False,
     light_enabled: bool = False,
     eyes_config_path: str | None = None,
-    http: bool = False,
+    http: bool = True,
     host: str = "127.0.0.1",
     port: int = 3737,
 ):
@@ -1455,9 +1455,9 @@ def run_server(
         tts_enabled: Whether to enable TTS (text-to-speech)
         light_enabled: Whether to enable i-Buddy USB light
         eyes_config_path: Path to eyes config file
-        http: Serve over streamable-HTTP instead of stdio. Avoids the Windows
-            stdio response-delivery hang; the server runs once and all Claude
-            Code sessions connect to it by URL.
+        http: Serve over streamable-HTTP (default). Avoids the Windows stdio
+            response-delivery hang; the server runs once and all Claude Code
+            sessions connect to it by URL. Pass --stdio to force legacy stdio.
         host: Bind host for HTTP transport
         port: Bind port for HTTP transport
     """
