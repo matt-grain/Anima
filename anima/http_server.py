@@ -14,6 +14,7 @@ Usage:
 Endpoints:
     POST /hooks/session-start    → Returns additionalContext with memories
     POST /hooks/subagent-start   → Returns lean additionalContext for subagents
+    *    /mcp                    → MCP tools (memory/curiosity/dream/...) over streamable-HTTP
     GET  /health                 → Health check
 """
 
@@ -32,13 +33,19 @@ from typing import Callable
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-from starlette.routing import Route
+from starlette.routing import Route, Mount
 
 from anima.hooks.session_start import run as run_session_start
 from anima.hooks.session_end import run as run_session_end
 from anima.hooks.pre_compact import run as run_pre_compact
 from anima.hooks.subagent_start import run as run_subagent_start
 from anima.embeddings.embedder import is_model_loaded, CACHE_DIR
+from anima.server import mcp
+
+# MCP tools (memory/curiosity/dream/...) served over streamable-HTTP at /mcp,
+# co-hosted with the lifecycle hooks so a single `anima serve` does both.
+# Calling streamable_http_app() also lazily creates mcp.session_manager.
+_mcp_app = mcp.streamable_http_app()
 
 DEFAULT_PORT = 3741
 
@@ -253,17 +260,20 @@ routes = [
     Route("/hooks/subagent-start", hook_subagent_start, methods=["POST"]),
     Route("/hooks/session-end", hook_session_end, methods=["POST"]),
     Route("/hooks/pre-compact", hook_pre_compact, methods=["POST"]),
+    # MCP tools endpoint (/mcp) — mounted last so explicit hook routes win.
+    Mount("/", app=_mcp_app),
 ]
 
 
 @asynccontextmanager
 async def lifespan(app: Starlette) -> AsyncGenerator[None, None]:
-    """Lifespan context manager - print stats on startup."""
-    try:
-        _print_startup_stats()
-    except Exception as e:
-        print(f"  (Could not load stats: {e})", file=sys.stderr)
-    yield
+    """Lifespan: run the MCP session manager and print stats on startup."""
+    async with mcp.session_manager.run():
+        try:
+            _print_startup_stats()
+        except Exception as e:
+            print(f"  (Could not load stats: {e})", file=sys.stderr)
+        yield
 
 
 # Create Starlette app with lifespan
@@ -400,6 +410,7 @@ def run_server(
     print("  POST /hooks/subagent-start - Load lean memories for subagents", file=sys.stderr)
     print("  POST /hooks/session-end    - Index subconscious", file=sys.stderr)
     print("  POST /hooks/pre-compact    - Save WIP state", file=sys.stderr)
+    print("  *    /mcp                  - MCP tools (memory/curiosity/dream/...)", file=sys.stderr)
     print("  GET  /health               - Health check", file=sys.stderr)
     if debug:
         print("  🐛 Debug mode enabled (verbose logging)", file=sys.stderr)
