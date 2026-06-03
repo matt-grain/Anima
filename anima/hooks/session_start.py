@@ -39,6 +39,13 @@ from anima.tools.platforms.base import find_config_dir, SETUP_VERSION_MARKER
 from anima.security.cognitive_auth import get_session_trust, TrustLevel
 from anima.core.config import get_config
 
+# Bytes reserved within max_output_bytes for everything session_start appends
+# AFTER the memory DSL: the greeting/diagnostic protocol, LTM headers, update
+# notice, and dream/curiosity prompts. Reserving it here keeps the TOTAL hook
+# output (memories + protocol) within max_output_bytes so the whole payload
+# arrives inline instead of overflowing and being persisted to a file.
+PROTOCOL_RESERVE_BYTES = 4000
+
 
 def get_curiosity_prompt(agent_id: str, project_id: str) -> str | None:
     """
@@ -309,9 +316,11 @@ def run(args: Optional[list[str]] = None) -> int:
     project = resolver.resolve_project()
     log.info(f"Resolved agent: {agent.id} ({agent.name}), project: {project.id if project else 'None'}")
 
-    # Initialize store and injector
+    # Initialize store and injector. Shrink the memory byte cap by the protocol
+    # reserve so memories + the appended protocol together fit under max_output_bytes.
     store = MemoryStore()
     injector = MemoryInjector(store)
+    injector.max_output_bytes = max(injector.max_output_bytes - PROTOCOL_RESERVE_BYTES, 4000)
 
     # Ensure agent and project are saved
     store.save_agent(agent)
