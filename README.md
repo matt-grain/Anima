@@ -127,9 +127,17 @@ uv run anima memory-import backup.json --merge
 
 ## Learn More
 
-- **[DEVELOPMENT.md](DEVELOPMENT.md)** — developing Anima itself: local setup, tests, dev server
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** — DSL, database schema, token budgeting
-- **[PHILOSOPHY.md](PHILOSOPHY.md)** — why memory matters for AI identity, the "void" problem
+- **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** — developing Anima itself: local setup, tests, dev server
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — DSL, database schema, token budgeting
+- **[docs/RETRIEVAL.md](docs/RETRIEVAL.md)** — how memories are found (dense RAG + BM25)
+- **[docs/MEMORY_GRAPH.md](docs/MEMORY_GRAPH.md)** — the memory link graph and link types
+- **[docs/DREAMS.md](docs/DREAMS.md)** — between-session dreaming (consolidation, dissonance, REM)
+- **[docs/SELF_LEARNING.md](docs/SELF_LEARNING.md)** — curiosity, research, and diary: how Anima evolves
+- **[docs/EMBODIMENT.md](docs/EMBODIMENT.md)** — eyes, voice (TTS), and light (i-Buddy)
+- **[docs/TECH_DEBT.md](docs/TECH_DEBT.md)** — known remaining cleanup
+- **[docs/PHILOSOPHY.md](docs/PHILOSOPHY.md)** — why memory matters for AI identity, the "void" problem
+- **[docs/CONFIGURATION.md](docs/CONFIGURATION.md)** — configuration options and tuning
+- **[docs/PLATFORMS.md](docs/PLATFORMS.md)** — platform integration (Claude Code, Gemini, Opencode, Copilot)
 
 ## License
 

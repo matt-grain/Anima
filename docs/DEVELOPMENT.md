@@ -1,7 +1,7 @@
 # Developing Anima
 
 This guide is for working on **Anima itself**. If you just want to *use* Anima,
-see the [README](README.md).
+see the [README](../README.md).
 
 ## Prerequisites
 
@@ -40,19 +40,14 @@ uv run anima serve --debug --reload   # verbose logs + auto-reload on file chang
 
 ### MCP transport
 
-The MCP server defaults to **streamable-HTTP** (stdio hangs on Windows — the
-response never reaches the client even though the memory is written). Claude
+Anima serves its MCP tools over **streamable-HTTP** (stdio hangs on Windows —
+the response never reaches the client even though the memory is written).
+There is one server, `anima serve`, hosting both `/mcp` and `/hooks/*`. Claude
 Code connects by URL:
 
 ```jsonc
 // ~/.claude.json
 "anima": { "type": "http", "url": "http://127.0.0.1:3741/mcp" }
-```
-
-The legacy stdio transport is still available for non-Windows use:
-
-```bash
-uv run anima --server --stdio
 ```
 
 ## Quality Gate
@@ -82,7 +77,7 @@ uv run ruff format .          # formatting
 | `seeds/`                      | Starter memories planted on first install           |
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the DSL, database schema, and token
-budgeting system, and [CLAUDE.md](CLAUDE.md) for agent-facing conventions.
+budgeting system, and [CLAUDE.md](../CLAUDE.md) for agent-facing conventions.
 
 ## Conventions
 

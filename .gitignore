@@ -27,8 +27,6 @@ private-docs/
 .claude/
 .agent
 
-# Git backups
-docs/
 
 # tests related
 .coverage
