@@ -21,6 +21,7 @@ from anima.dream.types import (
     N3Result,
     REMResult,
 )
+from anima.storage._connection import connect
 
 
 class DreamStateStore:
@@ -36,7 +37,7 @@ class DreamStateStore:
 
     def _init_db(self) -> None:
         """Initialize database schema."""
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS dream_sessions (
                     id TEXT PRIMARY KEY,
@@ -62,7 +63,7 @@ class DreamStateStore:
         project_id: Optional[str] = None,
     ) -> Optional[DreamSession]:
         """Get any incomplete dream session for this agent/project."""
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             if project_id:
                 row = conn.execute(
@@ -122,7 +123,7 @@ class DreamStateStore:
             updated_at=now,
         )
 
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             conn.execute(
                 """
                 INSERT INTO dream_sessions
@@ -153,7 +154,7 @@ class DreamStateStore:
         """Update session state and optionally store results."""
         now = datetime.now().isoformat()
 
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             # Build update query dynamically based on what's provided
             updates = ["state = ?", "updated_at = ?"]
             params: list = [state.value, now]
@@ -184,13 +185,13 @@ class DreamStateStore:
 
     def abandon_session(self, session_id: str) -> None:
         """Delete an incomplete session (user chose not to resume)."""
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             conn.execute("DELETE FROM dream_sessions WHERE id = ?", (session_id,))
             conn.commit()
 
     def get_session(self, session_id: str) -> Optional[DreamSession]:
         """Get a specific session by ID."""
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             row = conn.execute(
                 "SELECT * FROM dream_sessions WHERE id = ?",
@@ -221,7 +222,7 @@ class DreamStateStore:
         Used to determine cutoff for next dream - only process
         memories/diaries since last dream.
         """
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             if project_id:
                 row = conn.execute(
@@ -266,7 +267,7 @@ class DreamStateStore:
 
         cutoff = (datetime.now() - timedelta(days=days)).isoformat()
 
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             cursor = conn.execute(
                 """
                 DELETE FROM dream_sessions

@@ -17,6 +17,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
+from anima.storage._connection import connect
+
 
 class DissonanceStatus(str, Enum):
     """Status of a dissonance item."""
@@ -65,7 +67,7 @@ class DissonanceStore:
 
     def _ensure_table(self) -> None:
         """Create dissonance table if not exists."""
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS dissonance_queue (
                     id TEXT PRIMARY KEY,
@@ -115,7 +117,7 @@ class DissonanceStore:
             dissonance_type=DissonanceType.CONTRADICTION,
         )
 
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             conn.execute(
                 """
                 INSERT INTO dissonance_queue
@@ -158,7 +160,7 @@ class DissonanceStore:
             suggested_project_id=suggested_project_id,
         )
 
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             # Use empty string for memory_id_b to handle legacy tables with NOT NULL constraint
             # (SQLite can't alter NOT NULL constraints, so we work around it)
             conn.execute(
@@ -187,7 +189,7 @@ class DissonanceStore:
 
     def get_open_dissonances(self, agent_id: str) -> list[Dissonance]:
         """Get all open dissonances for an agent."""
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             rows = conn.execute(
                 "SELECT * FROM dissonance_queue WHERE agent_id = ? AND status = ?",
@@ -198,7 +200,7 @@ class DissonanceStore:
 
     def get_dissonance(self, dissonance_id: str) -> Optional[Dissonance]:
         """Get a specific dissonance by ID."""
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             row = conn.execute(
                 "SELECT * FROM dissonance_queue WHERE id = ?",
@@ -215,7 +217,7 @@ class DissonanceStore:
         resolution: str,
     ) -> None:
         """Mark a dissonance as resolved."""
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             conn.execute(
                 """
                 UPDATE dissonance_queue
@@ -233,7 +235,7 @@ class DissonanceStore:
 
     def dismiss_dissonance(self, dissonance_id: str) -> None:
         """Mark a dissonance as dismissed (not actually a contradiction)."""
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             conn.execute(
                 """
                 UPDATE dissonance_queue
@@ -250,7 +252,7 @@ class DissonanceStore:
 
     def count_open(self, agent_id: str) -> int:
         """Count open dissonances for an agent."""
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             row = conn.execute(
                 "SELECT COUNT(*) FROM dissonance_queue WHERE agent_id = ? AND status = ?",
                 (agent_id, DissonanceStatus.OPEN.value),
@@ -259,7 +261,7 @@ class DissonanceStore:
 
     def exists(self, memory_id_a: str, memory_id_b: str) -> bool:
         """Check if a dissonance already exists for this memory pair."""
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             row = conn.execute(
                 """
                 SELECT COUNT(*) FROM dissonance_queue
@@ -272,7 +274,7 @@ class DissonanceStore:
 
     def scope_issue_exists(self, memory_id: str) -> bool:
         """Check if a scope issue already exists for this memory."""
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             row = conn.execute(
                 """
                 SELECT COUNT(*) FROM dissonance_queue
@@ -284,7 +286,7 @@ class DissonanceStore:
 
     def get_open_scope_issues(self, agent_id: str) -> list[Dissonance]:
         """Get all open scope issues for an agent."""
-        with sqlite3.connect(self.db_path) as conn:
+        with connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             rows = conn.execute(
                 """
