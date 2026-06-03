@@ -506,19 +506,21 @@ Examples:
         _import_starter_seeds()
         print("\nNext steps:")
         if selected_mode in (MODE_MCP, MODE_BOTH):
-            print("  1. Restart Claude Code to load MCP server")
-            print("  2. Memory tools (remember, recall) are now available implicitly")
+            print("  1. Start the Anima server (keeps running; hosts MCP tools + hooks):")
+            print("       uv run anima serve")
+            print("  2. Restart Claude Code — it connects at http://127.0.0.1:3741/mcp")
+            print("  3. Memory tools (remember, recall) are then available implicitly")
             if eyes_enabled or tts_enabled:
                 deps = []
+                flags = []
                 if eyes_enabled:
                     deps.append("eyes")
+                    flags.append("--eyes")
                 if tts_enabled:
                     deps.append("tts")
-                print(f"  3. Install dependencies: pip install anima[{','.join(deps)}]")
-                if eyes_enabled:
-                    print("  4. Eyes window will appear on next session")
-                if tts_enabled:
-                    print(f"  {'5' if eyes_enabled else '4'}. Voice will activate on next session")
+                    flags.append("--tts")
+                print(f"  4. Install extras: pip install anima[{','.join(deps)}]")
+                print(f"     then launch the server with: uv run anima serve {' '.join(flags)}")
         else:
             print("  1. If using Anima, check your platform's rules/agent file is configured.")
             print("  2. Start a new session and say 'Welcome back'")

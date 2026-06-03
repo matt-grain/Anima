@@ -606,43 +606,16 @@ curl -s -X POST http://127.0.0.1:3741/hooks/subagent-start \\
         if "mcpServers" not in settings:
             settings["mcpServers"] = {}
 
-        # Find the uv executable path
-        uv_path = shutil.which("uv") or "uv"
-
-        # Build server arguments
-        # If project_dir is provided, use --directory to run from that location
-        # This allows MCP server to work without global Anima installation
-        server_args: list[str] = []
-        if project_dir is not None:
-            # Use absolute path for --directory
-            abs_project_dir = project_dir.resolve()
-            server_args = [
-                "--directory",
-                str(abs_project_dir),
-                "run",
-                "anima",
-                "--server",
-            ]
-        else:
-            server_args = ["run", "anima", "--server"]
-
-        if eyes_enabled:
-            server_args.append("--eyes")
-        if tts_enabled:
-            server_args.append("--tts")
-        if light_enabled:
-            server_args.append("--light")
-
-        # Configure Anima MCP server
-        # OPENBLAS_NUM_THREADS=1 fixes scipy hang on Windows with Python 3.13
-        # See: https://github.com/scipy/scipy/issues/20294
+        # Anima is served over streamable-HTTP by `anima serve` — one process
+        # hosts both the MCP tools (/mcp) and the lifecycle hooks. HTTP avoids
+        # the Windows stdio response-delivery hang where `remember` writes the
+        # memory but the reply never reaches the client. The server must be
+        # running; setup's "Next steps" tells the user to start it.
+        # (eyes/tts/light and project_dir are launch concerns now — pass them to
+        # `anima serve`, not the client config.)
         settings["mcpServers"]["anima"] = {
-            "type": "stdio",
-            "command": uv_path,
-            "args": server_args,
-            "env": {
-                "OPENBLAS_NUM_THREADS": "1",
-            },
+            "type": "http",
+            "url": "http://127.0.0.1:3741/mcp",
         }
 
         # Add MCP tool permissions to avoid authorization prompts
