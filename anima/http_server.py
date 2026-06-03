@@ -396,6 +396,28 @@ def _print_startup_stats() -> None:
     print("=" * 60, file=sys.stderr)
 
 
+def _build_log_config(debug: bool) -> dict:
+    """One unified log format for uvicorn and the MCP SDK.
+
+    Without this, uvicorn's loggers use uvicorn's own format while the MCP SDK
+    logs propagate to a stray RichHandler (installed when anima.server imports
+    FastMCP), producing two clashing styles in the console.
+    """
+    level = "DEBUG" if debug else "INFO"
+    fmt = {"format": "%(asctime)s | %(levelname)-7s | %(name)s | %(message)s", "datefmt": "%H:%M:%S"}
+    logger_cfg = {"handlers": ["default"], "level": level, "propagate": False}
+    return {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {"anima": fmt},
+        "handlers": {
+            "default": {"class": "logging.StreamHandler", "stream": "ext://sys.stderr", "formatter": "anima"},
+        },
+        "loggers": {name: logger_cfg for name in ("uvicorn", "uvicorn.error", "uvicorn.access", "mcp")},
+        "root": {"handlers": ["default"], "level": level},
+    }
+
+
 def run_server(
     port: int = DEFAULT_PORT,
     host: str = "127.0.0.1",
@@ -417,8 +439,8 @@ def run_server(
     if reload:
         print("  🔄 Auto-reload enabled (watching anima/ for changes)", file=sys.stderr)
 
-    # Stats are printed via on_startup event (works with --reload)
-    log_level = "debug" if debug else "warning"
+    # One log format for uvicorn AND the MCP SDK (works with --reload)
+    log_config = _build_log_config(debug)
 
     if reload:
         # Use string reference for reload mode (uvicorn reimports the module)
@@ -426,12 +448,12 @@ def run_server(
             "anima.http_server:app",
             host=host,
             port=port,
-            log_level=log_level,
+            log_config=log_config,
             reload=True,
             reload_dirs=["anima"],
         )
     else:
-        uvicorn.run(app, host=host, port=port, log_level=log_level)
+        uvicorn.run(app, host=host, port=port, log_config=log_config)
 
 
 if __name__ == "__main__":
