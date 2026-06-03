@@ -1444,6 +1444,9 @@ def run_server(
     tts_enabled: bool = False,
     light_enabled: bool = False,
     eyes_config_path: str | None = None,
+    http: bool = False,
+    host: str = "127.0.0.1",
+    port: int = 3737,
 ):
     """Run the MCP server.
 
@@ -1452,6 +1455,11 @@ def run_server(
         tts_enabled: Whether to enable TTS (text-to-speech)
         light_enabled: Whether to enable i-Buddy USB light
         eyes_config_path: Path to eyes config file
+        http: Serve over streamable-HTTP instead of stdio. Avoids the Windows
+            stdio response-delivery hang; the server runs once and all Claude
+            Code sessions connect to it by URL.
+        host: Bind host for HTTP transport
+        port: Bind port for HTTP transport
     """
     global _eyes_enabled, _tts_enabled, _light_enabled, _eyes_config_path
     _eyes_enabled = eyes_enabled and _check_eyes_available()
@@ -1474,8 +1482,14 @@ def run_server(
     else:
         logger.info("Running without light (not enabled or hidapi not installed)")
 
-    logger.info("Starting MCP server...")
-    mcp.run()
+    if http:
+        mcp.settings.host = host
+        mcp.settings.port = port
+        logger.info(f"Starting MCP server over streamable-HTTP at http://{host}:{port}{mcp.settings.streamable_http_path}")
+        mcp.run(transport="streamable-http")
+    else:
+        logger.info("Starting MCP server (stdio)...")
+        mcp.run()
     logger.info("MCP server exited")
 
 

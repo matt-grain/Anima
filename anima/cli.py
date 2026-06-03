@@ -20,12 +20,19 @@ def _run_server(args: list[str]) -> int:
     eyes_enabled = "--eyes" in args
     tts_enabled = "--tts" in args
     light_enabled = "--light" in args
+    http_enabled = "--http" in args
     eyes_config = None
+    host = "127.0.0.1"
+    port = 3737
 
-    # Extract --eyes-config value if provided
+    # Extract valued options if provided
     for i, arg in enumerate(args):
         if arg == "--eyes-config" and i + 1 < len(args):
             eyes_config = args[i + 1]
+        elif arg == "--host" and i + 1 < len(args):
+            host = args[i + 1]
+        elif arg == "--port" and i + 1 < len(args):
+            port = int(args[i + 1])
 
     from anima.server import run_server
 
@@ -34,6 +41,9 @@ def _run_server(args: list[str]) -> int:
         tts_enabled=tts_enabled,
         light_enabled=light_enabled,
         eyes_config_path=eyes_config,
+        http=http_enabled,
+        host=host,
+        port=port,
     )
     return 0
 
