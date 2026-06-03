@@ -252,22 +252,6 @@ class BasePlatformSetup(ABC):
         }
         marker_file.write_text(json.dumps(marker_data, indent=2) + "\n", encoding="utf-8")
 
-    @staticmethod
-    def read_setup_version_marker(config_dir: Path) -> dict | None:
-        """Read the setup version marker if it exists.
-
-        Returns:
-            Dict with 'version', 'platform', 'setup_at' or None if not found.
-        """
-        marker_file = config_dir / SETUP_VERSION_MARKER
-        if not marker_file.exists():
-            return None
-
-        try:
-            return json.loads(marker_file.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            return None
-
     def run_full_setup(
         self,
         project_dir: Path,

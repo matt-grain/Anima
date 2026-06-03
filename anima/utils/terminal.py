@@ -91,19 +91,6 @@ def safe_print(*args, file=None, **kwargs) -> None:
         print(*safe_args, file=file, **kwargs)
 
 
-def safe_text(text: str) -> str:
-    """Convert text to be safe for the current terminal encoding.
-
-    Returns the original text if Unicode is supported,
-    otherwise replaces emojis with ASCII equivalents.
-    """
-    if supports_unicode():
-        return text
-    for emoji, fallback in EMOJI_FALLBACKS.items():
-        text = text.replace(emoji, fallback)
-    return text
-
-
 def get_icon(emoji: str, ascii_fallback: str | None = None) -> str:
     """Get an icon that's safe for the current terminal.
 

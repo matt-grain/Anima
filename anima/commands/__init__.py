@@ -11,7 +11,3 @@ This module provides the command-line interface for memory operations:
 - export_memories: Export memories to JSON
 - import_memories: Import memories from JSON
 """
-
-from anima.commands.base import BaseCommand
-
-__all__ = ["BaseCommand"]

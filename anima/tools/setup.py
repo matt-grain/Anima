@@ -208,50 +208,6 @@ def download_embedding_model() -> bool:
         return False
 
 
-def setup_global_skills() -> tuple[int, int]:
-    """Install skills to global ~/.claude/skills/ directory.
-
-    Returns:
-        Tuple of (copied_count, skipped_count)
-    """
-    import shutil
-    from anima.tools.platforms.base import get_package_skills_dir
-    from anima.utils.terminal import safe_print, get_icon
-
-    try:
-        src_dir = get_package_skills_dir()
-    except FileNotFoundError as e:
-        safe_print(f"  {get_icon('', '[!]')}  {e}")
-        return (0, 0)
-
-    dest_dir = Path.home() / ".claude" / "skills"
-    dest_dir.mkdir(parents=True, exist_ok=True)
-
-    copied = 0
-    skipped = 0
-
-    for skill_dir in src_dir.iterdir():
-        if not skill_dir.is_dir():
-            continue
-
-        skill_md = skill_dir / "SKILL.md"
-        if not skill_md.exists():
-            continue
-
-        dest_skill_dir = dest_dir / skill_dir.name
-        is_update = dest_skill_dir.exists()
-
-        # Copy entire skill directory (replace if exists)
-        if is_update:
-            shutil.rmtree(dest_skill_dir)
-        shutil.copytree(skill_dir, dest_skill_dir)
-        status = "updated" if is_update else "installed"
-        safe_print(f"  {get_icon('', '[OK]')} {skill_dir.name}/ ({status})")
-        copied += 1
-
-    return (copied, skipped)
-
-
 def run(args: list[str]) -> int:
     """
     Run the setup tool.
