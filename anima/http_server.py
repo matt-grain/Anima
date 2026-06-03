@@ -13,6 +13,7 @@ Usage:
 
 Endpoints:
     POST /hooks/session-start    → Returns additionalContext with memories
+    POST /hooks/subagent-start   → Returns lean additionalContext for subagents
     GET  /health                 → Health check
 """
 
@@ -36,6 +37,7 @@ from starlette.routing import Route
 from anima.hooks.session_start import run as run_session_start
 from anima.hooks.session_end import run as run_session_end
 from anima.hooks.pre_compact import run as run_pre_compact
+from anima.hooks.subagent_start import run as run_subagent_start
 from anima.embeddings.embedder import is_model_loaded, CACHE_DIR
 
 DEFAULT_PORT = 3741
@@ -155,6 +157,53 @@ async def hook_session_start(request: Request) -> JSONResponse:
         )
 
 
+async def hook_subagent_start(request: Request) -> JSONResponse:
+    """
+    Handle SubagentStart hook via HTTP.
+
+    Injects a lean (CRITICAL-focused) memory set so subagents share Anima's
+    context. Returns additionalContext, mirroring the SessionStart contract.
+    """
+    try:
+        body = await request.json()
+    except json.JSONDecodeError:
+        body = {}
+
+    try:
+        output = await _run_hook_in_thread(
+            run_subagent_start,
+            body,
+            hook_args=[],
+            capture_stdout=True,
+            pass_hook_input=True,
+        )
+        # The capture buffer holds clean JSON followed by a stderr status line,
+        # so decode just the leading JSON object and ignore the trailing text.
+        result, _ = json.JSONDecoder().raw_decode(output.lstrip())
+        return JSONResponse(result)
+
+    except (json.JSONDecodeError, ValueError):
+        return JSONResponse(
+            {
+                "hookSpecificOutput": {
+                    "hookEventName": "SubagentStart",
+                    "additionalContext": "",
+                }
+            }
+        )
+    except Exception as e:
+        return JSONResponse(
+            {
+                "error": str(e),
+                "hookSpecificOutput": {
+                    "hookEventName": "SubagentStart",
+                    "additionalContext": "",
+                },
+            },
+            status_code=500,
+        )
+
+
 async def hook_session_end(request: Request) -> JSONResponse:
     """Handle SessionEnd hook via HTTP."""
     try:
@@ -201,6 +250,7 @@ async def hook_pre_compact(request: Request) -> JSONResponse:
 routes = [
     Route("/health", health, methods=["GET"]),
     Route("/hooks/session-start", hook_session_start, methods=["POST"]),
+    Route("/hooks/subagent-start", hook_subagent_start, methods=["POST"]),
     Route("/hooks/session-end", hook_session_end, methods=["POST"]),
     Route("/hooks/pre-compact", hook_pre_compact, methods=["POST"]),
 ]
@@ -347,6 +397,7 @@ def run_server(
 
     print(f"Starting Anima HTTP server on http://{host}:{port}", file=sys.stderr)
     print("  POST /hooks/session-start  - Load memories", file=sys.stderr)
+    print("  POST /hooks/subagent-start - Load lean memories for subagents", file=sys.stderr)
     print("  POST /hooks/session-end    - Index subconscious", file=sys.stderr)
     print("  POST /hooks/pre-compact    - Save WIP state", file=sys.stderr)
     print("  GET  /health               - Health check", file=sys.stderr)

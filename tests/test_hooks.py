@@ -270,6 +270,92 @@ class TestSessionStartHook:
             assert captured.out.strip() == mock_dsl
 
 
+class TestSubagentStartHook:
+    """Tests for the SubagentStart hook (used by the HTTP /hooks/subagent-start route)."""
+
+    def _patches(self):
+        return (
+            patch("anima.hooks.subagent_start.MemoryStore"),
+            patch("anima.hooks.subagent_start.MemoryInjector"),
+            patch("anima.hooks.subagent_start.AgentResolver"),
+            patch("anima.hooks.subagent_start.Path"),
+        )
+
+    def _wire_mocks(
+        self,
+        MockInjector: MagicMock,
+        MockResolver: MagicMock,
+        MockPath: MagicMock,
+        temp_project_dir: Path,
+        dsl: str,
+        injected_ids: list[str],
+    ) -> None:
+        mock_injector = MagicMock()
+        mock_injector.inject_with_deferred.return_value = {
+            "dsl": dsl,
+            "injected_ids": injected_ids,
+            "deferred_ids": [],
+            "deferred_count": 0,
+        }
+        MockInjector.return_value = mock_injector
+
+        mock_resolver = MagicMock()
+        mock_resolver.resolve.return_value = Agent(
+            id="anima", name="Anima", definition_path=None, signing_key=None
+        )
+        mock_resolver.resolve_project.return_value = Project(
+            id="test-proj", name="Test", path=temp_project_dir
+        )
+        MockResolver.return_value = mock_resolver
+        MockPath.cwd.return_value = temp_project_dir
+
+    def test_subagent_start_with_hook_input_injects_memories(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """hook_input is honored (no stdin read) and memories reach the subagent."""
+        from anima.hooks import subagent_start
+
+        p_store, p_injector, p_resolver, p_path = self._patches()
+        with p_store, p_injector as MockInjector, p_resolver as MockResolver, p_path as MockPath:
+            self._wire_mocks(
+                MockInjector,
+                MockResolver,
+                MockPath,
+                temp_project_dir,
+                dsl="~EMOT:CRIT| @Matt collaborative",
+                injected_ids=["id1", "id2"],
+            )
+
+            result = subagent_start.run(hook_input={"agent_type": "Explore"})
+            output = json.loads(capsys.readouterr().out.strip())
+
+        assert result == 0
+        assert output["hookSpecificOutput"]["hookEventName"] == "SubagentStart"
+        context = output["hookSpecificOutput"]["additionalContext"]
+        assert "@Matt" in context
+        assert "Explore" in context
+        assert "/remember" in context
+
+    def test_subagent_start_no_memories_returns_empty_context(
+        self, temp_project_dir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """With no memories to inject, additionalContext is empty (not an error)."""
+        from anima.hooks import subagent_start
+
+        p_store, p_injector, p_resolver, p_path = self._patches()
+        with p_store, p_injector as MockInjector, p_resolver as MockResolver, p_path as MockPath:
+            self._wire_mocks(
+                MockInjector, MockResolver, MockPath, temp_project_dir, dsl="", injected_ids=[]
+            )
+
+            result = subagent_start.run(hook_input={})
+            output = json.loads(capsys.readouterr().out.strip())
+
+        assert result == 0
+        assert output["hookSpecificOutput"]["hookEventName"] == "SubagentStart"
+        assert output["hookSpecificOutput"]["additionalContext"] == ""
+
+
 class TestPermissionRequestHook:
     """Tests for the PermissionRequest hook."""
 

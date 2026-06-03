@@ -24,25 +24,28 @@ from anima.logging import (
 )
 
 
-def run(args: Optional[list[str]] = None) -> int:
+def run(args: Optional[list[str]] = None, hook_input: Optional[dict] = None) -> int:
     """
     Run the subagent start hook.
 
-    Reads hook input from stdin, resolves agent/project,
-    and outputs a subset of memories for the subagent.
+    Resolves agent/project and outputs a subset of memories for the subagent.
+    Hook input comes from the ``hook_input`` argument (HTTP server path) or,
+    when omitted, is read from stdin (CLI invocation).
 
     Returns:
         Exit code (0 for success)
     """
     log = get_logger("hooks.subagent_start")
 
-    # Read hook input from stdin
-    try:
-        hook_input = json.load(sys.stdin)
-    except json.JSONDecodeError:
-        hook_input = {}
+    # HTTP server passes hook_input directly; CLI reads it from stdin.
+    payload: dict = hook_input if hook_input is not None else {}
+    if hook_input is None:
+        try:
+            payload = json.load(sys.stdin)
+        except json.JSONDecodeError:
+            payload = {}
 
-    agent_type = hook_input.get("agent_type", "unknown")
+    agent_type = payload.get("agent_type", "unknown")
     log_hook_start("SubagentStart", agent_type=agent_type, cwd=str(Path.cwd()))
 
     # Resolve agent and project from current directory
