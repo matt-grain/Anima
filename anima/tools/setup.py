@@ -465,14 +465,19 @@ Examples:
         if not tts_enabled:
             tts_enabled = prompt_tts_choice()
 
-        # Save mode choice to config
-        config = load_anima_config()
+        # Save config — seed the full set of tunable LTM options (budget, decay,
+        # hook limits, security/trust, injection buckets) at their defaults so they
+        # are visible and editable, preserving anything the user already customized.
+        from anima.core.config import LTMConfig
+
+        existing = load_anima_config()
+        config = LTMConfig.from_dict(existing).to_dict()
         config["mode"] = selected_mode
         config["eyes_enabled"] = eyes_enabled
         config["tts_enabled"] = tts_enabled
         config["light_enabled"] = light_enabled
         save_anima_config(config)
-        safe_print(f"{get_icon('', '[OK]')} Saved mode '{selected_mode}' to ~/.anima/config.json")
+        safe_print(f"{get_icon('', '[OK]')} Saved config to ~/.anima/config.json (mode '{selected_mode}', all options seeded)")
         if eyes_enabled:
             safe_print(f"{get_icon('', '[OK]')} Eyes enabled (visual expression)")
         if tts_enabled:
