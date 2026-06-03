@@ -85,6 +85,29 @@ def _set_eyes_emotion(emotion: str) -> None:
         _eyes_client.set_emotion(emotion)
 
 
+def configure_embodiment(
+    eyes_enabled: bool = False,
+    tts_enabled: bool = False,
+    light_enabled: bool = False,
+    eyes_config_path: str | None = None,
+) -> None:
+    """Enable eyes/tts/light on the MCP server globals (honored by the body tool).
+
+    Called by both the legacy stdio runner and `anima serve` so embodiment works
+    regardless of how the server is started. Each feature also requires its
+    optional dependency (pygame/piper/hidapi) to be installed.
+    """
+    global _eyes_enabled, _tts_enabled, _light_enabled, _eyes_config_path
+    _eyes_enabled = eyes_enabled and _check_eyes_available()
+    _tts_enabled = tts_enabled and _check_tts_available()
+    _light_enabled = light_enabled and _check_light_available()
+    _eyes_config_path = eyes_config_path
+
+    logger.info("Eyes enabled" if _eyes_enabled else "Running without eyes (not enabled or pygame missing)")
+    logger.info("TTS enabled" if _tts_enabled else "Running without TTS (not enabled or piper missing)")
+    logger.info("Light enabled" if _light_enabled else "Running without light (not enabled or hidapi missing)")
+
+
 def _spawn_windowless_win32(cmd: list[str]) -> None:
     """Spawn a Python subprocess on Windows without any console window."""
     import subprocess
@@ -1461,26 +1484,7 @@ def run_server(
         host: Bind host for HTTP transport
         port: Bind port for HTTP transport
     """
-    global _eyes_enabled, _tts_enabled, _light_enabled, _eyes_config_path
-    _eyes_enabled = eyes_enabled and _check_eyes_available()
-    _tts_enabled = tts_enabled and _check_tts_available()
-    _light_enabled = light_enabled and _check_light_available()
-    _eyes_config_path = eyes_config_path
-
-    if _eyes_enabled:
-        logger.info("Eyes features enabled (visual expression)")
-    else:
-        logger.info("Running without eyes (not enabled or pygame not installed)")
-
-    if _tts_enabled:
-        logger.info("TTS features enabled (text-to-speech)")
-    else:
-        logger.info("Running without TTS (not enabled or piper not installed)")
-
-    if _light_enabled:
-        logger.info("Light features enabled (i-Buddy USB)")
-    else:
-        logger.info("Running without light (not enabled or hidapi not installed)")
+    configure_embodiment(eyes_enabled, tts_enabled, light_enabled, eyes_config_path)
 
     if http:
         mcp.settings.host = host

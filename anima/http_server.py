@@ -441,9 +441,34 @@ def run_server(
     host: str = "127.0.0.1",
     debug: bool = False,
     reload: bool = False,
+    eyes: bool = False,
+    tts: bool = False,
+    light: bool = False,
+    eyes_config: str | None = None,
 ) -> None:
-    """Run the HTTP hooks server."""
+    """Run the Anima server (MCP tools at /mcp + lifecycle hooks)."""
     import uvicorn
+
+    # Enable embodiment from --eyes/--tts/--light flags OR the persisted
+    # ~/.anima/config.json runtime flags. Sets the server globals so the MCP
+    # `body` tool works; the eyes client connects lazily on first use.
+    # (Note: in --reload mode this runs in the reloader parent, so prefer
+    # running `serve` without --reload when using embodiment.)
+    from anima.server import configure_embodiment
+
+    runtime: dict = {}
+    cfg_path = Path.home() / ".anima" / "config.json"
+    if cfg_path.exists():
+        try:
+            runtime = json.loads(cfg_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            runtime = {}
+    configure_embodiment(
+        eyes_enabled=eyes or bool(runtime.get("eyes_enabled")),
+        tts_enabled=tts or bool(runtime.get("tts_enabled")),
+        light_enabled=light or bool(runtime.get("light_enabled")),
+        eyes_config_path=eyes_config,
+    )
 
     print(f"Starting Anima HTTP server on http://{host}:{port}", file=sys.stderr)
     print("  POST /hooks/session-start  - Load memories", file=sys.stderr)

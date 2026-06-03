@@ -141,6 +141,10 @@ def main() -> int:
             host = "127.0.0.1"
             debug = False
             reload = False
+            eyes = "--eyes" in args
+            tts = "--tts" in args
+            light = "--light" in args
+            eyes_config = None
             for i, arg in enumerate(args):
                 if arg == "--port" and i + 1 < len(args):
                     port = int(args[i + 1])
@@ -150,9 +154,20 @@ def main() -> int:
                     debug = True
                 elif arg == "--reload":
                     reload = True
+                elif arg == "--eyes-config" and i + 1 < len(args):
+                    eyes_config = args[i + 1]
             from anima.http_server import run_server as run_http_server
 
-            run_http_server(port=port, host=host, debug=debug, reload=reload)
+            run_http_server(
+                port=port,
+                host=host,
+                debug=debug,
+                reload=reload,
+                eyes=eyes,
+                tts=tts,
+                light=light,
+                eyes_config=eyes_config,
+            )
             return 0
         case "eyes-daemon":
             from anima.commands.eyes_daemon import run
