@@ -1,6 +1,6 @@
 [project]
 name = "anima"
-version = "0.18.8"
+version = "0.19.0"
 description = "Long Term Memory for Anima Agents - human-like persistent memory across sessions"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -76,6 +76,13 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 # Exclude benchmarks from default test run (run with: pytest tests/benchmarks/)
 norecursedirs = ["tests/benchmarks"]
+
+[tool.pyright]
+include = ["anima"]
+exclude = ["prototype", "tests", "**/__pycache__"]
+reportMissingImports = true
+reportMissingTypeStubs = false
+pythonVersion = "3.11"
 
 [tool.uv.workspace]
 members = [
