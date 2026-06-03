@@ -33,6 +33,7 @@ class TestSessionStartHook:
             MockStore.return_value = mock_store
 
             mock_injector = MagicMock()
+            mock_injector.max_output_bytes = 22000
             mock_injector.inject_with_deferred.return_value = {
                 "dsl": "~EMOT:CRIT| @Matt collaborative",
                 "injected_ids": ["id1", "id2", "id3"],
@@ -93,6 +94,7 @@ class TestSessionStartHook:
             MockStore.return_value = mock_store
 
             mock_injector = MagicMock()
+            mock_injector.max_output_bytes = 22000
             mock_injector.inject_with_deferred.return_value = {
                 "dsl": "",  # No memories
                 "injected_ids": [],
@@ -141,6 +143,7 @@ class TestSessionStartHook:
             MockStore.return_value = mock_store
 
             mock_injector = MagicMock()
+            mock_injector.max_output_bytes = 22000
             mock_injector.inject_with_deferred.return_value = {
                 "dsl": "Some memory content",
                 "injected_ids": ["id1"],
@@ -200,6 +203,7 @@ class TestSessionStartHook:
             MockStore.return_value = mock_store
 
             mock_injector = MagicMock()
+            mock_injector.max_output_bytes = 22000
             mock_injector.inject_with_deferred.return_value = {
                 "dsl": "",
                 "injected_ids": [],
@@ -241,6 +245,7 @@ class TestSessionStartHook:
             MockStore.return_value = mock_store
 
             mock_injector = MagicMock()
+            mock_injector.max_output_bytes = 22000
             mock_dsl = "[LTM:Anima]\n~EMOT:CRIT| @Matt collaborative\n[/LTM]"
             mock_injector.inject_with_deferred.return_value = {
                 "dsl": mock_dsl,
