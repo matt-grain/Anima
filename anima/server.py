@@ -9,8 +9,8 @@ Token-optimized: Uses consolidated tools to minimize context overhead.
 - curiosity(action, ...) - add/research/diary/list
 
 Usage:
-    uv run anima server
-    uv run anima --server
+    The tools defined here are served over HTTP by `anima serve`
+    (anima/http_server.py mounts this FastMCP app at /mcp).
 """
 
 from contextlib import asynccontextmanager

@@ -44,11 +44,8 @@ uv run pyright
 # Lint
 uv run ruff check . --fix
 
-# Start HTTP hooks server (with auto-reload)
+# Start the Anima server — MCP tools (/mcp) + lifecycle hooks (with auto-reload)
 uv run anima serve --debug --reload
-
-# Start MCP server
-uv run anima --server
 ```
 
 ## Architecture

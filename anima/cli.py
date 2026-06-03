@@ -14,49 +14,9 @@ def _force_utf8_io() -> None:
             reconfigure(encoding="utf-8")
 
 
-def _run_server(args: list[str]) -> int:
-    """Start the MCP server."""
-    # Parse server-specific arguments
-    eyes_enabled = "--eyes" in args
-    tts_enabled = "--tts" in args
-    light_enabled = "--light" in args
-    # HTTP transport is the default (stdio hangs on Windows); --stdio opts out.
-    http_enabled = "--stdio" not in args
-    eyes_config = None
-    host = "127.0.0.1"
-    port = 3737
-
-    # Extract valued options if provided
-    for i, arg in enumerate(args):
-        if arg == "--eyes-config" and i + 1 < len(args):
-            eyes_config = args[i + 1]
-        elif arg == "--host" and i + 1 < len(args):
-            host = args[i + 1]
-        elif arg == "--port" and i + 1 < len(args):
-            port = int(args[i + 1])
-
-    from anima.server import run_server
-
-    run_server(
-        eyes_enabled=eyes_enabled,
-        tts_enabled=tts_enabled,
-        light_enabled=light_enabled,
-        eyes_config_path=eyes_config,
-        http=http_enabled,
-        host=host,
-        port=port,
-    )
-    return 0
-
-
 def main() -> int:
     """Main entry point for LTM CLI."""
     _force_utf8_io()
-
-    # Handle --server flag at any position
-    if "--server" in sys.argv:
-        args = [a for a in sys.argv[1:] if a != "--server"]
-        return _run_server(args)
 
     if len(sys.argv) < 2 or "help" in sys.argv[1]:
         print("LTM - Long Term Memory for Anima")
@@ -92,8 +52,7 @@ def main() -> int:
         print("")
         print("System:")
         print("  setup                  Set up LTM in current project")
-        print("  serve                  Start the Anima server: MCP tools + hooks over HTTP (recommended)")
-        print("  server                 Standalone MCP server (legacy; prefer 'serve', use --stdio for stdio)")
+        print("  serve                  Start the Anima server (MCP tools + hooks over HTTP)")
         print("  eyes-daemon            Manage the eyes display daemon (start/stop/status)")
         print("  version                Show installed version (includes update check)")
         print("  update                 Update to latest version from GitHub")
@@ -176,10 +135,8 @@ def main() -> int:
             from anima.tools.setup import run
 
             return run(args)
-        case "server":
-            return _run_server(args)
         case "serve":
-            # HTTP hooks server (alternative to command hooks)
+            # Anima server: MCP tools (/mcp) + lifecycle hooks (/hooks/*) over HTTP
             port = 3741  # Default port
             host = "127.0.0.1"
             debug = False
