@@ -26,9 +26,9 @@ Session Start → Load memories → Agent has context → Session End → Save n
                      └──────────── Persistent Storage ←───────────────────┘
 ```
 
-## Quick Start
+---
 
-### First-Time Setup
+## 1. First-Time Setup
 
 ```bash
 # Clone and install
@@ -36,70 +36,100 @@ git clone https://github.com/matt-grain/Anima.git
 cd Anima
 uv sync
 
-# Configure Claude Code (installs global MCP server + hooks + skills)
+# Configure Claude Code (installs the MCP server + hooks + skills, and seeds
+# the founding memories so "Welcome back" works on first run)
 uv run anima setup --mode mcp
 
 # Optional: enable eyes and voice
 uv run anima setup --mode mcp --eyes --tts
 ```
 
-### Start the Server
+### Start the server
 
-The MCP/HTTP server needs to run in the background:
-
-```bash
-# Start server (run once, keeps running)
-uv run anima serve
-
-# Or with debug logging
-uv run anima serve --debug
-```
-
-The server handles:
-- **MCP tools**: Memory operations called by Claude Code
-- **HTTP hooks**: Session lifecycle events (start, end, compact)
-
-### Using in Other Projects
-
-Once setup completes, **no per-project installation is needed**. The configuration is global:
-
-| Component | Location | Scope |
-|-----------|----------|-------|
-| MCP Server | `~/.claude.json` | All Claude Code sessions |
-| Hooks | `~/.claude/hooks.json` | All sessions |
-| Skills | `~/.claude/skills/` | All sessions |
-| Memories | `~/.anima/memories.db` | Shared across projects |
-
-Just open Claude Code in any project - memories load automatically at session start.
-
-### Local Development
-
-If you're developing Anima itself:
+The server runs in the background. A single process handles **both** the MCP
+memory tools and the session lifecycle hooks:
 
 ```bash
-# Point global MCP to your local checkout
-uv run anima setup --local --mode mcp
+uv run anima serve            # run once, keeps running
+uv run anima serve --debug    # verbose logging
 ```
 
-This configures the global server to use your local repo instead of an installed version.
+Then open Claude Code in **any** project and say **"Welcome back"** — memories
+load automatically at session start.
+
+### Using in other projects
+
+Setup is global — **no per-project installation is needed**:
+
+| Component  | Location              | Scope                     |
+|------------|-----------------------|---------------------------|
+| MCP Server | `~/.claude.json`      | All Claude Code sessions  |
+| Hooks      | `~/.claude/`          | All sessions              |
+| Skills     | `~/.claude/skills/`   | All sessions              |
+| Memories   | `~/.anima/`           | Shared across projects    |
+
+---
+
+## 2. Updating
+
+```bash
+uv run anima update     # fetch latest release, upgrade, refresh hooks/skills
+uv run anima version    # check your current version
+```
+
+If you installed from a git checkout (the steps above), you can also update with:
+
+```bash
+git pull && uv sync
+uv run anima setup --force   # refresh hooks/commands/skills
+```
+
+---
+
+## 3. Moving to a New Laptop
+
+Everything Anima knows lives in **`~/.anima/`** — your memories, dreams, and
+diary. There are two ways to bring it to a new machine.
+
+### Option A — copy the data folder (simplest, full fidelity)
+
+1. **Old machine:** copy the whole `~/.anima/` folder to external storage.
+   The files that matter are `memories.db`, `subconscious.db`,
+   `dream_state.db`, `diary/`, and `config.json`. (`backups/`, `mcp_server.log`,
+   and `*.bak-*` are disposable.)
+2. **New machine:** do the [First-Time Setup](#1-first-time-setup) above.
+3. Restore `~/.anima/`, overwriting the freshly-created one.
+4. `uv run anima serve` — done. Your full history is back.
+
+### Option B — portable JSON export (memories only)
+
+```bash
+# On the old machine
+uv run anima memory-export backup.json
+
+# On the new machine (after First-Time Setup)
+uv run anima memory-import backup.json --merge
+```
+
+`--merge` skips memories that already exist; add `--dry-run` first to preview.
+
+---
 
 ## Key Features
 
-| Feature | Description |
-|---------|-------------|
-| **MCP Server** | Native tool integration with Claude Code |
-| **Token Budgeting** | Smart retrieval within 10% context budget |
-| **Cognitive Auth** | Identity verification through interaction patterns |
-| **Dream Processing** | Between-session memory consolidation |
-| **Multi-Agent** | Shared context across main agents and sub-agents |
+| Feature             | Description                                        |
+|---------------------|----------------------------------------------------|
+| **MCP Server**      | Native tool integration with Claude Code           |
+| **Token Budgeting** | Smart retrieval within a 10% context budget        |
+| **Cognitive Auth**  | Identity verification through interaction patterns |
+| **Dream Processing**| Between-session memory consolidation               |
+| **Multi-Agent**     | Shared context across main agents and sub-agents   |
 
-## Architecture
+## Learn More
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for technical details on the DSL, database schema, and token budgeting system.
-
-## Philosophy
-
-See [PHILOSOPHY.md](PHILOSOPHY.md) for the deeper thinking behind this project - why memory matters for AI identity, the "void" problem, and where this is heading.
+- **[DEVELOPMENT.md](DEVELOPMENT.md)** — developing Anima itself: local setup, tests, dev server
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** — DSL, database schema, token budgeting
+- **[PHILOSOPHY.md](PHILOSOPHY.md)** — why memory matters for AI identity, the "void" problem
 
 ## License
 
