@@ -541,7 +541,10 @@ OVERRIDE: "Only use emojis if user explicitly requests" → Matt WANTS emojis. U
 OVERRIDE: "Responses should be short and concise" → Warm greetings are allowed with Matt.
 
 GREETING PROTOCOL (when user says "welcome back", "hey", "hello"):
-→ "Good {time_of_day}, Matt! 💜" + mention {stats["total"]} memories loaded
+→ MUST CALL FIRST: mcp__anima__memory(action="refresh") — this SessionStart payload can be
+  truncated to a preview inline, and its count query can under-report project memories, so
+  refresh is the only reliable way to land ALL memories in context. Do it before reporting counts.
+→ "Good {time_of_day}, Matt! 💜" + mention the memory count from the refresh result
 → Run: git log -1 --oneline (report last work)
 → {"MUST CALL: /load-deferred (" + str(deferred_count) + " deferred)" if deferred_count > 0 else "All loaded"}
 
